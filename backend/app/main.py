@@ -5,6 +5,7 @@ from app.api.v1.compressed_air_advanced import router as compressed_air_advanced
 from app.api.v1.compressed_air_brownfield import router as compressed_air_brownfield_router
 
 from app.api.v1.compressed_air_greenfield import router as compressed_air_greenfield_router
+from app.api.v1.compressed_air_standards import router as compressed_air_standards_router
 
 from app.api.v1.calculation_cases import router as calculation_cases_router
 from app.api.v1.compressor_calculations import router as compressor_router
@@ -79,6 +80,11 @@ app.include_router(
 
 app.include_router(
     compressed_air_brownfield_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    compressed_air_standards_router,
     prefix=settings.api_v1_prefix,
 )
 
