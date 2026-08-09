@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 
+from app.api.v1.compressed_air_report import router as compressed_air_report_router
+
 from app.api.v1.compressed_air_assessments import router as compressed_air_assessments_router
 
 from app.api.v1.compressed_air_advanced import router as compressed_air_advanced_router
@@ -99,6 +101,12 @@ app.include_router(
 
 app.include_router(
     compressed_air_assessments_router,
+    prefix=settings.api_v1_prefix,
+)
+
+
+app.include_router(
+    compressed_air_report_router,
     prefix=settings.api_v1_prefix,
 )
 
