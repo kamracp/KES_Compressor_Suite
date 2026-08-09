@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 
+from app.api.v1.compressed_air_advanced import router as compressed_air_advanced_router
+
 from app.api.v1.compressed_air_brownfield import router as compressed_air_brownfield_router
 
 from app.api.v1.compressed_air_greenfield import router as compressed_air_greenfield_router
@@ -77,6 +79,12 @@ app.include_router(
 
 app.include_router(
     compressed_air_brownfield_router,
+    prefix=settings.api_v1_prefix,
+)
+
+
+app.include_router(
+    compressed_air_advanced_router,
     prefix=settings.api_v1_prefix,
 )
 
