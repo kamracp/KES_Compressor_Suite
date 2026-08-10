@@ -1,5 +1,4 @@
 from dataclasses import asdict
-from decimal import Decimal
 from typing import Any
 
 from fastapi import APIRouter

@@ -37,11 +37,10 @@ def size_driver(
     if service_factor < 0:
         raise InvalidDriverInputError("Service factor cannot be negative.")
 
-    if motor_efficiency is not None:
-        if motor_efficiency <= 0 or motor_efficiency > 1:
-            raise InvalidDriverInputError(
-                "Motor efficiency must be greater than zero and not exceed one."
-            )
+    if motor_efficiency is not None and (motor_efficiency <= 0 or motor_efficiency > 1):
+        raise InvalidDriverInputError(
+            "Motor efficiency must be greater than zero and not exceed one."
+        )
 
     required_driver_power_kw = shaft_power_kw * (Decimal("1") + service_factor)
 

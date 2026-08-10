@@ -165,9 +165,11 @@ def design_greenfield_system(
 
     required_pressure = pressure_budget.required_compressor_discharge_pressure_bar_g
 
-    if treatment_result is not None:
-        if treatment_result.recommended_treatment_capacity_nm3_per_hr < required_design_flow:
-            messages.append("Treatment system capacity is below plant design flow.")
+    if (
+        treatment_result is not None
+        and treatment_result.recommended_treatment_capacity_nm3_per_hr < required_design_flow
+    ):
+        messages.append("Treatment system capacity is below plant design flow.")
 
     station_capacity_is_adequate: bool | None
 

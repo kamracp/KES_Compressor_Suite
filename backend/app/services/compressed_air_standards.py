@@ -113,10 +113,7 @@ class CompressedAirStandardsService:
         if request.standard is not None and rule.standard != request.standard:
             return False
 
-        if request.module is not None and request.module not in rule.related_modules:
-            return False
-
-        return True
+        return request.module is None or request.module in rule.related_modules
 
 
 compressed_air_standards_service = CompressedAirStandardsService()

@@ -3,8 +3,8 @@ from decimal import Decimal
 from pydantic import BaseModel, Field
 
 from app.domain.compressed_air.consumers.consumer_models import (
-    AirConsumptionBasis,
     AirConsumerCategory,
+    AirConsumptionBasis,
     AirQualityClass,
     ConsumerCriticality,
 )

@@ -54,11 +54,10 @@ def calculate_centrifugal_power(
     if selected_driver_power_kw <= 0:
         raise InvalidCentrifugalPowerInputError("Selected driver power must be greater than zero.")
 
-    if motor_efficiency is not None:
-        if motor_efficiency <= 0 or motor_efficiency > 1:
-            raise InvalidCentrifugalPowerInputError(
-                "Motor efficiency must be greater than zero and not exceed one."
-            )
+    if motor_efficiency is not None and (motor_efficiency <= 0 or motor_efficiency > 1):
+        raise InvalidCentrifugalPowerInputError(
+            "Motor efficiency must be greater than zero and not exceed one."
+        )
 
     gas_power_kw = mass_flow_kg_per_s * polytropic_head_kj_per_kg / polytropic_efficiency
 

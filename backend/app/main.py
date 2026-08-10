@@ -1,19 +1,13 @@
 from fastapi import FastAPI
 
-from app.api.v1.compressed_air_system_summary import router as compressed_air_system_summary_router
-
-from app.api.v1.compressed_air_report import router as compressed_air_report_router
-
-from app.api.v1.compressed_air_assessments import router as compressed_air_assessments_router
-
-from app.api.v1.compressed_air_advanced import router as compressed_air_advanced_router
-
-from app.api.v1.compressed_air_brownfield import router as compressed_air_brownfield_router
-
-from app.api.v1.compressed_air_greenfield import router as compressed_air_greenfield_router
-from app.api.v1.compressed_air_standards import router as compressed_air_standards_router
-
 from app.api.v1.calculation_cases import router as calculation_cases_router
+from app.api.v1.compressed_air_advanced import router as compressed_air_advanced_router
+from app.api.v1.compressed_air_assessments import router as compressed_air_assessments_router
+from app.api.v1.compressed_air_brownfield import router as compressed_air_brownfield_router
+from app.api.v1.compressed_air_greenfield import router as compressed_air_greenfield_router
+from app.api.v1.compressed_air_report import router as compressed_air_report_router
+from app.api.v1.compressed_air_standards import router as compressed_air_standards_router
+from app.api.v1.compressed_air_system_summary import router as compressed_air_system_summary_router
 from app.api.v1.compressor_calculations import router as compressor_router
 from app.api.v1.compressor_execution import router as compressor_execution_router
 from app.api.v1.pdf_report import router as pdf_report_router

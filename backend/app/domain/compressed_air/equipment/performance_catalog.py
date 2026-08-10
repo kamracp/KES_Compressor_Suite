@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from decimal import Decimal
 
 from app.domain.compressed_air.equipment.equipment_models import (
     CompressorCatalogModel,

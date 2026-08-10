@@ -80,17 +80,16 @@ def optimize_compressed_air_system(
 
     actions: list[SystemOptimizationAction] = []
 
-    if station_capacity is not None:
-        if not station_capacity.available_capacity_is_adequate:
-            actions.append(
-                SystemOptimizationAction(
-                    action_code="STATION-CAPACITY-SHORTFALL",
-                    category=SystemOptimizationCategory.CAPACITY,
-                    priority=SystemOptimizationPriority.CRITICAL,
-                    title="Increase available compressor station capacity",
-                    rationale=("Available compressor capacity is below the required design flow."),
-                )
+    if station_capacity is not None and not station_capacity.available_capacity_is_adequate:
+        actions.append(
+            SystemOptimizationAction(
+                action_code="STATION-CAPACITY-SHORTFALL",
+                category=SystemOptimizationCategory.CAPACITY,
+                priority=SystemOptimizationPriority.CRITICAL,
+                title="Increase available compressor station capacity",
+                rationale=("Available compressor capacity is below the required design flow."),
             )
+        )
 
     if skid_assessment is not None:
         if not skid_assessment.flow_capacity_is_adequate:
@@ -132,20 +131,19 @@ def optimize_compressed_air_system(
                 )
             )
 
-    if distribution_optimization is not None:
-        if distribution_optimization.optimization_required:
-            actions.append(
-                SystemOptimizationAction(
-                    action_code="DISTRIBUTION-UPGRADE",
-                    category=SystemOptimizationCategory.DISTRIBUTION,
-                    priority=SystemOptimizationPriority.HIGH,
-                    title="Reduce compressed-air distribution losses",
-                    rationale=(
-                        "One or more consumer paths are pressure deficient. "
-                        "Header or branch resizing can reduce system losses."
-                    ),
-                )
+    if distribution_optimization is not None and distribution_optimization.optimization_required:
+        actions.append(
+            SystemOptimizationAction(
+                action_code="DISTRIBUTION-UPGRADE",
+                category=SystemOptimizationCategory.DISTRIBUTION,
+                priority=SystemOptimizationPriority.HIGH,
+                title="Reduce compressed-air distribution losses",
+                rationale=(
+                    "One or more consumer paths are pressure deficient. "
+                    "Header or branch resizing can reduce system losses."
+                ),
             )
+        )
 
     if brownfield_analysis is not None:
         if brownfield_analysis.high_unloaded_running_detected:

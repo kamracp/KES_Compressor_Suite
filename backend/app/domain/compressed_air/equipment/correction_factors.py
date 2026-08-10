@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
-
 STANDARD_ATMOSPHERIC_PRESSURE_BAR_A = Decimal("1.01325")
 STANDARD_REFERENCE_TEMPERATURE_C = Decimal("20")
 KELVIN_OFFSET = Decimal("273.15")

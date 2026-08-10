@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
-
 WATER_SPECIFIC_HEAT_KJ_PER_KG_K = Decimal("4.186")
 WATER_DENSITY_KG_PER_M3 = Decimal("997")
 

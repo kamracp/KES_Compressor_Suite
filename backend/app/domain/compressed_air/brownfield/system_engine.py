@@ -14,8 +14,8 @@ from app.domain.compressed_air.energy.leakage_energy import (
     LeakageEnergyResult,
 )
 from app.domain.compressed_air.energy.pressure_energy import (
-    PressureEnergyResult,
     PressureEnergyInput,
+    PressureEnergyResult,
     calculate_pressure_energy_saving,
 )
 from app.domain.compressed_air.optimization.system_optimizer import (

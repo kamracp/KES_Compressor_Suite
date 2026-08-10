@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from decimal import Decimal, ROUND_CEILING
+from decimal import ROUND_CEILING, Decimal
 
 
 class InvalidCapacityInputError(ValueError):
