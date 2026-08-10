@@ -42,7 +42,7 @@ def _raise_execution_error(exc: Exception) -> None:
 
     if isinstance(exc, InvalidCalculationPersistenceMetadataError):
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(exc),
         ) from exc
 
