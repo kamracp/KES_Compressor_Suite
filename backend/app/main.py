@@ -12,6 +12,7 @@ from app.api.v1.compressor_calculations import router as compressor_router
 from app.api.v1.compressor_execution import router as compressor_execution_router
 from app.api.v1.pdf_report import router as pdf_report_router
 from app.api.v1.pdf_report_v2 import router as pdf_report_v2_router
+from app.api.v1.organizations import router as organizations_router
 from app.api.v1.project_history import router as project_history_router
 from app.api.v1.projects import router as projects_router
 from app.api.v1.report_export import router as report_export_router
@@ -24,6 +25,12 @@ app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
     debug=settings.debug,
+)
+
+
+app.include_router(
+    organizations_router,
+    prefix=settings.api_v1_prefix,
 )
 
 app.include_router(
