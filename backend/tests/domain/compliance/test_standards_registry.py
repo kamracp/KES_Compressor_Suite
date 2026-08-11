@@ -1,0 +1,98 @@
+from app.domain.compliance.standards_registry import (
+    API_617,
+    API_618,
+    ASME_PTC_10,
+    ENGINEERING_STANDARDS,
+    GPSA_ENGINEERING_DATA_BOOK,
+    EngineeringStandard,
+    StandardApplicability,
+    StandardAuthority,
+    StandardVerificationStatus,
+    get_standard,
+)
+
+
+def test_registry_contains_expected_standards() -> None:
+    assert ENGINEERING_STANDARDS == (
+        API_617,
+        API_618,
+        ASME_PTC_10,
+        GPSA_ENGINEERING_DATA_BOOK,
+    )
+
+
+def test_standard_ids_are_unique() -> None:
+    standard_ids = tuple(standard.standard_id for standard in ENGINEERING_STANDARDS)
+
+    assert len(standard_ids) == len(set(standard_ids))
+
+
+def test_api_617_metadata() -> None:
+    standard = API_617
+
+    assert isinstance(standard, EngineeringStandard)
+    assert standard.standard_id == "API-617"
+    assert standard.authority == StandardAuthority.API
+    assert standard.edition == "9th Edition"
+
+    assert standard.applicability == (StandardApplicability.CENTRIFUGAL,)
+
+    assert standard.verification_status == StandardVerificationStatus.CLAUSE_MAPPING_PENDING
+
+
+def test_api_618_metadata() -> None:
+    standard = API_618
+
+    assert standard.standard_id == "API-618"
+    assert standard.authority == StandardAuthority.API
+
+    assert standard.applicability == (StandardApplicability.RECIPROCATING,)
+
+
+def test_asme_ptc_10_applicability() -> None:
+    standard = ASME_PTC_10
+
+    assert standard.authority == StandardAuthority.ASME
+
+    assert StandardApplicability.CENTRIFUGAL in standard.applicability
+
+    assert StandardApplicability.PERFORMANCE_TESTING in standard.applicability
+
+
+def test_gpsa_data_book_applicability() -> None:
+    standard = GPSA_ENGINEERING_DATA_BOOK
+
+    assert standard.authority == StandardAuthority.GPSA
+
+    assert StandardApplicability.GAS_PROCESSING_DATA in standard.applicability
+
+    assert StandardApplicability.CENTRIFUGAL in standard.applicability
+
+    assert StandardApplicability.RECIPROCATING in standard.applicability
+
+
+def test_get_standard_returns_exact_match() -> None:
+    assert get_standard("API-617") is API_617
+
+
+def test_get_standard_is_case_insensitive() -> None:
+    assert get_standard("api-618") is API_618
+
+
+def test_get_standard_ignores_surrounding_whitespace() -> None:
+    assert get_standard("  asme-ptc-10  ") is ASME_PTC_10
+
+
+def test_get_standard_returns_none_for_unknown_standard() -> None:
+    assert get_standard("UNKNOWN-STANDARD") is None
+
+
+def test_all_registered_standards_have_reference_notes() -> None:
+    assert all(standard.notes.strip() for standard in ENGINEERING_STANDARDS)
+
+
+def test_all_registered_standards_have_verification_status() -> None:
+    assert all(
+        standard.verification_status in StandardVerificationStatus
+        for standard in ENGINEERING_STANDARDS
+    )
