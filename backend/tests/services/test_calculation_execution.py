@@ -6,8 +6,8 @@ from sqlalchemy import delete
 from app.core.database import SessionLocal
 from app.models.calculation_case import CalculationCase, CalculationStatus, CalculationType
 from app.models.project import Project
-from app.schemas.project import ProjectCreate
 from app.repositories.project import project_repository
+from app.schemas.project import ProjectCreate
 from app.services.calculation_execution import calculation_execution_service
 
 
