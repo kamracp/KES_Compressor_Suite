@@ -16,6 +16,7 @@ from app.api.v1.pdf_report import router as pdf_report_router
 from app.api.v1.pdf_report_v2 import router as pdf_report_v2_router
 from app.api.v1.project_history import router as project_history_router
 from app.api.v1.projects import router as projects_router
+from app.api.v1.rbac import router as rbac_router
 from app.api.v1.report_export import router as report_export_router
 from app.api.v1.reporting import router as reporting_router
 from app.api.v1.users import router as users_router
@@ -43,6 +44,12 @@ app.include_router(
 
 app.include_router(
     users_router,
+    prefix=settings.api_v1_prefix,
+)
+
+
+app.include_router(
+    rbac_router,
     prefix=settings.api_v1_prefix,
 )
 
