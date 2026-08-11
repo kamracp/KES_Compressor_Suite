@@ -10,9 +10,10 @@ dependencies = [
     "sqlalchemy>=2.0,<3.0",
     "psycopg[binary]>=3.2,<4.0",
     "alembic>=1.16,<2.0",
-    "pydantic>=2.11,<3.0",
+    "pydantic[email]>=2.11,<3.0",
     "pydantic-settings>=2.10,<3.0",
     "loguru>=0.7,<1.0",
+    "pwdlib[argon2]>=0.3,<1.0",
 ]
 
 [project.optional-dependencies]
@@ -58,3 +59,9 @@ source = ["app"]
 show_missing = true
 skip_covered = false
 fail_under = 0
+
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+exclude = ["tests*", "migrations*"]

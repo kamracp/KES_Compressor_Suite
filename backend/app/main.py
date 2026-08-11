@@ -10,13 +10,14 @@ from app.api.v1.compressed_air_standards import router as compressed_air_standar
 from app.api.v1.compressed_air_system_summary import router as compressed_air_system_summary_router
 from app.api.v1.compressor_calculations import router as compressor_router
 from app.api.v1.compressor_execution import router as compressor_execution_router
+from app.api.v1.organizations import router as organizations_router
 from app.api.v1.pdf_report import router as pdf_report_router
 from app.api.v1.pdf_report_v2 import router as pdf_report_v2_router
-from app.api.v1.organizations import router as organizations_router
 from app.api.v1.project_history import router as project_history_router
 from app.api.v1.projects import router as projects_router
 from app.api.v1.report_export import router as report_export_router
 from app.api.v1.reporting import router as reporting_router
+from app.api.v1.users import router as users_router
 from app.core.config import get_settings
 
 settings = get_settings()
@@ -30,6 +31,12 @@ app = FastAPI(
 
 app.include_router(
     organizations_router,
+    prefix=settings.api_v1_prefix,
+)
+
+
+app.include_router(
+    users_router,
     prefix=settings.api_v1_prefix,
 )
 
