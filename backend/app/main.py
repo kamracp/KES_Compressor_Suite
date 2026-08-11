@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from app.api.v1.auth import router as auth_router
 from app.api.v1.calculation_cases import router as calculation_cases_router
 from app.api.v1.compressed_air_advanced import router as compressed_air_advanced_router
 from app.api.v1.compressed_air_assessments import router as compressed_air_assessments_router
@@ -28,6 +29,11 @@ app = FastAPI(
     debug=settings.debug,
 )
 
+
+app.include_router(
+    auth_router,
+    prefix=settings.api_v1_prefix,
+)
 
 app.include_router(
     organizations_router,

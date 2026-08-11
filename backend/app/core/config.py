@@ -14,6 +14,13 @@ class Settings(BaseSettings):
 
     api_v1_prefix: str = "/api/v1"
 
+    jwt_secret_key: str = Field(
+        default="change-this-development-secret-before-production"
+    )
+    jwt_algorithm: str = "HS256"
+    jwt_access_token_expire_minutes: int = 60
+    jwt_issuer: str = "kes-compressor-suite"
+
     database_url: str = Field(
         default="postgresql+psycopg://postgres:postgres@localhost:5432/kes_compressor"
     )
