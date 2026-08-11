@@ -9,7 +9,7 @@ from app.domain.compressed_air.station.station_models import (
 
 
 class EquipmentDataSourceType(StrEnum):
-    """Source type for manufacturer performance data."""
+    """Source type for equipment performance data."""
 
     DATASHEET = "DATASHEET"
     CATALOG = "CATALOG"
@@ -21,7 +21,7 @@ class EquipmentDataSourceType(StrEnum):
 
 
 class EquipmentDataVerificationStatus(StrEnum):
-    """Verification status for manufacturer-supplied data."""
+    """Verification status for source-supplied equipment data."""
 
     UNVERIFIED = "UNVERIFIED"
     SOURCE_VERIFIED = "SOURCE_VERIFIED"
@@ -31,7 +31,7 @@ class EquipmentDataVerificationStatus(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class EquipmentReference:
-    """Traceable manufacturer data source."""
+    """Traceable equipment performance data source."""
 
     source_name: str
 

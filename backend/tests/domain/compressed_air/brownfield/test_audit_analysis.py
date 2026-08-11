@@ -29,7 +29,7 @@ def build_compressor(
 ) -> ExistingCompressor:
     return ExistingCompressor(
         unit_code=unit_code,
-        manufacturer="TEST",
+        equipment_source="TEST",
         model="TEST-MODEL",
         technology=CompressorTechnology.ROTARY_SCREW_OIL_INJECTED,
         control_mode=CompressorControlMode.LOAD_UNLOAD,

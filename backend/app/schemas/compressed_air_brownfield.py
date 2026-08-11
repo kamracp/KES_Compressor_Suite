@@ -14,7 +14,19 @@ from app.domain.compressed_air.station.station_models import (
 class ExistingCompressorInputSchema(BaseModel):
     unit_code: str
 
-    manufacturer: str | None = None
+    equipment_source: str | None = Field(
+        default=None,
+        description=(
+            "Vendor-neutral equipment source, make reference, "
+            "or traceable equipment identification."
+        ),
+    )
+
+    manufacturer: str | None = Field(
+        default=None,
+        description=("Legacy compatibility field. Prefer equipment_source for new integrations."),
+    )
+
     model: str | None = None
 
     technology: CompressorTechnology

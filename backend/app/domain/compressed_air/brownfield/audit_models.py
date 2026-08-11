@@ -30,7 +30,7 @@ class ExistingCompressor:
     """One compressor installed in an existing factory."""
 
     unit_code: str
-    manufacturer: str | None
+    equipment_source: str | None
     model: str | None
 
     technology: CompressorTechnology

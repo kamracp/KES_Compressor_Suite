@@ -49,7 +49,7 @@ class SkidComponent:
 
     quantity: int = 1
 
-    manufacturer: str | None = None
+    equipment_source: str | None = None
     model: str | None = None
 
     notes: str | None = None

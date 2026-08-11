@@ -29,7 +29,7 @@ class CompressedAirBrownfieldService:
             compressors=tuple(
                 ExistingCompressor(
                     unit_code=item.unit_code,
-                    manufacturer=item.manufacturer,
+                    equipment_source=(item.equipment_source or item.manufacturer),
                     model=item.model,
                     technology=item.technology,
                     control_mode=item.control_mode,
