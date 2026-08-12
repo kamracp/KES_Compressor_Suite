@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.auth import router as auth_router
 from app.api.v1.calculation_cases import router as calculation_cases_router
@@ -11,6 +12,7 @@ from app.api.v1.compressed_air_standards import router as compressed_air_standar
 from app.api.v1.compressed_air_system_summary import router as compressed_air_system_summary_router
 from app.api.v1.compressor_calculations import router as compressor_router
 from app.api.v1.compressor_execution import router as compressor_execution_router
+from app.api.v1.gas_properties import router as gas_properties_router
 from app.api.v1.organizations import router as organizations_router
 from app.api.v1.pdf_report import router as pdf_report_router
 from app.api.v1.pdf_report_v2 import router as pdf_report_v2_router
@@ -29,6 +31,17 @@ app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
     debug=settings.debug,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -77,6 +90,11 @@ app.include_router(
 
 app.include_router(
     compressor_execution_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    gas_properties_router,
     prefix=settings.api_v1_prefix,
 )
 
