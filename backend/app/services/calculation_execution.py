@@ -10,8 +10,8 @@ from app.models.calculation_case import (
     CalculationStatus,
     CalculationType,
 )
-from app.models.project import Project
 from app.repositories.calculation_case import calculation_case_repository
+from app.repositories.project import project_repository
 from app.schemas.calculation_case import CalculationCaseCreate
 from app.services.calculation_case import (
     CalculationCaseAlreadyExistsError,
@@ -24,14 +24,20 @@ class UnsupportedCalculationExecutionError(ValueError):
 
 
 class CalculationExecutionService:
-    """Persist completed compressor engineering calculation executions."""
+    """Persist tenant-scoped completed compressor engineering calculations."""
 
     def _validate_project(
         self,
         db: Session,
+        *,
+        organization_id: int,
         project_id: int,
     ) -> None:
-        project = db.get(Project, project_id)
+        project = project_repository.get_by_id(
+            db,
+            organization_id=organization_id,
+            project_id=project_id,
+        )
 
         if project is None:
             raise CalculationCaseProjectNotFoundError(
@@ -58,6 +64,7 @@ class CalculationExecutionService:
         self,
         db: Session,
         *,
+        organization_id: int,
         project_id: int,
         calculation_code: str,
         calculation_type: CalculationType,
@@ -66,11 +73,12 @@ class CalculationExecutionService:
         result: Any,
         engineering_notes: str | None = None,
     ) -> CalculationCase:
-        """Persist a completed compressor engineering calculation."""
+        """Persist a completed calculation within a tenant-owned project."""
 
         self._validate_project(
             db,
-            project_id,
+            organization_id=organization_id,
+            project_id=project_id,
         )
 
         self._validate_calculation_code(

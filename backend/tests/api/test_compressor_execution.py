@@ -5,6 +5,7 @@ from app.core.database import SessionLocal
 from app.main import app
 from app.models.calculation_case import CalculationCase
 from app.models.project import Project
+from tests.helpers.api_tenant_auth import prepare_authenticated_tenant
 
 client = TestClient(app)
 
@@ -16,9 +17,18 @@ def reset_data() -> None:
         db.commit()
 
 
-def create_project() -> int:
+def prepare_context() -> dict[str, str]:
+    _, _, headers = prepare_authenticated_tenant(client)
+    return headers
+
+
+def create_project(
+    *,
+    headers: dict[str, str],
+) -> int:
     response = client.post(
         "/api/v1/projects",
+        headers=headers,
         json={
             "project_code": "KESC-EXEC-API-001",
             "project_name": "Compressor Execution API Test",
@@ -26,7 +36,6 @@ def create_project() -> int:
     )
 
     assert response.status_code == 201
-
     return response.json()["id"]
 
 
@@ -63,9 +72,11 @@ def build_selection_payload(
 
 def test_execute_selection_without_persistence() -> None:
     reset_data()
+    headers = prepare_context()
 
     response = client.post(
         "/api/v1/compressor-execution/selection",
+        headers=headers,
         json=build_selection_payload(
             persist_result=False,
         ),
@@ -84,11 +95,15 @@ def test_execute_selection_without_persistence() -> None:
 
 def test_execute_selection_with_persistence() -> None:
     reset_data()
+    headers = prepare_context()
 
-    project_id = create_project()
+    project_id = create_project(
+        headers=headers,
+    )
 
     response = client.post(
         "/api/v1/compressor-execution/selection",
+        headers=headers,
         json=build_selection_payload(
             persist_result=True,
             project_id=project_id,
@@ -102,7 +117,10 @@ def test_execute_selection_with_persistence() -> None:
 
     assert data["calculation_case_id"] is not None
 
-    case_response = client.get(f"/api/v1/calculation-cases/{data['calculation_case_id']}")
+    case_response = client.get(
+        f"/api/v1/calculation-cases/{data['calculation_case_id']}",
+        headers=headers,
+    )
 
     assert case_response.status_code == 200
 
@@ -116,8 +134,11 @@ def test_execute_selection_with_persistence() -> None:
 
 def test_duplicate_calculation_code_returns_conflict() -> None:
     reset_data()
+    headers = prepare_context()
 
-    project_id = create_project()
+    project_id = create_project(
+        headers=headers,
+    )
 
     payload = build_selection_payload(
         persist_result=True,
@@ -127,11 +148,13 @@ def test_duplicate_calculation_code_returns_conflict() -> None:
 
     first_response = client.post(
         "/api/v1/compressor-execution/selection",
+        headers=headers,
         json=payload,
     )
 
     second_response = client.post(
         "/api/v1/compressor-execution/selection",
+        headers=headers,
         json=payload,
     )
 
@@ -141,9 +164,11 @@ def test_duplicate_calculation_code_returns_conflict() -> None:
 
 def test_missing_project_returns_not_found() -> None:
     reset_data()
+    headers = prepare_context()
 
     response = client.post(
         "/api/v1/compressor-execution/selection",
+        headers=headers,
         json=build_selection_payload(
             persist_result=True,
             project_id=999999,
@@ -156,9 +181,11 @@ def test_missing_project_returns_not_found() -> None:
 
 def test_missing_persistence_metadata_returns_422() -> None:
     reset_data()
+    headers = prepare_context()
 
     response = client.post(
         "/api/v1/compressor-execution/selection",
+        headers=headers,
         json={
             "calculation": {
                 "required_flow_m3_per_hr": "14143.4",

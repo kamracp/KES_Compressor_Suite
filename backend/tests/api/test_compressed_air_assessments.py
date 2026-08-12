@@ -3,20 +3,24 @@ from uuid import uuid4
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 
-from app.core.database import engine
+from app.core.database import SessionLocal
 from app.main import app
+from tests.helpers.tenant_context import ensure_test_organization_id
 
 client = TestClient(app)
 
 
 def ensure_test_project_id() -> int:
-    """Ensure that the assessment tests always have a valid parent project."""
+    """Ensure that the tests have a tenant-owned parent project."""
 
-    with engine.begin() as connection:
-        project_id = connection.execute(
+    with SessionLocal() as db:
+        organization_id = ensure_test_organization_id(db)
+
+        project_id = db.execute(
             text(
                 """
                 INSERT INTO projects (
+                    organization_id,
                     project_code,
                     project_name,
                     client_name,
@@ -26,22 +30,30 @@ def ensure_test_project_id() -> int:
                     status
                 )
                 VALUES (
-                    'TEST-CAS-S11',
-                    'Compressed Air S11 Test Project',
+                    :organization_id,
+                    :project_code,
+                    :project_name,
                     'Engineering Test',
                     'Test Plant',
                     'Test Environment',
-                    'Automated compressed-air persistence testing',
+                    'Automated compressed-air regression testing',
                     'ACTIVE'
                 )
-                ON CONFLICT (project_code)
+                ON CONFLICT (organization_id, project_code)
                 DO UPDATE SET
                     project_name = EXCLUDED.project_name,
                     status = EXCLUDED.status
                 RETURNING id
                 """
-            )
+            ),
+            {
+                "organization_id": organization_id,
+                "project_code": "TEST-CAS-S11",
+                "project_name": "Compressed Air S11 Test Project",
+            },
         ).scalar_one()
+
+        db.commit()
 
     return int(project_id)
 

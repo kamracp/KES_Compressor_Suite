@@ -3,6 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
+from app.api.dependencies.auth import CurrentUser
+from app.api.dependencies.permissions import require_permission
 from app.core.database import get_db
 from app.schemas.project import ProjectCreate, ProjectRead, ProjectUpdate
 from app.services.project import (
@@ -16,7 +18,20 @@ router = APIRouter(
     tags=["Projects"],
 )
 
-DatabaseSession = Annotated[Session, Depends(get_db)]
+DatabaseSession = Annotated[
+    Session,
+    Depends(get_db),
+]
+
+ProjectReader = Annotated[
+    CurrentUser,
+    Depends(require_permission("project.read")),
+]
+
+ProjectWriter = Annotated[
+    CurrentUser,
+    Depends(require_permission("project.write")),
+]
 
 
 @router.post(
@@ -27,9 +42,14 @@ DatabaseSession = Annotated[Session, Depends(get_db)]
 def create_project(
     payload: ProjectCreate,
     db: DatabaseSession,
+    current_user: ProjectWriter,
 ) -> ProjectRead:
     try:
-        return project_service.create_project(db, payload)
+        return project_service.create_project(
+            db,
+            organization_id=current_user.organization_id,
+            payload=payload,
+        )
     except ProjectAlreadyExistsError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -43,8 +63,12 @@ def create_project(
 )
 def list_projects(
     db: DatabaseSession,
+    current_user: ProjectReader,
 ) -> list[ProjectRead]:
-    return project_service.list_projects(db)
+    return project_service.list_projects(
+        db,
+        organization_id=current_user.organization_id,
+    )
 
 
 @router.get(
@@ -54,9 +78,14 @@ def list_projects(
 def get_project(
     project_id: int,
     db: DatabaseSession,
+    current_user: ProjectReader,
 ) -> ProjectRead:
     try:
-        return project_service.get_project(db, project_id)
+        return project_service.get_project(
+            db,
+            organization_id=current_user.organization_id,
+            project_id=project_id,
+        )
     except ProjectNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -72,9 +101,15 @@ def update_project(
     project_id: int,
     payload: ProjectUpdate,
     db: DatabaseSession,
+    current_user: ProjectWriter,
 ) -> ProjectRead:
     try:
-        return project_service.update_project(db, project_id, payload)
+        return project_service.update_project(
+            db,
+            organization_id=current_user.organization_id,
+            project_id=project_id,
+            payload=payload,
+        )
     except ProjectAlreadyExistsError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -94,13 +129,20 @@ def update_project(
 def delete_project(
     project_id: int,
     db: DatabaseSession,
+    current_user: ProjectWriter,
 ) -> Response:
     try:
-        project_service.delete_project(db, project_id)
+        project_service.delete_project(
+            db,
+            organization_id=current_user.organization_id,
+            project_id=project_id,
+        )
     except ProjectNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(exc),
         ) from exc
 
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return Response(
+        status_code=status.HTTP_204_NO_CONTENT,
+    )

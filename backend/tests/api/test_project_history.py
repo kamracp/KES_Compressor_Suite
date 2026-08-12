@@ -5,6 +5,7 @@ from app.core.database import SessionLocal
 from app.main import app
 from app.models.calculation_case import CalculationCase
 from app.models.project import Project
+from tests.helpers.api_tenant_auth import prepare_authenticated_tenant
 
 client = TestClient(app)
 
@@ -16,9 +17,18 @@ def reset_data() -> None:
         db.commit()
 
 
-def create_project() -> int:
+def prepare_context() -> dict[str, str]:
+    _, _, headers = prepare_authenticated_tenant(client)
+    return headers
+
+
+def create_project(
+    *,
+    headers: dict[str, str],
+) -> int:
     response = client.post(
         "/api/v1/projects",
+        headers=headers,
         json={
             "project_code": "KESC-HIST-API-001",
             "project_name": "Project History API Test",
@@ -26,12 +36,12 @@ def create_project() -> int:
     )
 
     assert response.status_code == 201
-
     return response.json()["id"]
 
 
 def create_case(
     *,
+    headers: dict[str, str],
     project_id: int,
     calculation_code: str,
     calculation_type: str,
@@ -41,6 +51,7 @@ def create_case(
 ) -> int:
     response = client.post(
         "/api/v1/calculation-cases",
+        headers=headers,
         json={
             "project_id": project_id,
             "calculation_code": calculation_code,
@@ -49,21 +60,24 @@ def create_case(
             "revision": revision,
             "title": title,
             "input_data": {},
-            "result_data": {"status": "PASS"} if status == "COMPLETED" else None,
+            "result_data": ({"status": "PASS"} if status == "COMPLETED" else None),
         },
     )
 
     assert response.status_code == 201
-
     return response.json()["id"]
 
 
 def test_get_project_calculation_history() -> None:
     reset_data()
+    headers = prepare_context()
 
-    project_id = create_project()
+    project_id = create_project(
+        headers=headers,
+    )
 
     first_case_id = create_case(
+        headers=headers,
         project_id=project_id,
         calculation_code="HIST-API-001",
         calculation_type="SELECTION",
@@ -73,6 +87,7 @@ def test_get_project_calculation_history() -> None:
     )
 
     second_case_id = create_case(
+        headers=headers,
         project_id=project_id,
         calculation_code="HIST-API-002",
         calculation_type="CENTRIFUGAL",
@@ -81,7 +96,10 @@ def test_get_project_calculation_history() -> None:
         title="Draft Centrifugal Case",
     )
 
-    response = client.get(f"/api/v1/projects/{project_id}/calculation-history")
+    response = client.get(
+        f"/api/v1/projects/{project_id}/calculation-history",
+        headers=headers,
+    )
 
     assert response.status_code == 200
 
@@ -91,19 +109,23 @@ def test_get_project_calculation_history() -> None:
     assert data["total_cases"] == 2
     assert data["completed_cases"] == 1
     assert data["draft_cases"] == 1
-
     assert data["latest_case_id"] == second_case_id
     assert data["latest_completed_case_id"] == first_case_id
-
     assert len(data["items"]) == 2
 
 
 def test_empty_project_history() -> None:
     reset_data()
+    headers = prepare_context()
 
-    project_id = create_project()
+    project_id = create_project(
+        headers=headers,
+    )
 
-    response = client.get(f"/api/v1/projects/{project_id}/calculation-history")
+    response = client.get(
+        f"/api/v1/projects/{project_id}/calculation-history",
+        headers=headers,
+    )
 
     assert response.status_code == 200
 
@@ -120,7 +142,11 @@ def test_empty_project_history() -> None:
 
 def test_missing_project_returns_404() -> None:
     reset_data()
+    headers = prepare_context()
 
-    response = client.get("/api/v1/projects/999999/calculation-history")
+    response = client.get(
+        "/api/v1/projects/999999/calculation-history",
+        headers=headers,
+    )
 
     assert response.status_code == 404

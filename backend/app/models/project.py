@@ -1,21 +1,47 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, String, Text, func
+from sqlalchemy import (
+    DateTime,
+    ForeignKey,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
 
 
 class Project(Base):
-    """Compressor engineering project master record."""
+    """Tenant-scoped compressor engineering project master record."""
 
     __tablename__ = "projects"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    __table_args__ = (
+        UniqueConstraint(
+            "organization_id",
+            "project_code",
+            name="uq_projects_organization_code",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    organization_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "organizations.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
 
     project_code: Mapped[str] = mapped_column(
         String(50),
-        unique=True,
         nullable=False,
         index=True,
     )

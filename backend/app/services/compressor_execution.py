@@ -69,6 +69,7 @@ class CompressorExecutionService:
         self,
         db: Session,
         *,
+        organization_id: int,
         execution: CalculationExecutionMetadata,
         calculation_type: CalculationType,
         input_data: dict[str, Any],
@@ -81,6 +82,7 @@ class CompressorExecutionService:
 
         calculation_case = calculation_execution_service.persist_execution(
             db,
+            organization_id=organization_id,
             project_id=execution.project_id,
             calculation_code=execution.calculation_code,
             calculation_type=calculation_type,
@@ -95,6 +97,8 @@ class CompressorExecutionService:
     def execute_compression(
         self,
         db: Session,
+        *,
+        organization_id: int,
         calculation: CompressionCalculationRequest,
         execution: CalculationExecutionMetadata,
     ) -> dict[str, Any]:
@@ -120,6 +124,7 @@ class CompressorExecutionService:
 
         calculation_case_id = self._persist_if_requested(
             db,
+            organization_id=organization_id,
             execution=execution,
             calculation_type=CalculationType.COMPRESSION,
             input_data=calculation.model_dump(mode="json"),
@@ -134,6 +139,8 @@ class CompressorExecutionService:
     def execute_reciprocating(
         self,
         db: Session,
+        *,
+        organization_id: int,
         calculation: ReciprocatingCalculationRequest,
         execution: CalculationExecutionMetadata,
     ) -> dict[str, Any]:
@@ -162,6 +169,7 @@ class CompressorExecutionService:
 
         calculation_case_id = self._persist_if_requested(
             db,
+            organization_id=organization_id,
             execution=execution,
             calculation_type=CalculationType.RECIPROCATING,
             input_data=calculation.model_dump(mode="json"),
@@ -176,6 +184,8 @@ class CompressorExecutionService:
     def execute_centrifugal(
         self,
         db: Session,
+        *,
+        organization_id: int,
         calculation: CentrifugalCalculationRequest,
         execution: CalculationExecutionMetadata,
     ) -> dict[str, Any]:
@@ -211,6 +221,7 @@ class CompressorExecutionService:
 
         calculation_case_id = self._persist_if_requested(
             db,
+            organization_id=organization_id,
             execution=execution,
             calculation_type=CalculationType.CENTRIFUGAL,
             input_data=calculation.model_dump(mode="json"),
@@ -225,6 +236,8 @@ class CompressorExecutionService:
     def execute_selection(
         self,
         db: Session,
+        *,
+        organization_id: int,
         calculation: CompressorSelectionRequest,
         execution: CalculationExecutionMetadata,
     ) -> dict[str, Any]:
@@ -242,6 +255,7 @@ class CompressorExecutionService:
 
         calculation_case_id = self._persist_if_requested(
             db,
+            organization_id=organization_id,
             execution=execution,
             calculation_type=CalculationType.SELECTION,
             input_data=calculation.model_dump(mode="json"),

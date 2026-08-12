@@ -5,6 +5,7 @@ from app.core.database import SessionLocal
 from app.main import app
 from app.models.calculation_case import CalculationCase
 from app.models.project import Project
+from tests.helpers.api_tenant_auth import prepare_authenticated_tenant
 
 client = TestClient(app)
 
@@ -16,9 +17,10 @@ def reset_data() -> None:
         db.commit()
 
 
-def create_project() -> int:
+def create_project(headers: dict[str, str]) -> int:
     response = client.post(
         "/api/v1/projects",
+        headers=headers,
         json={
             "project_code": "KESC-PDF-API-001",
             "project_name": "PDF Report API Test Project",
@@ -30,9 +32,13 @@ def create_project() -> int:
     return response.json()["id"]
 
 
-def create_completed_case(project_id: int) -> int:
+def create_completed_case(
+    project_id: int,
+    headers: dict[str, str],
+) -> int:
     response = client.post(
         "/api/v1/calculation-cases",
+        headers=headers,
         json={
             "project_id": project_id,
             "calculation_code": "PDF-API-CALC-001",
@@ -63,8 +69,12 @@ def create_completed_case(project_id: int) -> int:
 def test_download_calculation_pdf() -> None:
     reset_data()
 
-    project_id = create_project()
-    calculation_case_id = create_completed_case(project_id)
+    _, _, headers = prepare_authenticated_tenant(client)
+    project_id = create_project(headers)
+    calculation_case_id = create_completed_case(
+        project_id,
+        headers,
+    )
 
     response = client.get(f"/api/v1/pdf-report/calculation-cases/{calculation_case_id}")
 
@@ -91,8 +101,12 @@ def test_missing_pdf_report_case_returns_404() -> None:
 def test_pdf_endpoint_returns_non_empty_document() -> None:
     reset_data()
 
-    project_id = create_project()
-    calculation_case_id = create_completed_case(project_id)
+    _, _, headers = prepare_authenticated_tenant(client)
+    project_id = create_project(headers)
+    calculation_case_id = create_completed_case(
+        project_id,
+        headers,
+    )
 
     response = client.get(f"/api/v1/pdf-report/calculation-cases/{calculation_case_id}")
 

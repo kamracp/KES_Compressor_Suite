@@ -3,6 +3,8 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.api.dependencies.auth import CurrentUser
+from app.api.dependencies.permissions import require_permission
 from app.core.database import get_db
 from app.schemas.compressor_execution import (
     CentrifugalExecutionRequest,
@@ -25,6 +27,11 @@ router = APIRouter(
 )
 
 DatabaseSession = Annotated[Session, Depends(get_db)]
+
+EngineeringCalculator = Annotated[
+    CurrentUser,
+    Depends(require_permission("engineering.calculate")),
+]
 
 
 def _raise_execution_error(exc: Exception) -> None:
@@ -53,10 +60,12 @@ def _raise_execution_error(exc: Exception) -> None:
 def execute_compression(
     payload: CompressionExecutionRequest,
     db: DatabaseSession,
+    current_user: EngineeringCalculator,
 ) -> dict[str, Any]:
     try:
         return compressor_execution_service.execute_compression(
             db,
+            organization_id=current_user.organization_id,
             calculation=payload.calculation,
             execution=payload.execution,
         )
@@ -74,10 +83,12 @@ def execute_compression(
 def execute_reciprocating(
     payload: ReciprocatingExecutionRequest,
     db: DatabaseSession,
+    current_user: EngineeringCalculator,
 ) -> dict[str, Any]:
     try:
         return compressor_execution_service.execute_reciprocating(
             db,
+            organization_id=current_user.organization_id,
             calculation=payload.calculation,
             execution=payload.execution,
         )
@@ -95,10 +106,12 @@ def execute_reciprocating(
 def execute_centrifugal(
     payload: CentrifugalExecutionRequest,
     db: DatabaseSession,
+    current_user: EngineeringCalculator,
 ) -> dict[str, Any]:
     try:
         return compressor_execution_service.execute_centrifugal(
             db,
+            organization_id=current_user.organization_id,
             calculation=payload.calculation,
             execution=payload.execution,
         )
@@ -116,10 +129,12 @@ def execute_centrifugal(
 def execute_selection(
     payload: SelectionExecutionRequest,
     db: DatabaseSession,
+    current_user: EngineeringCalculator,
 ) -> dict[str, Any]:
     try:
         return compressor_execution_service.execute_selection(
             db,
+            organization_id=current_user.organization_id,
             calculation=payload.calculation,
             execution=payload.execution,
         )

@@ -15,6 +15,7 @@ from app.services.reporting import (
     ReportingCalculationCaseNotFoundError,
     reporting_service,
 )
+from tests.helpers.tenant_context import ensure_test_organization_id
 
 
 def reset_data() -> None:
@@ -28,7 +29,8 @@ def create_test_project() -> int:
     with SessionLocal() as db:
         project = project_repository.create(
             db,
-            ProjectCreate(
+            organization_id=ensure_test_organization_id(db),
+            payload=ProjectCreate(
                 project_code="KESC-RPT-001",
                 project_name="Reporting Service Test Project",
             ),
@@ -41,7 +43,8 @@ def create_completed_case(project_id: int) -> int:
     with SessionLocal() as db:
         case = calculation_case_service.create_case(
             db,
-            CalculationCaseCreate(
+            organization_id=ensure_test_organization_id(db),
+            payload=CalculationCaseCreate(
                 project_id=project_id,
                 calculation_code="RPT-CALC-001",
                 calculation_type=CalculationType.CENTRIFUGAL,

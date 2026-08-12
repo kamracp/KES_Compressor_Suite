@@ -15,6 +15,7 @@ from app.services.project_history import (
     ProjectHistoryProjectNotFoundError,
     project_history_service,
 )
+from tests.helpers.tenant_context import ensure_test_organization_id
 
 
 def reset_data() -> None:
@@ -28,7 +29,8 @@ def create_test_project() -> int:
     with SessionLocal() as db:
         project = project_repository.create(
             db,
-            ProjectCreate(
+            organization_id=ensure_test_organization_id(db),
+            payload=ProjectCreate(
                 project_code="KESC-HIST-001",
                 project_name="Project History Test",
             ),
@@ -49,7 +51,8 @@ def create_case(
     with SessionLocal() as db:
         case = calculation_case_service.create_case(
             db,
-            CalculationCaseCreate(
+            organization_id=ensure_test_organization_id(db),
+            payload=CalculationCaseCreate(
                 project_id=project_id,
                 calculation_code=calculation_code,
                 calculation_type=calculation_type,
@@ -90,7 +93,8 @@ def test_get_project_history() -> None:
     with SessionLocal() as db:
         history = project_history_service.get_project_history(
             db,
-            project_id,
+            organization_id=ensure_test_organization_id(db),
+            project_id=project_id,
         )
 
     assert history.project_id == project_id
@@ -112,7 +116,8 @@ def test_empty_project_history() -> None:
     with SessionLocal() as db:
         history = project_history_service.get_project_history(
             db,
-            project_id,
+            organization_id=ensure_test_organization_id(db),
+            project_id=project_id,
         )
 
     assert history.project_id == project_id
@@ -131,7 +136,8 @@ def test_missing_project_raises_error() -> None:
         try:
             project_history_service.get_project_history(
                 db,
-                999999,
+                organization_id=ensure_test_organization_id(db),
+                project_id=999999,
             )
         except ProjectHistoryProjectNotFoundError as exc:
             assert "999999" in str(exc)

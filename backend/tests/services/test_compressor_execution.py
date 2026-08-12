@@ -12,6 +12,7 @@ from app.schemas.compressor_calculation import (
 )
 from app.schemas.project import ProjectCreate
 from app.services.compressor_execution import compressor_execution_service
+from tests.helpers.tenant_context import ensure_test_organization_id
 
 
 def reset_data() -> None:
@@ -25,7 +26,8 @@ def create_test_project() -> int:
     with SessionLocal() as db:
         project = project_repository.create(
             db,
-            ProjectCreate(
+            organization_id=ensure_test_organization_id(db),
+            payload=ProjectCreate(
                 project_code="KESC-EXEC-SVC-001",
                 project_name="Compressor Execution Service Test",
             ),
@@ -52,6 +54,7 @@ def test_selection_calculate_only() -> None:
     with SessionLocal() as db:
         response = compressor_execution_service.execute_selection(
             db,
+            organization_id=ensure_test_organization_id(db),
             calculation=build_selection_request(),
             execution=CalculationExecutionMetadata(
                 persist_result=False,
@@ -76,6 +79,7 @@ def test_selection_calculate_and_persist() -> None:
     with SessionLocal() as db:
         response = compressor_execution_service.execute_selection(
             db,
+            organization_id=ensure_test_organization_id(db),
             calculation=build_selection_request(),
             execution=CalculationExecutionMetadata(
                 persist_result=True,
@@ -117,6 +121,7 @@ def test_calculate_only_does_not_create_database_record() -> None:
     with SessionLocal() as db:
         compressor_execution_service.execute_selection(
             db,
+            organization_id=ensure_test_organization_id(db),
             calculation=build_selection_request(),
             execution=CalculationExecutionMetadata(
                 persist_result=False,

@@ -13,6 +13,7 @@ from app.schemas.project import ProjectCreate
 from app.services.calculation_case import calculation_case_service
 from app.services.report_export import report_export_service
 from app.services.reporting import ReportingCalculationCaseNotFoundError
+from tests.helpers.tenant_context import ensure_test_organization_id
 
 
 def reset_data() -> None:
@@ -26,7 +27,8 @@ def create_test_project() -> int:
     with SessionLocal() as db:
         project = project_repository.create(
             db,
-            ProjectCreate(
+            organization_id=ensure_test_organization_id(db),
+            payload=ProjectCreate(
                 project_code="KESC-EXPORT-001",
                 project_name="Report Export Test Project",
             ),
@@ -39,7 +41,8 @@ def create_completed_case(project_id: int) -> int:
     with SessionLocal() as db:
         case = calculation_case_service.create_case(
             db,
-            CalculationCaseCreate(
+            organization_id=ensure_test_organization_id(db),
+            payload=CalculationCaseCreate(
                 project_id=project_id,
                 calculation_code="EXPORT-SVC-001",
                 calculation_type=CalculationType.CENTRIFUGAL,

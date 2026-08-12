@@ -3,18 +3,24 @@ from uuid import uuid4
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 
-from app.core.database import engine
+from app.core.database import SessionLocal
 from app.main import app
+from tests.helpers.tenant_context import ensure_test_organization_id
 
 client = TestClient(app)
 
 
 def ensure_test_project_id() -> int:
-    with engine.begin() as connection:
-        project_id = connection.execute(
+    """Ensure that the tests have a tenant-owned parent project."""
+
+    with SessionLocal() as db:
+        organization_id = ensure_test_organization_id(db)
+
+        project_id = db.execute(
             text(
                 """
                 INSERT INTO projects (
+                    organization_id,
                     project_code,
                     project_name,
                     client_name,
@@ -24,22 +30,30 @@ def ensure_test_project_id() -> int:
                     status
                 )
                 VALUES (
-                    'TEST-SYSTEM-S11',
-                    'Compressed Air System Summary Test Project',
+                    :organization_id,
+                    :project_code,
+                    :project_name,
                     'Engineering Test',
                     'Test Plant',
                     'Test Environment',
-                    'Automated compressed-air system-summary testing',
+                    'Automated compressed-air regression testing',
                     'ACTIVE'
                 )
-                ON CONFLICT (project_code)
+                ON CONFLICT (organization_id, project_code)
                 DO UPDATE SET
                     project_name = EXCLUDED.project_name,
                     status = EXCLUDED.status
                 RETURNING id
                 """
-            )
+            ),
+            {
+                "organization_id": organization_id,
+                "project_code": "TEST-SYSTEM-S11",
+                "project_name": "Compressed Air System Summary Test Project",
+            },
         ).scalar_one()
+
+        db.commit()
 
     return int(project_id)
 
@@ -56,9 +70,7 @@ def create_assessment(
         "assessment_type": assessment_type,
         "status": "COMPLETED",
         "title": "Compressed Air Engineering Assessment",
-        "engineering_basis": (
-            "Vendor-neutral compressed-air engineering basis."
-        ),
+        "engineering_basis": ("Vendor-neutral compressed-air engineering basis."),
         "input_payload": {
             "design_basis": {
                 "required_flow_nm3_per_hr": "3000",
@@ -114,9 +126,7 @@ def create_assessment(
 def test_build_system_summary_from_assessment() -> None:
     assessment = create_assessment()
 
-    response = client.get(
-        f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}"
-    )
+    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
 
     assert response.status_code == 200
 
@@ -134,19 +144,13 @@ def test_build_system_summary_from_assessment() -> None:
 def test_summary_preserves_vendor_neutral_equipment_information() -> None:
     assessment = create_assessment()
 
-    response = client.get(
-        f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}"
-    )
+    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
 
     assert response.status_code == 200
 
     data = response.json()
 
-    equipment = next(
-        item
-        for item in data["capabilities"]
-        if item["name"] == "equipment"
-    )
+    equipment = next(item for item in data["capabilities"] if item["name"] == "equipment")
 
     assert equipment["available"] is True
     assert equipment["data"]["selection_basis"] == "vendor-neutral"
@@ -155,19 +159,13 @@ def test_summary_preserves_vendor_neutral_equipment_information() -> None:
 def test_summary_contains_energy_capability() -> None:
     assessment = create_assessment()
 
-    response = client.get(
-        f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}"
-    )
+    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
 
     assert response.status_code == 200
 
     data = response.json()
 
-    energy = next(
-        item
-        for item in data["capabilities"]
-        if item["name"] == "energy"
-    )
+    energy = next(item for item in data["capabilities"] if item["name"] == "energy")
 
     assert energy["available"] is True
     assert energy["data"]["annual_energy_kwh"] == "1000000"
@@ -176,19 +174,13 @@ def test_summary_contains_energy_capability() -> None:
 def test_summary_contains_persistence_capability() -> None:
     assessment = create_assessment()
 
-    response = client.get(
-        f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}"
-    )
+    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
 
     assert response.status_code == 200
 
     data = response.json()
 
-    persistence = next(
-        item
-        for item in data["capabilities"]
-        if item["name"] == "persistence"
-    )
+    persistence = next(item for item in data["capabilities"] if item["name"] == "persistence")
 
     assert persistence["available"] is True
     assert persistence["data"]["assessment_id"] == assessment["id"]
@@ -198,9 +190,7 @@ def test_summary_contains_persistence_capability() -> None:
 def test_summary_marks_integrated_report_available() -> None:
     assessment = create_assessment()
 
-    response = client.get(
-        f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}"
-    )
+    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
 
     assert response.status_code == 200
 
@@ -208,11 +198,7 @@ def test_summary_marks_integrated_report_available() -> None:
 
     assert data["integrated_report_available"] is True
 
-    report = next(
-        item
-        for item in data["capabilities"]
-        if item["name"] == "integrated_report"
-    )
+    report = next(item for item in data["capabilities"] if item["name"] == "integrated_report")
 
     assert report["available"] is True
 
@@ -220,9 +206,7 @@ def test_summary_marks_integrated_report_available() -> None:
 def test_summary_preserves_recommendations() -> None:
     assessment = create_assessment()
 
-    response = client.get(
-        f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}"
-    )
+    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
 
     assert response.status_code == 200
 
@@ -230,18 +214,13 @@ def test_summary_preserves_recommendations() -> None:
 
     assert "Monitor system specific power." in data["recommendations"]
 
-    assert (
-        "Maintain the lowest practical operating pressure."
-        in data["recommendations"]
-    )
+    assert "Maintain the lowest practical operating pressure." in data["recommendations"]
 
 
 def test_summary_does_not_infer_formal_compliance_claim() -> None:
     assessment = create_assessment()
 
-    response = client.get(
-        f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}"
-    )
+    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
 
     assert response.status_code == 200
 
@@ -250,8 +229,7 @@ def test_summary_does_not_infer_formal_compliance_claim() -> None:
     assert data["formal_compliance_claim_available"] is False
 
     assert any(
-        "no formal standards compliance claim" in warning.lower()
-        for warning in data["warnings"]
+        "no formal standards compliance claim" in warning.lower() for warning in data["warnings"]
     )
 
 
@@ -260,9 +238,7 @@ def test_greenfield_mode_is_mapped() -> None:
         assessment_type="GREENFIELD",
     )
 
-    response = client.get(
-        f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}"
-    )
+    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
 
     assert response.status_code == 200
 
@@ -270,11 +246,7 @@ def test_greenfield_mode_is_mapped() -> None:
 
     assert data["assessment_mode"] == "GREENFIELD"
 
-    greenfield = next(
-        item
-        for item in data["capabilities"]
-        if item["name"] == "greenfield"
-    )
+    greenfield = next(item for item in data["capabilities"] if item["name"] == "greenfield")
 
     assert greenfield["available"] is True
 
@@ -284,9 +256,7 @@ def test_brownfield_mode_is_mapped() -> None:
         assessment_type="BROWNFIELD",
     )
 
-    response = client.get(
-        f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}"
-    )
+    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
 
     assert response.status_code == 200
 
@@ -294,18 +264,12 @@ def test_brownfield_mode_is_mapped() -> None:
 
     assert data["assessment_mode"] == "BROWNFIELD"
 
-    brownfield = next(
-        item
-        for item in data["capabilities"]
-        if item["name"] == "brownfield"
-    )
+    brownfield = next(item for item in data["capabilities"] if item["name"] == "brownfield")
 
     assert brownfield["available"] is True
 
 
 def test_unknown_assessment_returns_404() -> None:
-    response = client.get(
-        "/api/v1/compressed-air/system-summary/assessment/999999999"
-    )
+    response = client.get("/api/v1/compressed-air/system-summary/assessment/999999999")
 
     assert response.status_code == 404

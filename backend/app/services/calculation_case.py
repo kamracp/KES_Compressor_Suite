@@ -16,30 +16,48 @@ class CalculationCaseAlreadyExistsError(ValueError):
 
 
 class CalculationCaseNotFoundError(LookupError):
-    """Raised when a calculation case cannot be found."""
+    """Raised when a tenant-scoped calculation case cannot be found."""
 
 
 class CalculationCaseProjectNotFoundError(LookupError):
-    """Raised when the parent project cannot be found."""
+    """Raised when the tenant-scoped parent project cannot be found."""
 
 
 class CalculationCaseService:
-    """Business service for compressor engineering calculation cases."""
+    """Business service for tenant-scoped compressor calculation cases."""
 
-    def create_case(
+    def _get_tenant_project(
         self,
         db: Session,
-        payload: CalculationCaseCreate,
-    ) -> CalculationCase:
+        *,
+        organization_id: int,
+        project_id: int,
+    ):
         project = project_repository.get_by_id(
             db,
-            payload.project_id,
+            organization_id=organization_id,
+            project_id=project_id,
         )
 
         if project is None:
             raise CalculationCaseProjectNotFoundError(
-                f"Project with id {payload.project_id} was not found."
+                f"Project with id {project_id} was not found."
             )
+
+        return project
+
+    def create_case(
+        self,
+        db: Session,
+        *,
+        organization_id: int,
+        payload: CalculationCaseCreate,
+    ) -> CalculationCase:
+        self._get_tenant_project(
+            db,
+            organization_id=organization_id,
+            project_id=payload.project_id,
+        )
 
         existing = calculation_case_repository.get_by_code(
             db,
@@ -66,6 +84,8 @@ class CalculationCaseService:
     def get_case(
         self,
         db: Session,
+        *,
+        organization_id: int,
         calculation_case_id: int,
     ) -> CalculationCase:
         calculation_case = calculation_case_repository.get_by_id(
@@ -78,28 +98,53 @@ class CalculationCaseService:
                 f"Calculation case with id {calculation_case_id} was not found."
             )
 
+        project = project_repository.get_by_id(
+            db,
+            organization_id=organization_id,
+            project_id=calculation_case.project_id,
+        )
+
+        if project is None:
+            raise CalculationCaseNotFoundError(
+                f"Calculation case with id {calculation_case_id} was not found."
+            )
+
         return calculation_case
 
     def list_cases(
         self,
         db: Session,
+        *,
+        organization_id: int,
     ) -> list[CalculationCase]:
-        return calculation_case_repository.list_all(db)
+        cases = calculation_case_repository.list_all(db)
+
+        tenant_cases: list[CalculationCase] = []
+
+        for calculation_case in cases:
+            project = project_repository.get_by_id(
+                db,
+                organization_id=organization_id,
+                project_id=calculation_case.project_id,
+            )
+
+            if project is not None:
+                tenant_cases.append(calculation_case)
+
+        return tenant_cases
 
     def list_project_cases(
         self,
         db: Session,
+        *,
+        organization_id: int,
         project_id: int,
     ) -> list[CalculationCase]:
-        project = project_repository.get_by_id(
+        self._get_tenant_project(
             db,
-            project_id,
+            organization_id=organization_id,
+            project_id=project_id,
         )
-
-        if project is None:
-            raise CalculationCaseProjectNotFoundError(
-                f"Project with id {project_id} was not found."
-            )
 
         return calculation_case_repository.list_by_project(
             db,
@@ -109,12 +154,15 @@ class CalculationCaseService:
     def update_case(
         self,
         db: Session,
+        *,
+        organization_id: int,
         calculation_case_id: int,
         payload: CalculationCaseUpdate,
     ) -> CalculationCase:
         calculation_case = self.get_case(
             db,
-            calculation_case_id,
+            organization_id=organization_id,
+            calculation_case_id=calculation_case_id,
         )
 
         if payload.calculation_code is not None:
@@ -154,11 +202,14 @@ class CalculationCaseService:
     def delete_case(
         self,
         db: Session,
+        *,
+        organization_id: int,
         calculation_case_id: int,
     ) -> None:
         calculation_case = self.get_case(
             db,
-            calculation_case_id,
+            organization_id=organization_id,
+            calculation_case_id=calculation_case_id,
         )
 
         calculation_case_repository.delete(

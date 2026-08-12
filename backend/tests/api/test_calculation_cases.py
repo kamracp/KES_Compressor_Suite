@@ -5,6 +5,7 @@ from app.core.database import SessionLocal
 from app.main import app
 from app.models.calculation_case import CalculationCase
 from app.models.project import Project
+from tests.helpers.api_tenant_auth import prepare_authenticated_tenant
 
 client = TestClient(app)
 
@@ -16,9 +17,18 @@ def reset_data() -> None:
         db.commit()
 
 
-def create_project() -> int:
+def prepare_context() -> tuple[dict, dict[str, str]]:
+    organization, _, headers = prepare_authenticated_tenant(client)
+    return organization, headers
+
+
+def create_project(
+    *,
+    headers: dict[str, str],
+) -> int:
     response = client.post(
         "/api/v1/projects",
+        headers=headers,
         json={
             "project_code": "KESC-CALC-PROJECT",
             "project_name": "Calculation Case Test Project",
@@ -32,10 +42,12 @@ def create_project() -> int:
 
 def test_create_calculation_case() -> None:
     reset_data()
-    project_id = create_project()
+    _, headers = prepare_context()
+    project_id = create_project(headers=headers)
 
     response = client.post(
         "/api/v1/calculation-cases",
+        headers=headers,
         json={
             "project_id": project_id,
             "calculation_code": "CALC-001",
@@ -60,10 +72,12 @@ def test_create_calculation_case() -> None:
 
 def test_list_calculation_cases() -> None:
     reset_data()
-    project_id = create_project()
+    _, headers = prepare_context()
+    project_id = create_project(headers=headers)
 
-    client.post(
+    create_response = client.post(
         "/api/v1/calculation-cases",
+        headers=headers,
         json={
             "project_id": project_id,
             "calculation_code": "CALC-002",
@@ -73,7 +87,12 @@ def test_list_calculation_cases() -> None:
         },
     )
 
-    response = client.get("/api/v1/calculation-cases")
+    assert create_response.status_code == 201
+
+    response = client.get(
+        "/api/v1/calculation-cases",
+        headers=headers,
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -84,10 +103,12 @@ def test_list_calculation_cases() -> None:
 
 def test_get_calculation_case() -> None:
     reset_data()
-    project_id = create_project()
+    _, headers = prepare_context()
+    project_id = create_project(headers=headers)
 
     create_response = client.post(
         "/api/v1/calculation-cases",
+        headers=headers,
         json={
             "project_id": project_id,
             "calculation_code": "CALC-003",
@@ -97,9 +118,14 @@ def test_get_calculation_case() -> None:
         },
     )
 
+    assert create_response.status_code == 201
+
     calculation_case_id = create_response.json()["id"]
 
-    response = client.get(f"/api/v1/calculation-cases/{calculation_case_id}")
+    response = client.get(
+        f"/api/v1/calculation-cases/{calculation_case_id}",
+        headers=headers,
+    )
 
     assert response.status_code == 200
     assert response.json()["calculation_code"] == "CALC-003"
@@ -107,10 +133,12 @@ def test_get_calculation_case() -> None:
 
 def test_update_calculation_case() -> None:
     reset_data()
-    project_id = create_project()
+    _, headers = prepare_context()
+    project_id = create_project(headers=headers)
 
     create_response = client.post(
         "/api/v1/calculation-cases",
+        headers=headers,
         json={
             "project_id": project_id,
             "calculation_code": "CALC-004",
@@ -120,10 +148,13 @@ def test_update_calculation_case() -> None:
         },
     )
 
+    assert create_response.status_code == 201
+
     calculation_case_id = create_response.json()["id"]
 
     response = client.patch(
         f"/api/v1/calculation-cases/{calculation_case_id}",
+        headers=headers,
         json={
             "title": "Updated Case",
             "revision": 2,
@@ -139,10 +170,12 @@ def test_update_calculation_case() -> None:
 
 def test_complete_calculation_case_sets_completed_at() -> None:
     reset_data()
-    project_id = create_project()
+    _, headers = prepare_context()
+    project_id = create_project(headers=headers)
 
     create_response = client.post(
         "/api/v1/calculation-cases",
+        headers=headers,
         json={
             "project_id": project_id,
             "calculation_code": "CALC-005",
@@ -152,10 +185,13 @@ def test_complete_calculation_case_sets_completed_at() -> None:
         },
     )
 
+    assert create_response.status_code == 201
+
     calculation_case_id = create_response.json()["id"]
 
     response = client.patch(
         f"/api/v1/calculation-cases/{calculation_case_id}",
+        headers=headers,
         json={
             "status": "COMPLETED",
             "result_data": {
@@ -173,7 +209,8 @@ def test_complete_calculation_case_sets_completed_at() -> None:
 
 def test_duplicate_calculation_code_returns_conflict() -> None:
     reset_data()
-    project_id = create_project()
+    _, headers = prepare_context()
+    project_id = create_project(headers=headers)
 
     payload = {
         "project_id": project_id,
@@ -185,10 +222,13 @@ def test_duplicate_calculation_code_returns_conflict() -> None:
 
     first_response = client.post(
         "/api/v1/calculation-cases",
+        headers=headers,
         json=payload,
     )
+
     second_response = client.post(
         "/api/v1/calculation-cases",
+        headers=headers,
         json=payload,
     )
 
@@ -198,9 +238,11 @@ def test_duplicate_calculation_code_returns_conflict() -> None:
 
 def test_missing_project_returns_not_found() -> None:
     reset_data()
+    _, headers = prepare_context()
 
     response = client.post(
         "/api/v1/calculation-cases",
+        headers=headers,
         json={
             "project_id": 999999,
             "calculation_code": "CALC-007",
@@ -215,10 +257,12 @@ def test_missing_project_returns_not_found() -> None:
 
 def test_delete_calculation_case() -> None:
     reset_data()
-    project_id = create_project()
+    _, headers = prepare_context()
+    project_id = create_project(headers=headers)
 
     create_response = client.post(
         "/api/v1/calculation-cases",
+        headers=headers,
         json={
             "project_id": project_id,
             "calculation_code": "CALC-008",
@@ -228,12 +272,20 @@ def test_delete_calculation_case() -> None:
         },
     )
 
+    assert create_response.status_code == 201
+
     calculation_case_id = create_response.json()["id"]
 
-    delete_response = client.delete(f"/api/v1/calculation-cases/{calculation_case_id}")
+    delete_response = client.delete(
+        f"/api/v1/calculation-cases/{calculation_case_id}",
+        headers=headers,
+    )
 
     assert delete_response.status_code == 204
 
-    get_response = client.get(f"/api/v1/calculation-cases/{calculation_case_id}")
+    get_response = client.get(
+        f"/api/v1/calculation-cases/{calculation_case_id}",
+        headers=headers,
+    )
 
     assert get_response.status_code == 404

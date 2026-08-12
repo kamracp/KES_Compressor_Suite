@@ -9,6 +9,7 @@ from app.models.project import Project
 from app.repositories.project import project_repository
 from app.schemas.project import ProjectCreate
 from app.services.calculation_execution import calculation_execution_service
+from tests.helpers.tenant_context import ensure_test_organization_id
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,7 +32,8 @@ def create_test_project() -> int:
     with SessionLocal() as db:
         project = project_repository.create(
             db,
-            ProjectCreate(
+            organization_id=ensure_test_organization_id(db),
+            payload=ProjectCreate(
                 project_code="KESC-EXEC-001",
                 project_name="Calculation Execution Test Project",
             ),
@@ -54,6 +56,7 @@ def test_persist_completed_calculation_execution() -> None:
     with SessionLocal() as db:
         calculation_case = calculation_execution_service.persist_execution(
             db,
+            organization_id=ensure_test_organization_id(db),
             project_id=project_id,
             calculation_code="EXEC-CALC-001",
             calculation_type=CalculationType.CENTRIFUGAL,
@@ -97,6 +100,7 @@ def test_persisted_execution_can_be_reloaded() -> None:
     with SessionLocal() as db:
         created = calculation_execution_service.persist_execution(
             db,
+            organization_id=ensure_test_organization_id(db),
             project_id=project_id,
             calculation_code="EXEC-CALC-002",
             calculation_type=CalculationType.COMPRESSION,
