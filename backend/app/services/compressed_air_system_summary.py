@@ -25,11 +25,13 @@ class CompressedAirSystemSummaryService:
         self,
         db: Session,
         *,
+        organization_id: int,
         assessment_id: int,
     ) -> CompressedAirSystemSummary:
         assessment = compressed_air_assessment_repository.get_by_id(
             db,
-            assessment_id,
+            organization_id=organization_id,
+            assessment_id=assessment_id,
         )
 
         if assessment is None:
@@ -108,6 +110,7 @@ class CompressedAirSystemSummaryService:
 
         integrated_report = compressed_air_report_service.build_from_assessment(
             db,
+            organization_id=organization_id,
             assessment_id=assessment.id,
             report_code=f"{assessment.assessment_code}-SUMMARY",
             report_title="Compressed Air Integrated Engineering Summary",

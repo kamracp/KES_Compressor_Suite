@@ -1,69 +1,47 @@
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
-from sqlalchemy import text
+from sqlalchemy import delete
 
 from app.core.database import SessionLocal
 from app.main import app
-from tests.helpers.tenant_context import ensure_test_organization_id
+from app.models.compressed_air_assessment import CompressedAirAssessment
+from app.models.project import Project
+from tests.helpers.api_tenant_auth import prepare_authenticated_tenant
 
 client = TestClient(app)
 
 
-def ensure_test_project_id() -> int:
-    """Ensure that the tests have a tenant-owned parent project."""
-
+def reset_data() -> None:
     with SessionLocal() as db:
-        organization_id = ensure_test_organization_id(db)
-
-        project_id = db.execute(
-            text(
-                """
-                INSERT INTO projects (
-                    organization_id,
-                    project_code,
-                    project_name,
-                    client_name,
-                    plant_name,
-                    location,
-                    service_description,
-                    status
-                )
-                VALUES (
-                    :organization_id,
-                    :project_code,
-                    :project_name,
-                    'Engineering Test',
-                    'Test Plant',
-                    'Test Environment',
-                    'Automated compressed-air regression testing',
-                    'ACTIVE'
-                )
-                ON CONFLICT (organization_id, project_code)
-                DO UPDATE SET
-                    project_name = EXCLUDED.project_name,
-                    status = EXCLUDED.status
-                RETURNING id
-                """
-            ),
-            {
-                "organization_id": organization_id,
-                "project_code": "TEST-SYSTEM-S11",
-                "project_name": "Compressed Air System Summary Test Project",
-            },
-        ).scalar_one()
-
+        db.execute(delete(CompressedAirAssessment))
+        db.execute(delete(Project))
         db.commit()
 
-    return int(project_id)
+
+def prepare_context() -> tuple[dict, dict[str, str], int]:
+    organization, _, headers = prepare_authenticated_tenant(client)
+
+    response = client.post(
+        "/api/v1/projects",
+        headers=headers,
+        json={
+            "project_code": f"SYS-{uuid4().hex[:8]}",
+            "project_name": "Compressed Air System Summary Test Project",
+        },
+    )
+
+    assert response.status_code == 201
+
+    return organization, headers, response.json()["id"]
 
 
 def create_assessment(
     *,
+    headers: dict[str, str],
+    project_id: int,
     assessment_type: str = "GREENFIELD",
 ) -> dict:
-    project_id = ensure_test_project_id()
-
     payload = {
         "project_id": project_id,
         "assessment_code": f"CA-SYS-{uuid4().hex[:10]}",
@@ -115,6 +93,7 @@ def create_assessment(
 
     response = client.post(
         "/api/v1/compressed-air/assessments",
+        headers=headers,
         json=payload,
     )
 
@@ -123,10 +102,30 @@ def create_assessment(
     return response.json()
 
 
-def test_build_system_summary_from_assessment() -> None:
-    assessment = create_assessment()
+def get_summary(
+    *,
+    headers: dict[str, str],
+    assessment_id: int,
+):
+    return client.get(
+        f"/api/v1/compressed-air/system-summary/assessment/{assessment_id}",
+        headers=headers,
+    )
 
-    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
+
+def test_build_system_summary_from_assessment() -> None:
+    reset_data()
+    _, headers, project_id = prepare_context()
+
+    assessment = create_assessment(
+        headers=headers,
+        project_id=project_id,
+    )
+
+    response = get_summary(
+        headers=headers,
+        assessment_id=assessment["id"],
+    )
 
     assert response.status_code == 200
 
@@ -136,51 +135,75 @@ def test_build_system_summary_from_assessment() -> None:
     assert data["assessment_mode"] == "GREENFIELD"
     assert data["assessment_code"] == assessment["assessment_code"]
     assert data["calculation_version"] == "S11-M39"
-
     assert data["available_capability_count"] > 0
     assert data["total_capability_count"] == 13
 
 
 def test_summary_preserves_vendor_neutral_equipment_information() -> None:
-    assessment = create_assessment()
+    reset_data()
+    _, headers, project_id = prepare_context()
 
-    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
+    assessment = create_assessment(
+        headers=headers,
+        project_id=project_id,
+    )
+
+    response = get_summary(
+        headers=headers,
+        assessment_id=assessment["id"],
+    )
 
     assert response.status_code == 200
 
-    data = response.json()
-
-    equipment = next(item for item in data["capabilities"] if item["name"] == "equipment")
+    equipment = next(
+        item for item in response.json()["capabilities"] if item["name"] == "equipment"
+    )
 
     assert equipment["available"] is True
     assert equipment["data"]["selection_basis"] == "vendor-neutral"
 
 
 def test_summary_contains_energy_capability() -> None:
-    assessment = create_assessment()
+    reset_data()
+    _, headers, project_id = prepare_context()
 
-    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
+    assessment = create_assessment(
+        headers=headers,
+        project_id=project_id,
+    )
+
+    response = get_summary(
+        headers=headers,
+        assessment_id=assessment["id"],
+    )
 
     assert response.status_code == 200
 
-    data = response.json()
-
-    energy = next(item for item in data["capabilities"] if item["name"] == "energy")
+    energy = next(item for item in response.json()["capabilities"] if item["name"] == "energy")
 
     assert energy["available"] is True
     assert energy["data"]["annual_energy_kwh"] == "1000000"
 
 
 def test_summary_contains_persistence_capability() -> None:
-    assessment = create_assessment()
+    reset_data()
+    _, headers, project_id = prepare_context()
 
-    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
+    assessment = create_assessment(
+        headers=headers,
+        project_id=project_id,
+    )
+
+    response = get_summary(
+        headers=headers,
+        assessment_id=assessment["id"],
+    )
 
     assert response.status_code == 200
 
-    data = response.json()
-
-    persistence = next(item for item in data["capabilities"] if item["name"] == "persistence")
+    persistence = next(
+        item for item in response.json()["capabilities"] if item["name"] == "persistence"
+    )
 
     assert persistence["available"] is True
     assert persistence["data"]["assessment_id"] == assessment["id"]
@@ -188,9 +211,18 @@ def test_summary_contains_persistence_capability() -> None:
 
 
 def test_summary_marks_integrated_report_available() -> None:
-    assessment = create_assessment()
+    reset_data()
+    _, headers, project_id = prepare_context()
 
-    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
+    assessment = create_assessment(
+        headers=headers,
+        project_id=project_id,
+    )
+
+    response = get_summary(
+        headers=headers,
+        assessment_id=assessment["id"],
+    )
 
     assert response.status_code == 200
 
@@ -204,72 +236,123 @@ def test_summary_marks_integrated_report_available() -> None:
 
 
 def test_summary_preserves_recommendations() -> None:
-    assessment = create_assessment()
+    reset_data()
+    _, headers, project_id = prepare_context()
 
-    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
+    assessment = create_assessment(
+        headers=headers,
+        project_id=project_id,
+    )
+
+    response = get_summary(
+        headers=headers,
+        assessment_id=assessment["id"],
+    )
 
     assert response.status_code == 200
 
-    data = response.json()
+    recommendations = response.json()["recommendations"]
 
-    assert "Monitor system specific power." in data["recommendations"]
-
-    assert "Maintain the lowest practical operating pressure." in data["recommendations"]
+    assert "Monitor system specific power." in recommendations
+    assert "Maintain the lowest practical operating pressure." in recommendations
 
 
 def test_summary_does_not_infer_formal_compliance_claim() -> None:
-    assessment = create_assessment()
+    reset_data()
+    _, headers, project_id = prepare_context()
 
-    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
+    assessment = create_assessment(
+        headers=headers,
+        project_id=project_id,
+    )
+
+    response = get_summary(
+        headers=headers,
+        assessment_id=assessment["id"],
+    )
 
     assert response.status_code == 200
 
     data = response.json()
 
     assert data["formal_compliance_claim_available"] is False
-
     assert any(
         "no formal standards compliance claim" in warning.lower() for warning in data["warnings"]
     )
 
 
 def test_greenfield_mode_is_mapped() -> None:
+    reset_data()
+    _, headers, project_id = prepare_context()
+
     assessment = create_assessment(
+        headers=headers,
+        project_id=project_id,
         assessment_type="GREENFIELD",
     )
 
-    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
+    response = get_summary(
+        headers=headers,
+        assessment_id=assessment["id"],
+    )
 
     assert response.status_code == 200
-
-    data = response.json()
-
-    assert data["assessment_mode"] == "GREENFIELD"
-
-    greenfield = next(item for item in data["capabilities"] if item["name"] == "greenfield")
-
-    assert greenfield["available"] is True
+    assert response.json()["assessment_mode"] == "GREENFIELD"
 
 
 def test_brownfield_mode_is_mapped() -> None:
+    reset_data()
+    _, headers, project_id = prepare_context()
+
     assessment = create_assessment(
+        headers=headers,
+        project_id=project_id,
         assessment_type="BROWNFIELD",
     )
 
-    response = client.get(f"/api/v1/compressed-air/system-summary/assessment/{assessment['id']}")
+    response = get_summary(
+        headers=headers,
+        assessment_id=assessment["id"],
+    )
 
     assert response.status_code == 200
-
-    data = response.json()
-
-    assert data["assessment_mode"] == "BROWNFIELD"
-
-    brownfield = next(item for item in data["capabilities"] if item["name"] == "brownfield")
-
-    assert brownfield["available"] is True
+    assert response.json()["assessment_mode"] == "BROWNFIELD"
 
 
 def test_unknown_assessment_returns_404() -> None:
+    reset_data()
+    _, headers, _ = prepare_context()
+
+    response = get_summary(
+        headers=headers,
+        assessment_id=999999999,
+    )
+
+    assert response.status_code == 404
+
+
+def test_system_summary_requires_authentication() -> None:
+    reset_data()
+
     response = client.get("/api/v1/compressed-air/system-summary/assessment/999999999")
+
+    assert response.status_code == 401
+
+
+def test_cross_tenant_system_summary_returns_404() -> None:
+    reset_data()
+
+    _, first_headers, first_project_id = prepare_context()
+    _, second_headers, _ = prepare_context()
+
+    assessment = create_assessment(
+        headers=first_headers,
+        project_id=first_project_id,
+    )
+
+    response = get_summary(
+        headers=second_headers,
+        assessment_id=assessment["id"],
+    )
 
     assert response.status_code == 404

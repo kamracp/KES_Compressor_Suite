@@ -19,13 +19,15 @@ class CompressedAirReportService:
         self,
         db: Session,
         *,
+        organization_id: int,
         assessment_id: int,
         report_code: str,
         report_title: str,
     ) -> IntegratedEngineeringReport:
         assessment = compressed_air_assessment_repository.get_by_id(
             db,
-            assessment_id,
+            organization_id=organization_id,
+            assessment_id=assessment_id,
         )
 
         if assessment is None:

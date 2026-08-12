@@ -3,6 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.api.dependencies.auth import CurrentUser
+from app.api.dependencies.permissions import require_permission
 from app.core.database import get_db
 from app.schemas.compressed_air_assessment import (
     CompressedAirAssessmentCreateRequest,
@@ -12,6 +14,7 @@ from app.schemas.compressed_air_assessment import (
 )
 from app.services.compressed_air_assessment import (
     CompressedAirAssessmentNotFoundError,
+    CompressedAirAssessmentProjectNotFoundError,
     DuplicateCompressedAirAssessmentCodeError,
     compressed_air_assessment_service,
 )
@@ -24,6 +27,16 @@ router = APIRouter(
 DbSession = Annotated[Session, Depends(get_db)]
 AssessmentTypeQuery = Annotated[str | None, Query()]
 
+AssessmentReader = Annotated[
+    CurrentUser,
+    Depends(require_permission("assessment.read")),
+]
+
+AssessmentWriter = Annotated[
+    CurrentUser,
+    Depends(require_permission("assessment.write")),
+]
+
 
 @router.post(
     "",
@@ -33,12 +46,19 @@ AssessmentTypeQuery = Annotated[str | None, Query()]
 def create_compressed_air_assessment(
     request: CompressedAirAssessmentCreateRequest,
     db: DbSession,
+    current_user: AssessmentWriter,
 ) -> CompressedAirAssessmentResponse:
     try:
         return compressed_air_assessment_service.create(
             db,
-            request,
+            organization_id=current_user.organization_id,
+            request=request,
         )
+    except CompressedAirAssessmentProjectNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
     except DuplicateCompressedAirAssessmentCodeError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -53,11 +73,13 @@ def create_compressed_air_assessment(
 def get_compressed_air_assessment(
     assessment_id: int,
     db: DbSession,
+    current_user: AssessmentReader,
 ) -> CompressedAirAssessmentResponse:
     try:
         return compressed_air_assessment_service.get_by_id(
             db,
-            assessment_id,
+            organization_id=current_user.organization_id,
+            assessment_id=assessment_id,
         )
     except CompressedAirAssessmentNotFoundError as exc:
         raise HTTPException(
@@ -73,19 +95,28 @@ def get_compressed_air_assessment(
 def list_compressed_air_assessments(
     project_id: int,
     db: DbSession,
+    current_user: AssessmentReader,
     assessment_type: AssessmentTypeQuery = None,
 ) -> CompressedAirAssessmentListResponse:
-    if assessment_type is None:
-        return compressed_air_assessment_service.list_by_project(
-            db,
-            project_id,
-        )
+    try:
+        if assessment_type is None:
+            return compressed_air_assessment_service.list_by_project(
+                db,
+                organization_id=current_user.organization_id,
+                project_id=project_id,
+            )
 
-    return compressed_air_assessment_service.list_by_project_and_type(
-        db,
-        project_id=project_id,
-        assessment_type=assessment_type,
-    )
+        return compressed_air_assessment_service.list_by_project_and_type(
+            db,
+            organization_id=current_user.organization_id,
+            project_id=project_id,
+            assessment_type=assessment_type,
+        )
+    except CompressedAirAssessmentProjectNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
 
 
 @router.patch(
@@ -96,10 +127,12 @@ def update_compressed_air_assessment_status(
     assessment_id: int,
     request: CompressedAirAssessmentStatusUpdateRequest,
     db: DbSession,
+    current_user: AssessmentWriter,
 ) -> CompressedAirAssessmentResponse:
     try:
         return compressed_air_assessment_service.update_status(
             db,
+            organization_id=current_user.organization_id,
             assessment_id=assessment_id,
             request=request,
         )

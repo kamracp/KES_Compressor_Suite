@@ -3,6 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.api.dependencies.auth import CurrentUser
+from app.api.dependencies.permissions import require_permission
 from app.core.database import get_db
 from app.domain.compressed_air.system.system_summary import (
     CompressedAirSystemSummary,
@@ -21,6 +23,11 @@ router = APIRouter(
 
 DbSession = Annotated[Session, Depends(get_db)]
 
+ReportReader = Annotated[
+    CurrentUser,
+    Depends(require_permission("report.read")),
+]
+
 
 @router.get(
     "/assessment/{assessment_id}",
@@ -30,10 +37,12 @@ DbSession = Annotated[Session, Depends(get_db)]
 def build_compressed_air_system_summary(
     assessment_id: int,
     db: DbSession,
+    current_user: ReportReader,
 ) -> CompressedAirSystemSummary:
     try:
         return compressed_air_system_summary_service.build_from_assessment(
             db,
+            organization_id=current_user.organization_id,
             assessment_id=assessment_id,
         )
     except CompressedAirAssessmentNotFoundError as exc:

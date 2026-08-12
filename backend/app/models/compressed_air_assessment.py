@@ -1,7 +1,15 @@
 from datetime import UTC, datetime
 from enum import StrEnum
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    JSON,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -31,6 +39,14 @@ class CompressedAirAssessment(Base):
 
     __tablename__ = "compressed_air_assessments"
 
+    __table_args__ = (
+        UniqueConstraint(
+            "project_id",
+            "assessment_code",
+            name="uq_compressed_air_assessments_project_code",
+        ),
+    )
+
     id: Mapped[int] = mapped_column(
         Integer,
         primary_key=True,
@@ -49,7 +65,6 @@ class CompressedAirAssessment(Base):
     assessment_code: Mapped[str] = mapped_column(
         String(100),
         nullable=False,
-        unique=True,
         index=True,
     )
 

@@ -1,11 +1,10 @@
 from sqlalchemy.orm import Session
 
-from app.models.compressed_air_assessment import (
-    CompressedAirAssessment,
-)
+from app.models.compressed_air_assessment import CompressedAirAssessment
 from app.repositories.compressed_air_assessment import (
     compressed_air_assessment_repository,
 )
+from app.repositories.project import project_repository
 from app.schemas.compressed_air_assessment import (
     CompressedAirAssessmentCreateRequest,
     CompressedAirAssessmentListResponse,
@@ -16,24 +15,55 @@ from app.schemas.compressed_air_assessment import (
 
 
 class CompressedAirAssessmentNotFoundError(LookupError):
-    """Raised when a compressed-air assessment cannot be found."""
+    """Raised when a tenant-scoped compressed-air assessment cannot be found."""
+
+
+class CompressedAirAssessmentProjectNotFoundError(LookupError):
+    """Raised when the tenant-scoped parent project cannot be found."""
 
 
 class DuplicateCompressedAirAssessmentCodeError(ValueError):
-    """Raised when an assessment code already exists."""
+    """Raised when an assessment code already exists within a tenant."""
 
 
 class CompressedAirAssessmentService:
-    """Application service for compressed-air assessment persistence."""
+    """Application service for tenant-scoped compressed-air assessments."""
+
+    def _validate_project(
+        self,
+        db: Session,
+        *,
+        organization_id: int,
+        project_id: int,
+    ) -> None:
+        project = project_repository.get_by_id(
+            db,
+            organization_id=organization_id,
+            project_id=project_id,
+        )
+
+        if project is None:
+            raise CompressedAirAssessmentProjectNotFoundError(
+                f"Project with id {project_id} was not found."
+            )
 
     def create(
         self,
         db: Session,
+        *,
+        organization_id: int,
         request: CompressedAirAssessmentCreateRequest,
     ) -> CompressedAirAssessmentResponse:
+        self._validate_project(
+            db,
+            organization_id=organization_id,
+            project_id=request.project_id,
+        )
+
         existing = compressed_air_assessment_repository.get_by_code(
             db,
-            request.assessment_code,
+            project_id=request.project_id,
+            assessment_code=request.assessment_code,
         )
 
         if existing is not None:
@@ -65,11 +95,14 @@ class CompressedAirAssessmentService:
     def get_by_id(
         self,
         db: Session,
+        *,
+        organization_id: int,
         assessment_id: int,
     ) -> CompressedAirAssessmentResponse:
         assessment = compressed_air_assessment_repository.get_by_id(
             db,
-            assessment_id,
+            organization_id=organization_id,
+            assessment_id=assessment_id,
         )
 
         if assessment is None:
@@ -80,11 +113,20 @@ class CompressedAirAssessmentService:
     def list_by_project(
         self,
         db: Session,
+        *,
+        organization_id: int,
         project_id: int,
     ) -> CompressedAirAssessmentListResponse:
+        self._validate_project(
+            db,
+            organization_id=organization_id,
+            project_id=project_id,
+        )
+
         assessments = compressed_air_assessment_repository.list_by_project(
             db,
-            project_id,
+            organization_id=organization_id,
+            project_id=project_id,
         )
 
         items = [
@@ -101,11 +143,19 @@ class CompressedAirAssessmentService:
         self,
         db: Session,
         *,
+        organization_id: int,
         project_id: int,
         assessment_type: str,
     ) -> CompressedAirAssessmentListResponse:
+        self._validate_project(
+            db,
+            organization_id=organization_id,
+            project_id=project_id,
+        )
+
         assessments = compressed_air_assessment_repository.list_by_project_and_type(
             db,
+            organization_id=organization_id,
             project_id=project_id,
             assessment_type=assessment_type,
         )
@@ -124,12 +174,14 @@ class CompressedAirAssessmentService:
         self,
         db: Session,
         *,
+        organization_id: int,
         assessment_id: int,
         request: CompressedAirAssessmentStatusUpdateRequest,
     ) -> CompressedAirAssessmentResponse:
         assessment = compressed_air_assessment_repository.get_by_id(
             db,
-            assessment_id,
+            organization_id=organization_id,
+            assessment_id=assessment_id,
         )
 
         if assessment is None:
