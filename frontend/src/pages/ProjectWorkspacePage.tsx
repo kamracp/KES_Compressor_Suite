@@ -71,7 +71,8 @@ export function ProjectWorkspacePage() {
       description:
         "Quantify compressed-air leakage, energy loss, annual cost, repair priority, and verified post-repair savings.",
       icon: AlertTriangle,
-      status: "Integration Pending",
+      status: "Available",
+      path: `/projects/${projectId}/leakage`,
     },
     {
       title: "Allied Equipment Engineering",

@@ -10,6 +10,7 @@ import { BrownfieldPlantAssessmentPage } from "../pages/BrownfieldPlantAssessmen
 import { DashboardPage } from "../pages/DashboardPage";
 import { GasPropertiesPage } from "../pages/GasPropertiesPage";
 import { GreenfieldSystemDesignPage } from "../pages/GreenfieldSystemDesignPage";
+import { LeakageManagementPage } from "../pages/LeakageManagementPage";
 import { PerformanceEnergyAnalysisPage } from "../pages/PerformanceEnergyAnalysisPage";
 import { CompressorEngineeringPage } from "../pages/CompressorEngineeringPage";
 import { CompressionEngineeringPage } from "../pages/CompressionEngineeringPage";
@@ -88,6 +89,15 @@ export function AppRouter() {
           element={
             <ProtectedPage>
               <PerformanceEnergyAnalysisPage />
+            </ProtectedPage>
+          }
+        />
+
+        <Route
+          path="/projects/:projectId/leakage"
+          element={
+            <ProtectedPage>
+              <LeakageManagementPage />
             </ProtectedPage>
           }
         />
