@@ -1,0 +1,271 @@
+import {
+  BadgeIndianRupee,
+  Settings2,
+} from "lucide-react";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+type OptimizationBasisSectionProps = {
+  auditCode: string;
+  annualOperatingHours: string;
+  electricityTariffPerKwh: string;
+  optimizedDischargePressureBarG: string;
+  expectedLeakRepairFraction: string;
+  powerPenaltyFractionPerBar: string;
+  notes: string;
+
+  onAuditCodeChange: (value: string) => void;
+  onAnnualOperatingHoursChange: (value: string) => void;
+  onElectricityTariffChange: (value: string) => void;
+  onOptimizedPressureChange: (value: string) => void;
+  onExpectedLeakRepairFractionChange: (value: string) => void;
+  onPowerPenaltyFractionPerBarChange: (value: string) => void;
+  onNotesChange: (value: string) => void;
+};
+
+export function OptimizationBasisSection({
+  auditCode,
+  annualOperatingHours,
+  electricityTariffPerKwh,
+  optimizedDischargePressureBarG,
+  expectedLeakRepairFraction,
+  powerPenaltyFractionPerBar,
+  notes,
+  onAuditCodeChange,
+  onAnnualOperatingHoursChange,
+  onElectricityTariffChange,
+  onOptimizedPressureChange,
+  onExpectedLeakRepairFractionChange,
+  onPowerPenaltyFractionPerBarChange,
+  onNotesChange,
+}: OptimizationBasisSectionProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-start gap-3">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+            <Settings2 className="size-5" />
+          </div>
+
+          <div>
+            <CardTitle>
+              Audit & Optimization Basis
+            </CardTitle>
+
+            <CardDescription className="mt-1 max-w-3xl leading-6">
+              Define the Brownfield audit reference, annual operating basis,
+              electricity cost, and optional optimization assumptions used for
+              energy and opportunity analysis.
+            </CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-6">
+        <section>
+          <h3 className="mb-4 text-sm font-semibold text-slate-900">
+            Audit Identification
+          </h3>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="brownfield-audit-code">
+                Audit Code
+              </Label>
+
+              <Input
+                id="brownfield-audit-code"
+                value={auditCode}
+                placeholder="Example: BF-2026-001"
+                onChange={(event) =>
+                  onAuditCodeChange(event.target.value)
+                }
+              />
+
+              <p className="text-xs text-slate-500">
+                Unique engineering reference for this Brownfield assessment.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brownfield-notes">
+                Audit Notes
+              </Label>
+
+              <Input
+                id="brownfield-notes"
+                value={notes}
+                placeholder="Plant condition, audit scope, operating assumptions..."
+                onChange={(event) =>
+                  onNotesChange(event.target.value)
+                }
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="border-t border-slate-100 pt-6">
+          <div className="mb-4 flex items-center gap-2">
+            <BadgeIndianRupee className="size-4 text-slate-500" />
+
+            <h3 className="text-sm font-semibold text-slate-900">
+              Annual Energy & Cost Basis
+            </h3>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="brownfield-annual-hours">
+                Annual Operating Hours
+              </Label>
+
+              <Input
+                id="brownfield-annual-hours"
+                type="number"
+                min="0.01"
+                step="any"
+                value={annualOperatingHours}
+                onChange={(event) =>
+                  onAnnualOperatingHoursChange(
+                    event.target.value,
+                  )
+                }
+              />
+
+              <p className="text-xs text-slate-500">
+                hours/year
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brownfield-tariff">
+                Electricity Tariff
+              </Label>
+
+              <Input
+                id="brownfield-tariff"
+                type="number"
+                min="0"
+                step="any"
+                value={electricityTariffPerKwh}
+                onChange={(event) =>
+                  onElectricityTariffChange(
+                    event.target.value,
+                  )
+                }
+              />
+
+              <p className="text-xs text-slate-500">
+                currency units/kWh
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-t border-slate-100 pt-6">
+          <h3 className="mb-4 text-sm font-semibold text-slate-900">
+            Optimization Assumptions
+          </h3>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="brownfield-optimized-pressure">
+                Optimized Discharge Pressure
+              </Label>
+
+              <Input
+                id="brownfield-optimized-pressure"
+                type="number"
+                min="0"
+                step="any"
+                value={optimizedDischargePressureBarG}
+                placeholder="Optional"
+                onChange={(event) =>
+                  onOptimizedPressureChange(
+                    event.target.value,
+                  )
+                }
+              />
+
+              <p className="text-xs leading-5 text-slate-500">
+                bar(g). Leave blank when pressure-reduction analysis is not
+                required.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brownfield-leak-repair">
+                Expected Leak Repair Fraction
+              </Label>
+
+              <Input
+                id="brownfield-leak-repair"
+                type="number"
+                min="0"
+                max="1"
+                step="0.01"
+                value={expectedLeakRepairFraction}
+                onChange={(event) =>
+                  onExpectedLeakRepairFractionChange(
+                    event.target.value,
+                  )
+                }
+              />
+
+              <p className="text-xs leading-5 text-slate-500">
+                Fraction of identified leakage expected to be recoverable.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brownfield-pressure-penalty">
+                Power Penalty Fraction / bar
+              </Label>
+
+              <Input
+                id="brownfield-pressure-penalty"
+                type="number"
+                min="0"
+                max="1"
+                step="0.01"
+                value={powerPenaltyFractionPerBar}
+                onChange={(event) =>
+                  onPowerPenaltyFractionPerBarChange(
+                    event.target.value,
+                  )
+                }
+              />
+
+              <p className="text-xs leading-5 text-slate-500">
+                Fractional power impact used by the current pressure-energy
+                model for each bar of pressure change.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <div className="rounded-lg border border-dashed border-slate-300 p-4">
+          <p className="text-sm font-medium text-slate-800">
+            Engineering-use boundary
+          </p>
+
+          <p className="mt-1 text-xs leading-5 text-slate-500">
+            The optimized pressure is an engineering scenario input, not an
+            automatically determined safe operating pressure. Distribution
+            losses, point-of-use requirements, controls, and process pressure
+            requirements must be reviewed before adopting a lower pressure
+            setpoint.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

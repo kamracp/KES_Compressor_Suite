@@ -6,8 +6,11 @@ import {
 
 import { AppLayout } from "../layouts/AppLayout";
 import { AssessmentsPage } from "../pages/AssessmentsPage";
+import { BrownfieldPlantAssessmentPage } from "../pages/BrownfieldPlantAssessmentPage";
 import { DashboardPage } from "../pages/DashboardPage";
 import { GasPropertiesPage } from "../pages/GasPropertiesPage";
+import { GreenfieldSystemDesignPage } from "../pages/GreenfieldSystemDesignPage";
+import { PerformanceEnergyAnalysisPage } from "../pages/PerformanceEnergyAnalysisPage";
 import { CompressorEngineeringPage } from "../pages/CompressorEngineeringPage";
 import { CompressionEngineeringPage } from "../pages/CompressionEngineeringPage";
 import { ReciprocatingEngineeringPage } from "../pages/ReciprocatingEngineeringPage";
@@ -67,6 +70,33 @@ export function AppRouter() {
           element={
             <ProtectedPage>
               <ProjectWorkspacePage />
+            </ProtectedPage>
+          }
+        />
+
+        <Route
+          path="/projects/:projectId/brownfield"
+          element={
+            <ProtectedPage>
+              <BrownfieldPlantAssessmentPage />
+            </ProtectedPage>
+          }
+        />
+
+        <Route
+          path="/projects/:projectId/performance"
+          element={
+            <ProtectedPage>
+              <PerformanceEnergyAnalysisPage />
+            </ProtectedPage>
+          }
+        />
+
+        <Route
+          path="/projects/:projectId/greenfield"
+          element={
+            <ProtectedPage>
+              <GreenfieldSystemDesignPage />
             </ProtectedPage>
           }
         />
