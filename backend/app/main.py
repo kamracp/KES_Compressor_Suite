@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.auth import router as auth_router
 from app.api.v1.calculation_cases import router as calculation_cases_router
 from app.api.v1.compressed_air_advanced import router as compressed_air_advanced_router
+from app.api.v1.compressed_air_allied import router as compressed_air_allied_router
 from app.api.v1.compressed_air_assessments import router as compressed_air_assessments_router
 from app.api.v1.compressed_air_brownfield import router as compressed_air_brownfield_router
 from app.api.v1.compressed_air_greenfield import router as compressed_air_greenfield_router
@@ -155,6 +156,12 @@ app.include_router(
 
 app.include_router(
     compressed_air_advanced_router,
+    prefix=settings.api_v1_prefix,
+)
+
+
+app.include_router(
+    compressed_air_allied_router,
     prefix=settings.api_v1_prefix,
 )
 
