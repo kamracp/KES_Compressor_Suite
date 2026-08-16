@@ -77,9 +77,10 @@ export function ProjectWorkspacePage() {
     {
       title: "Allied Equipment Engineering",
       description:
-        "Engineer receivers, storage, dryers, treatment, filters, distribution, pressure loss, and other compressed-air system equipment.",
+        "Engineer receivers, storage, dryers, treatment, aftercoolers, moisture separators, filters, condensate drains, and allied-equipment pressure losses.",
       icon: Package,
-      status: "Integration Pending",
+      status: "Available",
+      path: `/projects/${projectId}/allied-equipment`,
     },
     {
       title: "Advanced Compressor Engineering",

@@ -31,10 +31,11 @@ router = APIRouter(
 def analyze_compressed_air_allied_equipment(
     request: AlliedEquipmentAnalysisRequest,
 ) -> AlliedEquipmentAnalysisResponse:
-    """Analyze compressed-air allied equipment and capacity adequacy."""
+    """Analyze compressed-air allied equipment and engineering adequacy."""
 
     try:
         return compressed_air_allied_service.analyze(request)
+
     except (
         InvalidAlliedEquipmentInputError,
         InvalidReceiverSizingInputError,

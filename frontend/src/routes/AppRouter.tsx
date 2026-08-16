@@ -11,6 +11,7 @@ import { DashboardPage } from "../pages/DashboardPage";
 import { GasPropertiesPage } from "../pages/GasPropertiesPage";
 import { GreenfieldSystemDesignPage } from "../pages/GreenfieldSystemDesignPage";
 import { LeakageManagementPage } from "../pages/LeakageManagementPage";
+import { AlliedEquipmentEngineeringPage } from "../pages/AlliedEquipmentEngineeringPage";
 import { PerformanceEnergyAnalysisPage } from "../pages/PerformanceEnergyAnalysisPage";
 import { CompressorEngineeringPage } from "../pages/CompressorEngineeringPage";
 import { CompressionEngineeringPage } from "../pages/CompressionEngineeringPage";
@@ -98,6 +99,15 @@ export function AppRouter() {
           element={
             <ProtectedPage>
               <LeakageManagementPage />
+            </ProtectedPage>
+          }
+        />
+
+        <Route
+          path="/projects/:projectId/allied-equipment"
+          element={
+            <ProtectedPage>
+              <AlliedEquipmentEngineeringPage />
             </ProtectedPage>
           }
         />

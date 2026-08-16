@@ -8,7 +8,7 @@ from app.schemas.compressed_air_allied import (
 
 
 class CompressedAirAlliedService:
-    """Application service for compressed-air allied-equipment analysis."""
+    """Application service for compressed-air allied-equipment engineering."""
 
     def analyze(
         self,
