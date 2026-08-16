@@ -32,6 +32,8 @@ type EngineeringWorkflow = {
   icon: LucideIcon;
   status: WorkflowStatus;
   path?: string;
+  secondaryPath?: string;
+  secondaryLabel?: string;
 };
 
 export function ProjectWorkspacePage() {
@@ -81,6 +83,8 @@ export function ProjectWorkspacePage() {
       icon: Package,
       status: "Available",
       path: `/projects/${projectId}/allied-equipment`,
+      secondaryPath: `/projects/${projectId}/skid`,
+      secondaryLabel: "Open Skid Engineering",
     },
     {
       title: "Advanced Compressor Engineering",
@@ -177,16 +181,32 @@ export function ProjectWorkspacePage() {
 
                 <CardContent>
                   {available && workflow.path ? (
-                    <Button
-                      asChild
-                      variant="ghost"
-                      className="w-full justify-between"
-                    >
-                      <Link to={workflow.path}>
-                        Open Engineering Workspace
-                        <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-                      </Link>
-                    </Button>
+                    <div className="space-y-2">
+                      <Button
+                        asChild
+                        variant="ghost"
+                        className="w-full justify-between"
+                      >
+                        <Link to={workflow.path}>
+                          Open Engineering Workspace
+                          <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                        </Link>
+                      </Button>
+
+                      {workflow.secondaryPath &&
+                        workflow.secondaryLabel && (
+                          <Button
+                            asChild
+                            variant="outline"
+                            className="w-full justify-between"
+                          >
+                            <Link to={workflow.secondaryPath}>
+                              {workflow.secondaryLabel}
+                              <ArrowRight className="size-4" />
+                            </Link>
+                          </Button>
+                        )}
+                    </div>
                   ) : (
                     <Button
                       type="button"
