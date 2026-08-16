@@ -11,6 +11,7 @@ from app.api.v1.compressed_air_greenfield import router as compressed_air_greenf
 from app.api.v1.compressed_air_leakage import router as compressed_air_leakage_router
 from app.api.v1.compressed_air_performance import router as compressed_air_performance_router
 from app.api.v1.compressed_air_report import router as compressed_air_report_router
+from app.api.v1.compressed_air_skid import router as compressed_air_skid_router
 from app.api.v1.compressed_air_standards import router as compressed_air_standards_router
 from app.api.v1.compressed_air_system_summary import router as compressed_air_system_summary_router
 from app.api.v1.compressor_calculations import router as compressor_router
@@ -162,6 +163,12 @@ app.include_router(
 
 app.include_router(
     compressed_air_allied_router,
+    prefix=settings.api_v1_prefix,
+)
+
+
+app.include_router(
+    compressed_air_skid_router,
     prefix=settings.api_v1_prefix,
 )
 
