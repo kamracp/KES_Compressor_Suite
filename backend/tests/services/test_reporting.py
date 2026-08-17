@@ -73,9 +73,12 @@ def test_get_calculation_report() -> None:
     calculation_case_id = create_completed_case(project_id)
 
     with SessionLocal() as db:
+        organization_id = ensure_test_organization_id(db)
+
         report = reporting_service.get_calculation_report(
             db,
-            calculation_case_id,
+            organization_id=organization_id,
+            calculation_case_id=calculation_case_id,
         )
 
     assert report.calculation_case_id == calculation_case_id
@@ -100,9 +103,12 @@ def test_get_audit_summary() -> None:
     calculation_case_id = create_completed_case(project_id)
 
     with SessionLocal() as db:
+        organization_id = ensure_test_organization_id(db)
+
         summary = reporting_service.get_audit_summary(
             db,
-            calculation_case_id,
+            organization_id=organization_id,
+            calculation_case_id=calculation_case_id,
         )
 
     assert summary.calculation_case_id == calculation_case_id
@@ -117,12 +123,34 @@ def test_missing_calculation_case_raises_error() -> None:
     reset_data()
 
     with SessionLocal() as db:
+        organization_id = ensure_test_organization_id(db)
+
         try:
             reporting_service.get_calculation_report(
                 db,
-                999999,
+                organization_id=organization_id,
+                calculation_case_id=999999,
             )
         except ReportingCalculationCaseNotFoundError as exc:
             assert "999999" in str(exc)
+        else:
+            raise AssertionError("Expected ReportingCalculationCaseNotFoundError.")
+
+
+def test_calculation_case_is_hidden_from_other_organization() -> None:
+    reset_data()
+
+    project_id = create_test_project()
+    calculation_case_id = create_completed_case(project_id)
+
+    with SessionLocal() as db:
+        try:
+            reporting_service.get_calculation_report(
+                db,
+                organization_id=999999,
+                calculation_case_id=calculation_case_id,
+            )
+        except ReportingCalculationCaseNotFoundError as exc:
+            assert str(calculation_case_id) in str(exc)
         else:
             raise AssertionError("Expected ReportingCalculationCaseNotFoundError.")

@@ -72,9 +72,12 @@ def test_get_export_payload() -> None:
     calculation_case_id = create_completed_case(project_id)
 
     with SessionLocal() as db:
+        organization_id = ensure_test_organization_id(db)
+
         payload = report_export_service.get_export_payload(
             db,
-            calculation_case_id,
+            organization_id=organization_id,
+            calculation_case_id=calculation_case_id,
         )
 
     assert payload.calculation_case_id == calculation_case_id
@@ -99,12 +102,34 @@ def test_missing_case_raises_reporting_error() -> None:
     reset_data()
 
     with SessionLocal() as db:
+        organization_id = ensure_test_organization_id(db)
+
         try:
             report_export_service.get_export_payload(
                 db,
-                999999,
+                organization_id=organization_id,
+                calculation_case_id=999999,
             )
         except ReportingCalculationCaseNotFoundError as exc:
             assert "999999" in str(exc)
+        else:
+            raise AssertionError("Expected ReportingCalculationCaseNotFoundError.")
+
+
+def test_export_payload_is_hidden_from_other_organization() -> None:
+    reset_data()
+
+    project_id = create_test_project()
+    calculation_case_id = create_completed_case(project_id)
+
+    with SessionLocal() as db:
+        try:
+            report_export_service.get_export_payload(
+                db,
+                organization_id=999999,
+                calculation_case_id=calculation_case_id,
+            )
+        except ReportingCalculationCaseNotFoundError as exc:
+            assert str(calculation_case_id) in str(exc)
         else:
             raise AssertionError("Expected ReportingCalculationCaseNotFoundError.")

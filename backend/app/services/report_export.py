@@ -16,14 +16,17 @@ class ReportExportService:
     def get_export_payload(
         self,
         db: Session,
+        *,
+        organization_id: int,
         calculation_case_id: int,
     ) -> CalculationExportPayload:
-        """Build an export-ready payload for a calculation case."""
+        """Build a tenant-scoped export payload for a calculation case."""
 
         try:
             report = reporting_service.get_calculation_report(
                 db,
-                calculation_case_id,
+                organization_id=organization_id,
+                calculation_case_id=calculation_case_id,
             )
         except ReportingCalculationCaseNotFoundError:
             raise

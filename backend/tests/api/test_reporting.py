@@ -5,7 +5,11 @@ from app.core.database import SessionLocal
 from app.main import app
 from app.models.calculation_case import CalculationCase
 from app.models.project import Project
-from tests.helpers.api_tenant_auth import prepare_authenticated_tenant
+from tests.helpers.api_tenant_auth import (
+    create_test_user,
+    login_headers,
+    prepare_authenticated_tenant,
+)
 
 client = TestClient(app)
 
@@ -74,7 +78,10 @@ def test_get_calculation_report() -> None:
         headers,
     )
 
-    response = client.get(f"/api/v1/reporting/calculation-cases/{calculation_case_id}/report")
+    response = client.get(
+        f"/api/v1/reporting/calculation-cases/{calculation_case_id}/report",
+        headers=headers,
+    )
 
     assert response.status_code == 200
 
@@ -105,7 +112,8 @@ def test_get_calculation_audit_summary() -> None:
     )
 
     response = client.get(
-        f"/api/v1/reporting/calculation-cases/{calculation_case_id}/audit-summary"
+        f"/api/v1/reporting/calculation-cases/{calculation_case_id}/audit-summary",
+        headers=headers,
     )
 
     assert response.status_code == 200
@@ -126,7 +134,12 @@ def test_get_calculation_audit_summary() -> None:
 def test_missing_calculation_report_returns_404() -> None:
     reset_data()
 
-    response = client.get("/api/v1/reporting/calculation-cases/999999/report")
+    _, _, headers = prepare_authenticated_tenant(client)
+
+    response = client.get(
+        "/api/v1/reporting/calculation-cases/999999/report",
+        headers=headers,
+    )
 
     assert response.status_code == 404
 
@@ -134,6 +147,91 @@ def test_missing_calculation_report_returns_404() -> None:
 def test_missing_audit_summary_returns_404() -> None:
     reset_data()
 
-    response = client.get("/api/v1/reporting/calculation-cases/999999/audit-summary")
+    _, _, headers = prepare_authenticated_tenant(client)
+
+    response = client.get(
+        "/api/v1/reporting/calculation-cases/999999/audit-summary",
+        headers=headers,
+    )
+
+    assert response.status_code == 404
+
+
+def test_reporting_requires_authentication() -> None:
+    reset_data()
+
+    response = client.get("/api/v1/reporting/calculation-cases/999999/report")
+
+    assert response.status_code == 401
+
+
+def test_reporting_requires_report_read_permission() -> None:
+    reset_data()
+
+    organization, _, admin_headers = prepare_authenticated_tenant(client)
+
+    project_id = create_project(admin_headers)
+    calculation_case_id = create_completed_case(
+        project_id,
+        admin_headers,
+    )
+
+    user = create_test_user(
+        client,
+        organization_id=organization["id"],
+    )
+
+    headers = login_headers(
+        client,
+        organization_id=organization["id"],
+        email=user["email"],
+    )
+
+    response = client.get(
+        f"/api/v1/reporting/calculation-cases/{calculation_case_id}/report",
+        headers=headers,
+    )
+
+    assert response.status_code == 403
+
+
+def test_cross_tenant_calculation_report_returns_404() -> None:
+    reset_data()
+
+    _, _, first_headers = prepare_authenticated_tenant(client)
+
+    project_id = create_project(first_headers)
+    calculation_case_id = create_completed_case(
+        project_id,
+        first_headers,
+    )
+
+    _, _, second_headers = prepare_authenticated_tenant(client)
+
+    response = client.get(
+        f"/api/v1/reporting/calculation-cases/{calculation_case_id}/report",
+        headers=second_headers,
+    )
+
+    assert response.status_code == 404
+
+
+def test_cross_tenant_audit_summary_returns_404() -> None:
+    reset_data()
+
+    _, _, first_headers = prepare_authenticated_tenant(client)
+
+    project_id = create_project(first_headers)
+    calculation_case_id = create_completed_case(
+        project_id,
+        first_headers,
+    )
+
+    _, _, second_headers = prepare_authenticated_tenant(client)
+
+    response = client.get(
+        f"/api/v1/reporting/calculation-cases/{calculation_case_id}/audit-summary",
+        headers=second_headers,
+    )
 
     assert response.status_code == 404

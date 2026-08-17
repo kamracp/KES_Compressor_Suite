@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
+from app.api.dependencies.auth import CurrentUser
+from app.api.dependencies.permissions import require_permission
 from app.core.database import get_db
 from app.services.pdf_report import PdfReportGenerationError, pdf_report_service
 from app.services.report_export import report_export_service
@@ -15,7 +17,15 @@ router = APIRouter(
     tags=["PDF Report"],
 )
 
-DatabaseSession = Annotated[Session, Depends(get_db)]
+DatabaseSession = Annotated[
+    Session,
+    Depends(get_db),
+]
+
+ReportExporter = Annotated[
+    CurrentUser,
+    Depends(require_permission("report.export")),
+]
 
 
 @router.get(
@@ -25,11 +35,13 @@ DatabaseSession = Annotated[Session, Depends(get_db)]
 def download_calculation_pdf(
     calculation_case_id: int,
     db: DatabaseSession,
+    current_user: ReportExporter,
 ) -> StreamingResponse:
     try:
         payload = report_export_service.get_export_payload(
             db,
-            calculation_case_id,
+            organization_id=current_user.organization_id,
+            calculation_case_id=calculation_case_id,
         )
 
         pdf_bytes = pdf_report_service.generate_calculation_report(
