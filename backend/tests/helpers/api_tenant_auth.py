@@ -1,10 +1,15 @@
+from contextlib import suppress
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
-from sqlalchemy import select
 
 from app.core.database import SessionLocal
-from app.models.role import Role
+from app.schemas.organization import OrganizationCreate, OrganizationResponse
+from app.schemas.user import UserCreate, UserResponse
+from app.services.organization import organization_service
+from app.services.rbac import UserRoleConflictError, rbac_service
+from app.services.rbac_bootstrap import rbac_bootstrap_service
+from app.services.user import user_service
 
 TEST_PASSWORD = "Strong-Test-Password-123!"
 
@@ -12,16 +17,18 @@ TEST_PASSWORD = "Strong-Test-Password-123!"
 def create_test_organization(
     client: TestClient,
 ) -> dict:
-    response = client.post(
-        "/api/v1/organizations",
-        json={
-            "organization_code": f"ORG-{uuid4().hex[:8]}",
-            "organization_name": "Authenticated API Test Organization",
-        },
-    )
+    del client
 
-    assert response.status_code == 201
-    return response.json()
+    with SessionLocal() as db:
+        organization = organization_service.create(
+            db,
+            OrganizationCreate(
+                organization_code=f"ORG-{uuid4().hex[:8]}",
+                organization_name="Authenticated API Test Organization",
+            ),
+        )
+
+        return OrganizationResponse.model_validate(organization).model_dump(mode="json")
 
 
 def create_test_user(
@@ -29,22 +36,24 @@ def create_test_user(
     *,
     organization_id: int,
 ) -> dict:
+    del client
+
     email = f"user-{uuid4().hex[:8]}@example.com"
 
-    response = client.post(
-        "/api/v1/users",
-        json={
-            "organization_id": organization_id,
-            "email": email,
-            "full_name": "Authenticated API Test User",
-            "password": TEST_PASSWORD,
-            "active": True,
-            "verified": True,
-        },
-    )
+    with SessionLocal() as db:
+        user = user_service.create(
+            db,
+            UserCreate(
+                organization_id=organization_id,
+                email=email,
+                full_name="Authenticated API Test User",
+                password=TEST_PASSWORD,
+                active=True,
+                verified=True,
+            ),
+        )
 
-    assert response.status_code == 201
-    return response.json()
+        return UserResponse.model_validate(user).model_dump(mode="json")
 
 
 def bootstrap_tenant_admin(
@@ -53,30 +62,22 @@ def bootstrap_tenant_admin(
     organization_id: int,
     user_id: int,
 ) -> None:
-    response = client.post(f"/api/v1/rbac/bootstrap/organization/{organization_id}")
-
-    assert response.status_code == 200
+    del client
 
     with SessionLocal() as db:
-        role = db.scalar(
-            select(Role).where(
-                Role.organization_id == organization_id,
-                Role.role_code == "TENANT_ADMIN",
-            )
+        roles = rbac_bootstrap_service.bootstrap_organization(
+            db,
+            organization_id=organization_id,
         )
 
-        assert role is not None
-        role_id = role.id
+        tenant_admin = next(role for role in roles if role.role_code == "TENANT_ADMIN")
 
-    response = client.post(
-        "/api/v1/rbac/user-roles",
-        json={
-            "user_id": user_id,
-            "role_id": role_id,
-        },
-    )
-
-    assert response.status_code in {201, 409}
+        with suppress(UserRoleConflictError):
+            rbac_service.assign_role_to_user(
+                db,
+                user_id=user_id,
+                role_id=tenant_admin.id,
+            )
 
 
 def login_headers(
@@ -96,7 +97,7 @@ def login_headers(
 
     assert response.status_code == 200
 
-    return {"Authorization": f"Bearer {response.json()['access_token']}"}
+    return {"Authorization": (f"Bearer {response.json()['access_token']}")}
 
 
 def prepare_authenticated_tenant(

@@ -7,6 +7,10 @@ from app.core.database import SessionLocal
 from app.main import app
 from app.models.organization import Organization
 from app.models.user import User
+from app.schemas.organization import OrganizationCreate, OrganizationResponse
+from app.schemas.user import UserCreate, UserResponse
+from app.services.organization import organization_service
+from app.services.user import user_service
 
 client = TestClient(app)
 
@@ -19,20 +23,20 @@ def cleanup_data() -> None:
 
 
 def create_organization() -> dict:
-    response = client.post(
-        "/api/v1/organizations",
-        json={
-            "organization_code": f"ORG-{uuid4().hex[:8]}",
-            "organization_name": "Authentication Test Organization",
-            "country_code": "IN",
-            "timezone": "Asia/Kolkata",
-            "default_currency": "INR",
-            "active": True,
-        },
-    )
+    with SessionLocal() as db:
+        organization = organization_service.create(
+            db,
+            OrganizationCreate(
+                organization_code=f"ORG-{uuid4().hex[:8]}",
+                organization_name="Authentication Test Organization",
+                country_code="IN",
+                timezone="Asia/Kolkata",
+                default_currency="INR",
+                active=True,
+            ),
+        )
 
-    assert response.status_code == 201
-    return response.json()
+        return OrganizationResponse.model_validate(organization).model_dump(mode="json")
 
 
 def create_user(
@@ -42,20 +46,20 @@ def create_user(
     password: str = "Strong-Test-Password-123!",
     active: bool = True,
 ) -> dict:
-    response = client.post(
-        "/api/v1/users",
-        json={
-            "organization_id": organization_id,
-            "email": email,
-            "full_name": "Authentication Test User",
-            "password": password,
-            "active": active,
-            "verified": True,
-        },
-    )
+    with SessionLocal() as db:
+        user = user_service.create(
+            db,
+            UserCreate(
+                organization_id=organization_id,
+                email=email,
+                full_name="Authentication Test User",
+                password=password,
+                active=active,
+                verified=True,
+            ),
+        )
 
-    assert response.status_code == 201
-    return response.json()
+        return UserResponse.model_validate(user).model_dump(mode="json")
 
 
 def login(

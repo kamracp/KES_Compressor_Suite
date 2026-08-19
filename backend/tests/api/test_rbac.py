@@ -1,54 +1,31 @@
-from uuid import uuid4
-
 from fastapi.testclient import TestClient
-from sqlalchemy import delete
+from sqlalchemy import select
 
 from app.core.database import SessionLocal
 from app.main import app
-from app.models.organization import Organization
 from app.models.permission import Permission
-from app.models.role import Role
-from app.models.role_permission import RolePermission
-from app.models.user import User
-from app.models.user_role import UserRole
+from tests.helpers.api_tenant_auth import (
+    create_test_user,
+    login_headers,
+    prepare_authenticated_tenant,
+)
 
 client = TestClient(app)
 
 
-def cleanup_data() -> None:
-    with SessionLocal() as db:
-        db.execute(delete(UserRole))
-        db.execute(delete(RolePermission))
-        db.execute(delete(Permission))
-        db.execute(delete(Role))
-        db.execute(delete(User))
-        db.execute(delete(Organization))
-        db.commit()
-
-
-def create_organization() -> dict:
-    response = client.post(
-        "/api/v1/organizations",
-        json={
-            "organization_code": f"ORG-{uuid4().hex[:8]}",
-            "organization_name": "RBAC API Organization",
-        },
-    )
-
-    assert response.status_code == 201
-    return response.json()
-
-
-def create_user(
+def create_custom_role(
+    *,
     organization_id: int,
+    headers: dict[str, str],
+    role_code: str = "CUSTOM_AUDITOR",
 ) -> dict:
     response = client.post(
-        "/api/v1/users",
+        "/api/v1/rbac/roles",
+        headers=headers,
         json={
             "organization_id": organization_id,
-            "email": f"user-{uuid4().hex[:8]}@example.com",
-            "full_name": "RBAC API User",
-            "password": "Strong-Test-Password-123!",
+            "role_code": role_code,
+            "role_name": "Custom Auditor",
         },
     )
 
@@ -56,122 +33,144 @@ def create_user(
     return response.json()
 
 
-def create_permission(
+def get_permission_id(
     permission_code: str,
-) -> Permission:
+) -> int:
     with SessionLocal() as db:
-        permission = Permission(
-            permission_code=permission_code,
-            permission_name=permission_code,
-            resource="project",
-            action="read",
-            active=True,
+        permission_id = db.scalar(
+            select(Permission.id).where(
+                Permission.permission_code == permission_code,
+            )
         )
 
-        db.add(permission)
-        db.commit()
-        db.refresh(permission)
-
-        return permission
+    assert permission_id is not None
+    return permission_id
 
 
-def test_create_and_get_role() -> None:
-    cleanup_data()
-    organization = create_organization()
+def test_create_get_and_update_current_tenant_role() -> None:
+    organization, _, headers = prepare_authenticated_tenant(client)
 
-    response = client.post(
-        "/api/v1/rbac/roles",
-        json={
-            "organization_id": organization["id"],
-            "role_code": "ENGINEER",
-            "role_name": "Engineer",
-        },
+    role = create_custom_role(
+        organization_id=organization["id"],
+        headers=headers,
     )
 
-    assert response.status_code == 201
-
-    role = response.json()
-
-    assert role["role_code"] == "ENGINEER"
-    assert role["organization_id"] == organization["id"]
-
-    response = client.get(f"/api/v1/rbac/roles/{role['id']}")
+    response = client.get(
+        f"/api/v1/rbac/roles/{role['id']}",
+        headers=headers,
+    )
 
     assert response.status_code == 200
     assert response.json()["id"] == role["id"]
 
-
-def test_duplicate_role_returns_conflict() -> None:
-    cleanup_data()
-    organization = create_organization()
-
-    payload = {
-        "organization_id": organization["id"],
-        "role_code": "ADMIN",
-        "role_name": "Administrator",
-    }
-
-    first = client.post(
-        "/api/v1/rbac/roles",
-        json=payload,
-    )
-
-    second = client.post(
-        "/api/v1/rbac/roles",
-        json=payload,
-    )
-
-    assert first.status_code == 201
-    assert second.status_code == 409
-
-
-def test_list_roles_for_organization() -> None:
-    cleanup_data()
-    organization = create_organization()
-
-    for code in ("ENGINEER", "VIEWER"):
-        response = client.post(
-            "/api/v1/rbac/roles",
-            json={
-                "organization_id": organization["id"],
-                "role_code": code,
-                "role_name": code.title(),
-            },
-        )
-
-        assert response.status_code == 201
-
-    response = client.get(f"/api/v1/rbac/roles/organization/{organization['id']}")
-
-    assert response.status_code == 200
-    assert len(response.json()) == 2
-
-
-def test_assign_permission_and_resolve_effective_permissions() -> None:
-    cleanup_data()
-
-    organization = create_organization()
-    user = create_user(organization["id"])
-
-    permission = create_permission("project.read")
-
-    role_response = client.post(
-        "/api/v1/rbac/roles",
+    response = client.patch(
+        f"/api/v1/rbac/roles/{role['id']}",
+        headers=headers,
         json={
-            "organization_id": organization["id"],
-            "role_code": "VIEWER",
-            "role_name": "Viewer",
+            "role_name": "Updated Custom Auditor",
         },
     )
 
-    assert role_response.status_code == 201
-    role = role_response.json()
+    assert response.status_code == 200
+    assert response.json()["role_name"] == "Updated Custom Auditor"
+
+
+def test_duplicate_role_returns_409() -> None:
+    organization, _, headers = prepare_authenticated_tenant(client)
+
+    create_custom_role(
+        organization_id=organization["id"],
+        headers=headers,
+        role_code="CUSTOM_DUPLICATE",
+    )
+
+    response = client.post(
+        "/api/v1/rbac/roles",
+        headers=headers,
+        json={
+            "organization_id": organization["id"],
+            "role_code": "CUSTOM_DUPLICATE",
+            "role_name": "Duplicate Role",
+        },
+    )
+
+    assert response.status_code == 409
+
+
+def test_list_current_tenant_roles() -> None:
+    organization, _, headers = prepare_authenticated_tenant(client)
+
+    role = create_custom_role(
+        organization_id=organization["id"],
+        headers=headers,
+    )
+
+    response = client.get(
+        f"/api/v1/rbac/roles/organization/{organization['id']}",
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+
+    role_ids = {item["id"] for item in response.json()}
+
+    assert role["id"] in role_ids
+
+    assert all(item["organization_id"] == organization["id"] for item in response.json())
+
+
+def test_list_permissions_requires_role_read() -> None:
+    organization, _, headers = prepare_authenticated_tenant(client)
+
+    response = client.get(
+        "/api/v1/rbac/permissions",
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    assert len(response.json()) > 0
+
+    user = create_test_user(
+        client,
+        organization_id=organization["id"],
+    )
+
+    no_role_headers = login_headers(
+        client,
+        organization_id=organization["id"],
+        email=user["email"],
+    )
+
+    response = client.get(
+        "/api/v1/rbac/permissions",
+        headers=no_role_headers,
+    )
+
+    assert response.status_code == 403
+
+
+def test_assign_permission_and_role_and_resolve_permissions() -> None:
+    organization, _, headers = prepare_authenticated_tenant(client)
+
+    user = create_test_user(
+        client,
+        organization_id=organization["id"],
+    )
+
+    role = create_custom_role(
+        organization_id=organization["id"],
+        headers=headers,
+        role_code="CUSTOM_PROJECT_READER",
+    )
+
+    permission_id = get_permission_id("project.read")
 
     response = client.post(
         "/api/v1/rbac/role-permissions",
+        headers=headers,
         json={
             "role_id": role["id"],
-            "permission_id": permission.id,
+            "permission_id": permission_id,
         },
     )
 
@@ -179,6 +178,7 @@ def test_assign_permission_and_resolve_effective_permissions() -> None:
 
     response = client.post(
         "/api/v1/rbac/user-roles",
+        headers=headers,
         json={
             "user_id": user["id"],
             "role_id": role["id"],
@@ -187,45 +187,170 @@ def test_assign_permission_and_resolve_effective_permissions() -> None:
 
     assert response.status_code == 201
 
-    response = client.get(f"/api/v1/rbac/users/{user['id']}/permissions")
+    response = client.get(
+        f"/api/v1/rbac/users/{user['id']}/permissions",
+        headers=headers,
+    )
 
     assert response.status_code == 200
-    assert response.json() == ["project.read"]
+    assert "project.read" in response.json()
 
 
-def test_cross_tenant_role_assignment_is_forbidden() -> None:
-    cleanup_data()
-
-    first_organization = create_organization()
-    second_organization = create_organization()
-
-    user = create_user(first_organization["id"])
-
-    role_response = client.post(
-        "/api/v1/rbac/roles",
-        json={
-            "organization_id": second_organization["id"],
-            "role_code": "ADMIN",
-            "role_name": "Administrator",
-        },
+def test_rbac_requires_authentication() -> None:
+    response = client.get(
+        "/api/v1/rbac/permissions",
     )
 
-    assert role_response.status_code == 201
+    assert response.status_code == 401
+
+
+def test_role_management_requires_role_manage() -> None:
+    organization, _, _ = prepare_authenticated_tenant(client)
+
+    user = create_test_user(
+        client,
+        organization_id=organization["id"],
+    )
+
+    headers = login_headers(
+        client,
+        organization_id=organization["id"],
+        email=user["email"],
+    )
 
     response = client.post(
-        "/api/v1/rbac/user-roles",
+        "/api/v1/rbac/roles",
+        headers=headers,
         json={
-            "user_id": user["id"],
-            "role_id": role_response.json()["id"],
+            "organization_id": organization["id"],
+            "role_code": "FORBIDDEN_ROLE",
+            "role_name": "Forbidden Role",
         },
     )
 
     assert response.status_code == 403
 
 
-def test_unknown_role_returns_not_found() -> None:
-    cleanup_data()
+def test_cross_tenant_role_create_and_list_return_404() -> None:
+    first_organization, _, first_headers = prepare_authenticated_tenant(client)
+    second_organization, _, _ = prepare_authenticated_tenant(client)
 
-    response = client.get("/api/v1/rbac/roles/999999999")
+    response = client.post(
+        "/api/v1/rbac/roles",
+        headers=first_headers,
+        json={
+            "organization_id": second_organization["id"],
+            "role_code": "CROSS_TENANT",
+            "role_name": "Cross Tenant Role",
+        },
+    )
+
+    assert response.status_code == 404
+
+    response = client.get(
+        (f"/api/v1/rbac/roles/organization/{second_organization['id']}"),
+        headers=first_headers,
+    )
+
+    assert response.status_code == 404
+
+    assert first_organization["id"] != second_organization["id"]
+
+
+def test_cross_tenant_role_get_and_update_return_404() -> None:
+    _, _, first_headers = prepare_authenticated_tenant(client)
+
+    second_organization, _, second_headers = prepare_authenticated_tenant(client)
+
+    role = create_custom_role(
+        organization_id=second_organization["id"],
+        headers=second_headers,
+    )
+
+    response = client.get(
+        f"/api/v1/rbac/roles/{role['id']}",
+        headers=first_headers,
+    )
+
+    assert response.status_code == 404
+
+    response = client.patch(
+        f"/api/v1/rbac/roles/{role['id']}",
+        headers=first_headers,
+        json={
+            "role_name": "Cross Tenant Update",
+        },
+    )
+
+    assert response.status_code == 404
+
+
+def test_cross_tenant_role_permission_assignment_returns_404() -> None:
+    _, _, first_headers = prepare_authenticated_tenant(client)
+
+    second_organization, _, second_headers = prepare_authenticated_tenant(client)
+
+    role = create_custom_role(
+        organization_id=second_organization["id"],
+        headers=second_headers,
+    )
+
+    permission_id = get_permission_id("project.read")
+
+    response = client.post(
+        "/api/v1/rbac/role-permissions",
+        headers=first_headers,
+        json={
+            "role_id": role["id"],
+            "permission_id": permission_id,
+        },
+    )
+
+    assert response.status_code == 404
+
+
+def test_cross_tenant_user_role_assignment_returns_404() -> None:
+    first_organization, _, first_headers = prepare_authenticated_tenant(client)
+
+    second_organization, second_user, second_headers = prepare_authenticated_tenant(client)
+
+    role = create_custom_role(
+        organization_id=second_organization["id"],
+        headers=second_headers,
+    )
+
+    response = client.post(
+        "/api/v1/rbac/user-roles",
+        headers=first_headers,
+        json={
+            "user_id": second_user["id"],
+            "role_id": role["id"],
+        },
+    )
+
+    assert response.status_code == 404
+
+    assert first_organization["id"] != second_organization["id"]
+
+
+def test_cross_tenant_effective_permissions_returns_404() -> None:
+    _, _, first_headers = prepare_authenticated_tenant(client)
+    _, second_user, _ = prepare_authenticated_tenant(client)
+
+    response = client.get(
+        f"/api/v1/rbac/users/{second_user['id']}/permissions",
+        headers=first_headers,
+    )
+
+    assert response.status_code == 404
+
+
+def test_unknown_role_returns_404() -> None:
+    _, _, headers = prepare_authenticated_tenant(client)
+
+    response = client.get(
+        "/api/v1/rbac/roles/999999999",
+        headers=headers,
+    )
 
     assert response.status_code == 404

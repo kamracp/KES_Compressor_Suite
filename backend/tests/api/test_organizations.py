@@ -1,189 +1,21 @@
-from uuid import uuid4
-
 from fastapi.testclient import TestClient
-from sqlalchemy import delete
 
-from app.core.database import SessionLocal
 from app.main import app
-from app.models.organization import Organization
+from tests.helpers.api_tenant_auth import (
+    create_test_user,
+    login_headers,
+    prepare_authenticated_tenant,
+)
 
 client = TestClient(app)
 
 
-def cleanup_organizations() -> None:
-    with SessionLocal() as db:
-        db.execute(delete(Organization))
-        db.commit()
-
-
-def build_payload(
-    *,
-    organization_code: str | None = None,
-    active: bool = True,
-) -> dict:
-    code = organization_code or f"ORG-{uuid4().hex[:8]}"
-
-    return {
-        "organization_code": code,
-        "organization_name": "Kamra Engineering Test Organization",
-        "legal_name": "Kamra Engineering Test Organization Private",
-        "country_code": "in",
-        "timezone": "Asia/Kolkata",
-        "default_currency": "inr",
-        "active": active,
-        "notes": "Automated organization API test.",
-    }
-
-
-def test_create_organization() -> None:
-    cleanup_organizations()
-
-    payload = build_payload()
-
-    response = client.post(
-        "/api/v1/organizations",
-        json=payload,
-    )
-
-    assert response.status_code == 201
-
-    data = response.json()
-
-    assert data["id"] > 0
-    assert data["organization_code"] == payload["organization_code"].upper()
-    assert data["organization_name"] == payload["organization_name"]
-    assert data["country_code"] == "IN"
-    assert data["default_currency"] == "INR"
-    assert data["timezone"] == "Asia/Kolkata"
-    assert data["active"] is True
-
-
-def test_duplicate_organization_code_returns_409() -> None:
-    cleanup_organizations()
-
-    code = f"ORG-{uuid4().hex[:8]}"
-
-    first_payload = build_payload(
-        organization_code=code,
-    )
-
-    second_payload = build_payload(
-        organization_code=code.lower(),
-    )
-
-    first = client.post(
-        "/api/v1/organizations",
-        json=first_payload,
-    )
-
-    assert first.status_code == 201
-
-    second = client.post(
-        "/api/v1/organizations",
-        json=second_payload,
-    )
-
-    assert second.status_code == 409
-    assert "already exists" in second.json()["detail"]
-
-
-def test_get_organization_by_id() -> None:
-    cleanup_organizations()
-
-    create_response = client.post(
-        "/api/v1/organizations",
-        json=build_payload(),
-    )
-
-    assert create_response.status_code == 201
-
-    organization_id = create_response.json()["id"]
-
-    response = client.get(
-        f"/api/v1/organizations/{organization_id}"
-    )
-
-    assert response.status_code == 200
-    assert response.json()["id"] == organization_id
-
-
-def test_get_organization_by_code_is_normalized() -> None:
-    cleanup_organizations()
-
-    code = f"ORG-{uuid4().hex[:8]}"
-
-    create_response = client.post(
-        "/api/v1/organizations",
-        json=build_payload(
-            organization_code=code,
-        ),
-    )
-
-    assert create_response.status_code == 201
-
-    response = client.get(
-        f"/api/v1/organizations/code/{code.lower()}"
-    )
-
-    assert response.status_code == 200
-    assert response.json()["organization_code"] == code.upper()
-
-
-def test_list_organizations() -> None:
-    cleanup_organizations()
-
-    assert (
-        client.post(
-            "/api/v1/organizations",
-            json=build_payload(),
-        ).status_code
-        == 201
-    )
-
-    assert (
-        client.post(
-            "/api/v1/organizations",
-            json=build_payload(),
-        ).status_code
-        == 201
-    )
-
-    response = client.get(
-        "/api/v1/organizations"
-    )
-
-    assert response.status_code == 200
-    assert len(response.json()) == 2
-
-
-def test_list_active_organizations_only() -> None:
-    cleanup_organizations()
-
-    assert (
-        client.post(
-            "/api/v1/organizations",
-            json=build_payload(
-                active=True,
-            ),
-        ).status_code
-        == 201
-    )
-
-    assert (
-        client.post(
-            "/api/v1/organizations",
-            json=build_payload(
-                active=False,
-            ),
-        ).status_code
-        == 201
-    )
+def test_list_current_organization() -> None:
+    organization, _, headers = prepare_authenticated_tenant(client)
 
     response = client.get(
         "/api/v1/organizations",
-        params={
-            "active_only": True,
-        },
+        headers=headers,
     )
 
     assert response.status_code == 200
@@ -191,27 +23,43 @@ def test_list_active_organizations_only() -> None:
     data = response.json()
 
     assert len(data) == 1
-    assert data[0]["active"] is True
+    assert data[0]["id"] == organization["id"]
+    assert data[0]["organization_code"] == organization["organization_code"]
 
 
-def test_update_organization() -> None:
-    cleanup_organizations()
+def test_get_current_organization_by_id() -> None:
+    organization, _, headers = prepare_authenticated_tenant(client)
 
-    create_response = client.post(
-        "/api/v1/organizations",
-        json=build_payload(),
+    response = client.get(
+        f"/api/v1/organizations/{organization['id']}",
+        headers=headers,
     )
 
-    assert create_response.status_code == 201
+    assert response.status_code == 200
+    assert response.json()["id"] == organization["id"]
 
-    organization_id = create_response.json()["id"]
+
+def test_get_current_organization_by_code_is_normalized() -> None:
+    organization, _, headers = prepare_authenticated_tenant(client)
+
+    response = client.get(
+        (f"/api/v1/organizations/code/{organization['organization_code'].lower()}"),
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["id"] == organization["id"]
+
+
+def test_update_current_organization() -> None:
+    organization, _, headers = prepare_authenticated_tenant(client)
 
     response = client.patch(
-        f"/api/v1/organizations/{organization_id}",
+        f"/api/v1/organizations/{organization['id']}",
+        headers=headers,
         json={
             "organization_name": "Updated Engineering Organization",
             "default_currency": "usd",
-            "active": False,
         },
     )
 
@@ -219,29 +67,138 @@ def test_update_organization() -> None:
 
     data = response.json()
 
-    assert data["organization_name"] == (
-        "Updated Engineering Organization"
-    )
-
+    assert data["organization_name"] == "Updated Engineering Organization"
     assert data["default_currency"] == "USD"
-    assert data["active"] is False
 
 
-def test_unknown_organization_returns_404() -> None:
-    cleanup_organizations()
+def test_active_only_excludes_inactive_current_organization() -> None:
+    organization, _, headers = prepare_authenticated_tenant(client)
+
+    update_response = client.patch(
+        f"/api/v1/organizations/{organization['id']}",
+        headers=headers,
+        json={
+            "active": False,
+        },
+    )
+
+    assert update_response.status_code == 200
 
     response = client.get(
-        "/api/v1/organizations/999999999"
+        "/api/v1/organizations",
+        headers=headers,
+        params={
+            "active_only": True,
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_organizations_require_authentication() -> None:
+    response = client.get(
+        "/api/v1/organizations",
+    )
+
+    assert response.status_code == 401
+
+
+def test_organizations_require_read_permission() -> None:
+    organization, _, admin_headers = prepare_authenticated_tenant(client)
+
+    user = create_test_user(
+        client,
+        organization_id=organization["id"],
+    )
+
+    headers = login_headers(
+        client,
+        organization_id=organization["id"],
+        email=user["email"],
+    )
+
+    response = client.get(
+        "/api/v1/organizations",
+        headers=headers,
+    )
+
+    assert response.status_code == 403
+
+    assert admin_headers
+
+
+def test_organization_update_requires_manage_permission() -> None:
+    organization, _, _ = prepare_authenticated_tenant(client)
+
+    user = create_test_user(
+        client,
+        organization_id=organization["id"],
+    )
+
+    headers = login_headers(
+        client,
+        organization_id=organization["id"],
+        email=user["email"],
+    )
+
+    response = client.patch(
+        f"/api/v1/organizations/{organization['id']}",
+        headers=headers,
+        json={
+            "organization_name": "Forbidden Update",
+        },
+    )
+
+    assert response.status_code == 403
+
+
+def test_cross_tenant_organization_by_id_returns_404() -> None:
+    first_organization, _, _ = prepare_authenticated_tenant(client)
+    _, _, second_headers = prepare_authenticated_tenant(client)
+
+    response = client.get(
+        f"/api/v1/organizations/{first_organization['id']}",
+        headers=second_headers,
     )
 
     assert response.status_code == 404
 
 
-def test_unknown_organization_code_returns_404() -> None:
-    cleanup_organizations()
+def test_cross_tenant_organization_by_code_returns_404() -> None:
+    first_organization, _, _ = prepare_authenticated_tenant(client)
+    _, _, second_headers = prepare_authenticated_tenant(client)
 
     response = client.get(
-        "/api/v1/organizations/code/UNKNOWN-ORG"
+        (f"/api/v1/organizations/code/{first_organization['organization_code']}"),
+        headers=second_headers,
     )
 
     assert response.status_code == 404
+
+
+def test_cross_tenant_organization_update_returns_404() -> None:
+    first_organization, _, _ = prepare_authenticated_tenant(client)
+    _, _, second_headers = prepare_authenticated_tenant(client)
+
+    response = client.patch(
+        f"/api/v1/organizations/{first_organization['id']}",
+        headers=second_headers,
+        json={
+            "organization_name": "Cross Tenant Update",
+        },
+    )
+
+    assert response.status_code == 404
+
+
+def test_public_organization_creation_is_not_exposed() -> None:
+    response = client.post(
+        "/api/v1/organizations",
+        json={
+            "organization_code": "PUBLIC-CREATE",
+            "organization_name": "Public Organization",
+        },
+    )
+
+    assert response.status_code == 405

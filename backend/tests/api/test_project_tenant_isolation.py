@@ -1,7 +1,5 @@
-from uuid import uuid4
-
 from fastapi.testclient import TestClient
-from sqlalchemy import delete, select
+from sqlalchemy import delete
 
 from app.core.database import SessionLocal
 from app.main import app
@@ -12,10 +10,9 @@ from app.models.role import Role
 from app.models.role_permission import RolePermission
 from app.models.user import User
 from app.models.user_role import UserRole
+from tests.helpers.api_tenant_auth import prepare_authenticated_tenant
 
 client = TestClient(app)
-
-PASSWORD = "Strong-Test-Password-123!"
 
 
 def cleanup_data() -> None:
@@ -30,119 +27,8 @@ def cleanup_data() -> None:
         db.commit()
 
 
-def create_organization() -> dict:
-    response = client.post(
-        "/api/v1/organizations",
-        json={
-            "organization_code": f"ORG-{uuid4().hex[:8]}",
-            "organization_name": "Project Tenant Test Organization",
-        },
-    )
-
-    assert response.status_code == 201
-    return response.json()
-
-
-def create_user(
-    *,
-    organization_id: int,
-) -> dict:
-    email = f"user-{uuid4().hex[:8]}@example.com"
-
-    response = client.post(
-        "/api/v1/users",
-        json={
-            "organization_id": organization_id,
-            "email": email,
-            "full_name": "Tenant Project User",
-            "password": PASSWORD,
-            "active": True,
-            "verified": True,
-        },
-    )
-
-    assert response.status_code == 201
-
-    data = response.json()
-    data["password"] = PASSWORD
-
-    return data
-
-
-def bootstrap_admin_role(
-    *,
-    organization_id: int,
-    user_id: int,
-) -> None:
-    response = client.post(f"/api/v1/rbac/bootstrap/organization/{organization_id}")
-
-    assert response.status_code == 200
-
-    with SessionLocal() as db:
-        role = db.scalar(
-            select(Role).where(
-                Role.organization_id == organization_id,
-                Role.role_code == "TENANT_ADMIN",
-            )
-        )
-
-        assert role is not None
-        role_id = role.id
-
-    response = client.post(
-        "/api/v1/rbac/user-roles",
-        json={
-            "user_id": user_id,
-            "role_id": role_id,
-        },
-    )
-
-    assert response.status_code == 201
-
-
-def login_headers(
-    *,
-    organization_id: int,
-    email: str,
-    password: str,
-) -> dict[str, str]:
-    response = client.post(
-        "/api/v1/auth/login",
-        json={
-            "organization_id": organization_id,
-            "email": email,
-            "password": password,
-        },
-    )
-
-    assert response.status_code == 200
-
-    token = response.json()["access_token"]
-
-    return {
-        "Authorization": f"Bearer {token}",
-    }
-
-
 def prepare_tenant() -> tuple[dict, dict, dict[str, str]]:
-    organization = create_organization()
-
-    user = create_user(
-        organization_id=organization["id"],
-    )
-
-    bootstrap_admin_role(
-        organization_id=organization["id"],
-        user_id=user["id"],
-    )
-
-    headers = login_headers(
-        organization_id=organization["id"],
-        email=user["email"],
-        password=user["password"],
-    )
-
-    return organization, user, headers
+    return prepare_authenticated_tenant(client)
 
 
 def create_project(
