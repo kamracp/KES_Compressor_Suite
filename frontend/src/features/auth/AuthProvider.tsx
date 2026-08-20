@@ -20,6 +20,7 @@ import type {
   CurrentUserResponse,
   LoginRequest,
 } from "../../types/auth";
+import { AUTH_UNAUTHORIZED_EVENT } from "../../services/apiClient";
 
 type AuthContextValue = {
   accessToken: string | null;
@@ -41,6 +42,26 @@ export function AuthProvider({
   const [currentUser, setCurrentUser] =
     useState<CurrentUserResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    function handleUnauthorized(): void {
+      clearAccessToken();
+      setTokenState(null);
+      setCurrentUser(null);
+    }
+
+    window.addEventListener(
+      AUTH_UNAUTHORIZED_EVENT,
+      handleUnauthorized,
+    );
+
+    return () => {
+      window.removeEventListener(
+        AUTH_UNAUTHORIZED_EVENT,
+        handleUnauthorized,
+      );
+    };
+  }, []);
 
   useEffect(() => {
     async function restoreSession(): Promise<void> {

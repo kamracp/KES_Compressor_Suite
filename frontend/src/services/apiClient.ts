@@ -1,5 +1,7 @@
 import { API_BASE_URL } from "../lib/apiConfig";
 
+export const AUTH_UNAUTHORIZED_EVENT = "kes:auth-unauthorized";
+
 export class ApiError extends Error {
   readonly status: number;
   readonly details: unknown;
@@ -57,6 +59,16 @@ export async function apiRequest<T>(
   );
 
   if (!response.ok) {
+    if (
+      response.status === 401 &&
+      accessToken &&
+      typeof window !== "undefined"
+    ) {
+      window.dispatchEvent(
+        new CustomEvent(AUTH_UNAUTHORIZED_EVENT),
+      );
+    }
+
     let details: unknown = null;
 
     try {
