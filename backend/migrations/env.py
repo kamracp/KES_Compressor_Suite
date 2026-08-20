@@ -3,10 +3,17 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+import app.models.calculation_case  # noqa: F401
+import app.models.compressed_air_assessment  # noqa: F401
+import app.models.organization  # noqa: F401
+import app.models.permission  # noqa: F401
+import app.models.project  # noqa: F401
+import app.models.role  # noqa: F401
+import app.models.role_permission  # noqa: F401
+import app.models.user  # noqa: F401
+import app.models.user_role  # noqa: F401
 from app.core.config import get_settings
 from app.core.database import Base
-from app.models.calculation_case import CalculationCase  # noqa: F401
-from app.models.project import Project  # noqa: F401
 
 config = context.config
 

@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -16,6 +16,14 @@ class User(Base):
     """Tenant-scoped SaaS user identity."""
 
     __tablename__ = "users"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "organization_id",
+            "email",
+            name="uq_users_organization_email",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(
         primary_key=True,
