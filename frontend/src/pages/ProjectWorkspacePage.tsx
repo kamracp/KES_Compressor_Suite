@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Link, useParams } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useAuth } from "../features/auth/AuthProvider";
+import { getProject } from "../features/projects/projectService";
 
 type WorkflowStatus = "Available" | "Integration Pending";
 
@@ -38,10 +41,37 @@ type EngineeringWorkflow = {
 
 export function ProjectWorkspacePage() {
   const { projectId } = useParams();
+  const { accessToken } = useAuth();
 
-  if (!projectId) {
-    throw new Error("Project ID is required.");
+  const numericProjectId = Number(projectId);
+  const hasValidProjectId =
+    Number.isInteger(numericProjectId) && numericProjectId > 0;
+
+  const projectQuery = useQuery({
+    queryKey: ["projects", numericProjectId],
+    queryFn: () => {
+      if (!accessToken) {
+        throw new Error("Authenticated access token is required.");
+      }
+
+      return getProject(
+        accessToken,
+        numericProjectId,
+      );
+    },
+    enabled: Boolean(accessToken) && hasValidProjectId,
+  });
+
+  if (!hasValidProjectId) {
+    return (
+      <main>
+        <h1>Invalid Project</h1>
+        <p>The requested project ID is not valid.</p>
+      </main>
+    );
   }
+
+  const project = projectQuery.data;
 
   const workflows: EngineeringWorkflow[] = [
     {
@@ -50,7 +80,7 @@ export function ProjectWorkspacePage() {
         "Design a new factory compressed-air system from consumer demand through pressure, station capacity, treatment, storage, energy, and engineering review.",
       icon: Factory,
       status: "Available",
-      path: `/projects/${projectId}/greenfield`,
+      path: `/projects/${numericProjectId}/greenfield`,
     },
     {
       title: "Brownfield Plant Assessment",
@@ -58,7 +88,7 @@ export function ProjectWorkspacePage() {
         "Assess an existing compressor station, operating profile, system condition, capacity utilisation, losses, controls, and improvement opportunities.",
       icon: Search,
       status: "Available",
-      path: `/projects/${projectId}/brownfield`,
+      path: `/projects/${numericProjectId}/brownfield`,
     },
     {
       title: "Performance & Energy Analysis",
@@ -66,7 +96,7 @@ export function ProjectWorkspacePage() {
         "Evaluate compressor and system specific power, operating efficiency, energy consumption, cost, deviation, and improvement potential.",
       icon: Gauge,
       status: "Available",
-      path: `/projects/${projectId}/performance`,
+      path: `/projects/${numericProjectId}/performance`,
     },
     {
       title: "Leakage Management",
@@ -74,7 +104,7 @@ export function ProjectWorkspacePage() {
         "Quantify compressed-air leakage, energy loss, annual cost, repair priority, and verified post-repair savings.",
       icon: AlertTriangle,
       status: "Available",
-      path: `/projects/${projectId}/leakage`,
+      path: `/projects/${numericProjectId}/leakage`,
     },
     {
       title: "Allied Equipment Engineering",
@@ -82,8 +112,8 @@ export function ProjectWorkspacePage() {
         "Engineer receivers, storage, dryers, treatment, aftercoolers, moisture separators, filters, condensate drains, and allied-equipment pressure losses.",
       icon: Package,
       status: "Available",
-      path: `/projects/${projectId}/allied-equipment`,
-      secondaryPath: `/projects/${projectId}/skid`,
+      path: `/projects/${numericProjectId}/allied-equipment`,
+      secondaryPath: `/projects/${numericProjectId}/skid`,
       secondaryLabel: "Open Skid Engineering",
     },
     {
@@ -92,7 +122,7 @@ export function ProjectWorkspacePage() {
         "Open specialist gas-property, compressor-selection, compression, reciprocating, centrifugal, and saved calculation workflows.",
       icon: Calculator,
       status: "Available",
-      path: `/projects/${projectId}/compressor`,
+      path: `/projects/${numericProjectId}/compressor`,
     },
   ];
 
@@ -104,29 +134,52 @@ export function ProjectWorkspacePage() {
             Project Engineering Workspace
           </Badge>
 
-          <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-            Complete Compressed-Air Engineering
-          </h1>
+          {projectQuery.isPending && (
+            <p className="mt-4 text-sm text-slate-600">
+              Loading project...
+            </p>
+          )}
 
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-            Select the engineering problem to solve. The project acts as the
-            common engineering record for system design, assessment,
-            calculations, optimization, and future reporting.
-          </p>
+          {projectQuery.isError && (
+            <p className="mt-4 text-sm font-medium text-red-700">
+              Unable to load this project.
+            </p>
+          )}
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Badge variant="secondary">
-              Project {projectId}
-            </Badge>
+          {project && (
+            <>
+              <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+                {project.project_name}
+              </h1>
 
-            <Badge variant="outline">
-              Vendor Neutral
-            </Badge>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+                {project.service_description ??
+                  "Select the engineering problem to solve. This project is the common engineering record for design, assessment, calculations, optimization, and reporting."}
+              </p>
 
-            <Badge variant="outline">
-              Manufacturing Engineering
-            </Badge>
-          </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Badge variant="secondary">
+                  {project.project_code}
+                </Badge>
+
+                <Badge variant="outline">
+                  {project.status}
+                </Badge>
+
+                {project.client_name && (
+                  <Badge variant="outline">
+                    {project.client_name}
+                  </Badge>
+                )}
+
+                {project.location && (
+                  <Badge variant="outline">
+                    {project.location}
+                  </Badge>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </section>
 
@@ -256,7 +309,7 @@ export function ProjectWorkspacePage() {
                 variant="outline"
                 className="w-full"
               >
-                <Link to={`/projects/${projectId}/calculations`}>
+                <Link to={`/projects/${numericProjectId}/calculations`}>
                   Open Records
                 </Link>
               </Button>

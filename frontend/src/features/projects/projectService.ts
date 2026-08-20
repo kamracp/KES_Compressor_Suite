@@ -15,6 +15,18 @@ export function listProjects(
   );
 }
 
+export function getProject(
+  accessToken: string,
+  projectId: number,
+): Promise<Project> {
+  return apiRequest<Project>(
+    `/projects/${projectId}`,
+    {
+      accessToken,
+    },
+  );
+}
+
 export function createProject(
   accessToken: string,
   payload: ProjectCreateRequest,
