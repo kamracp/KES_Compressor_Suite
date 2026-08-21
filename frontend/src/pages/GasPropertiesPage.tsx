@@ -5,15 +5,20 @@ import {
 } from "react";
 
 import { useMutation } from "@tanstack/react-query";
-import { useParams } from "react-router";
 
 import { useAuth } from "../features/auth/AuthProvider";
+import { useProjectContext } from "../features/projects/useProjectContext";
 import { calculateGasProperties } from "../features/projects/gasService";
 import type { GasPropertiesResponse } from "../features/projects/gasTypes";
 
 export function GasPropertiesPage() {
-  const { projectId } = useParams();
   const { accessToken } = useAuth();
+  const {
+    projectId,
+    hasValidProjectId,
+    project,
+    projectQuery,
+  } = useProjectContext();
 
   const [methane, setMethane] = useState("0.90");
   const [ethane, setEthane] = useState("0.05");
@@ -28,6 +33,10 @@ export function GasPropertiesPage() {
 
   if (!accessToken) {
     throw new Error("Authenticated access token is required.");
+  }
+
+  if (!hasValidProjectId) {
+    throw new Error("Valid project ID is required.");
   }
 
   const moleFractionTotal = useMemo(
@@ -97,7 +106,11 @@ export function GasPropertiesPage() {
       <h1>Gas Properties</h1>
 
       <p>
-        Project ID: {projectId}
+        {project
+          ? `${project.project_code} · ${project.project_name} · ${project.status}`
+          : projectQuery.isPending
+            ? "Loading project..."
+            : `Project ${projectId}`}
       </p>
 
       <p>

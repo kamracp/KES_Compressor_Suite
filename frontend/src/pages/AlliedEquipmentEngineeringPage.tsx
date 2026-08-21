@@ -7,7 +7,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-import { Link, useParams } from "react-router";
+import { Link } from "react-router";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/card";
 
 import { useAuth } from "../features/auth/AuthProvider";
+import { useProjectContext } from "../features/projects/useProjectContext";
 import { AftercoolerSection } from "../features/allied/components/AftercoolerSection";
 import { AlliedEngineeringReviewSection } from "../features/allied/components/AlliedEngineeringReviewSection";
 import { AlliedStudyBasisSection } from "../features/allied/components/AlliedStudyBasisSection";
@@ -64,8 +65,13 @@ function extractErrorMessage(error: unknown): string {
 }
 
 export function AlliedEquipmentEngineeringPage() {
-  const { projectId } = useParams();
   const { accessToken } = useAuth();
+  const {
+    projectId: projectIdNumber,
+    hasValidProjectId,
+    project,
+    projectQuery,
+  } = useProjectContext();
 
   const [formState, setFormState] = useState<AlliedFormState>(
     createInitialAlliedFormState,
@@ -75,8 +81,6 @@ export function AlliedEquipmentEngineeringPage() {
     [],
   );
 
-  const projectIdNumber = Number(projectId);
-
   const alliedMutation = useMutation({
     mutationFn: () => {
       if (!accessToken) {
@@ -85,10 +89,7 @@ export function AlliedEquipmentEngineeringPage() {
         );
       }
 
-      if (
-        !Number.isInteger(projectIdNumber) ||
-        projectIdNumber <= 0
-      ) {
+      if (!hasValidProjectId) {
         throw new Error("A valid project ID is required.");
       }
 
@@ -119,10 +120,7 @@ export function AlliedEquipmentEngineeringPage() {
   function runAlliedAnalysis(): void {
     const errors = validateAlliedFormState(formState);
 
-    if (
-      !Number.isInteger(projectIdNumber) ||
-      projectIdNumber <= 0
-    ) {
+    if (!hasValidProjectId) {
       errors.unshift("A valid project ID is required.");
     }
 
@@ -164,8 +162,18 @@ export function AlliedEquipmentEngineeringPage() {
 
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge variant="secondary">
-                Project {projectId ?? "Unknown"}
+                {project
+                  ? `${project.project_code} · ${project.project_name}`
+                  : projectQuery.isPending
+                    ? "Loading project..."
+                    : `Project ${projectIdNumber}`}
               </Badge>
+
+              {project && (
+                <Badge variant="outline">
+                  {project.status}
+                </Badge>
+              )}
 
               <Badge variant="outline">
                 Storage
@@ -381,7 +389,7 @@ export function AlliedEquipmentEngineeringPage() {
           asChild
           variant="ghost"
         >
-          <Link to={`/projects/${projectId}`}>
+          <Link to={`/projects/${projectIdNumber}`}>
             Return to Project Workspace
           </Link>
         </Button>

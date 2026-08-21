@@ -4,9 +4,9 @@ import {
 } from "react";
 
 import { useMutation } from "@tanstack/react-query";
-import { useParams } from "react-router";
 
 import { useAuth } from "../features/auth/AuthProvider";
+import { useProjectContext } from "../features/projects/useProjectContext";
 import {
   executeReciprocatingCalculation,
 } from "../features/projects/reciprocatingService";
@@ -15,8 +15,13 @@ import type {
 } from "../features/projects/reciprocatingTypes";
 
 export function ReciprocatingEngineeringPage() {
-  const { projectId } = useParams();
   const { accessToken } = useAuth();
+  const {
+    projectId,
+    hasValidProjectId,
+    project,
+    projectQuery,
+  } = useProjectContext();
 
   const [requiredFlow, setRequiredFlow] = useState("1000");
   const [bore, setBore] = useState("250");
@@ -46,6 +51,10 @@ export function ReciprocatingEngineeringPage() {
 
   if (!accessToken) {
     throw new Error("Authenticated access token is required.");
+  }
+
+  if (!hasValidProjectId) {
+    throw new Error("Valid project ID is required.");
   }
 
   const calculationMutation = useMutation({
@@ -78,8 +87,8 @@ export function ReciprocatingEngineeringPage() {
             persist_result: persistResult,
 
             project_id:
-              persistResult && projectId
-                ? Number(projectId)
+              persistResult
+                ? projectId
                 : null,
 
             calculation_code:
@@ -118,7 +127,13 @@ export function ReciprocatingEngineeringPage() {
     <main>
       <h1>Reciprocating Compressor Engineering</h1>
 
-      <p>Project ID: {projectId}</p>
+      <p>
+        {project
+          ? `${project.project_code} · ${project.project_name} · ${project.status}`
+          : projectQuery.isPending
+            ? "Loading project..."
+            : `Project ${projectId}`}
+      </p>
 
       <p>
         Evaluate reciprocating compressor displacement, capacity,

@@ -8,7 +8,7 @@ import {
   MoveRight,
   Settings2,
 } from "lucide-react";
-import { Link, useParams } from "react-router";
+import { Link } from "react-router";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+import { useProjectContext } from "../features/projects/useProjectContext";
+
 type EngineeringModule = {
   title: string;
   description: string;
@@ -29,10 +31,15 @@ type EngineeringModule = {
 };
 
 export function CompressorEngineeringPage() {
-  const { projectId } = useParams();
+  const {
+    projectId,
+    hasValidProjectId,
+    project,
+    projectQuery,
+  } = useProjectContext();
 
-  if (!projectId) {
-    throw new Error("Project ID is required.");
+  if (!hasValidProjectId) {
+    throw new Error("Valid project ID is required.");
   }
 
   const modules: EngineeringModule[] = [
@@ -106,8 +113,18 @@ export function CompressorEngineeringPage() {
 
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge variant="secondary">
-                Project {projectId}
+                {project
+                  ? `${project.project_code} · ${project.project_name}`
+                  : projectQuery.isPending
+                    ? "Loading project..."
+                    : `Project ${projectId}`}
               </Badge>
+
+              {project && (
+                <Badge variant="outline">
+                  {project.status}
+                </Badge>
+              )}
 
               <Badge variant="outline">
                 Vendor Neutral

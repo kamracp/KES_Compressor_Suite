@@ -2,25 +2,39 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router";
 
 import { useAuth } from "../features/auth/AuthProvider";
+import { useProjectContext } from "../features/projects/useProjectContext";
 import { getCalculationCase } from "../features/projects/calculationCaseService";
 
 export function CalculationDetailPage() {
-  const { projectId, calculationCaseId } = useParams();
+  const { calculationCaseId } = useParams();
   const { accessToken } = useAuth();
+  const {
+    projectId,
+    hasValidProjectId,
+    project,
+    projectQuery,
+  } = useProjectContext();
 
   if (!accessToken) {
     throw new Error("Authenticated access token is required.");
   }
 
-  if (!projectId || !calculationCaseId) {
-    throw new Error("Project ID and calculation case ID are required.");
-  }
-
-  const numericProjectId = Number(projectId);
   const numericCalculationCaseId = Number(calculationCaseId);
+
+  if (
+    !hasValidProjectId ||
+    !Number.isInteger(numericCalculationCaseId) ||
+    numericCalculationCaseId <= 0
+  ) {
+    throw new Error(
+      "Valid project ID and calculation case ID are required.",
+    );
+  }
 
   const calculationQuery = useQuery({
     queryKey: [
+      "projects",
+      projectId,
       "calculation-case",
       numericCalculationCaseId,
     ],
@@ -41,15 +55,39 @@ export function CalculationDetailPage() {
 
   const calculation = calculationQuery.data;
 
+  if (calculation.project_id !== projectId) {
+    return (
+      <main>
+        <h1>Calculation Project Mismatch</h1>
+        <p>
+          This calculation does not belong to the requested project.
+        </p>
+        <p>
+          <Link to={`/projects/${projectId}/calculations`}>
+            Return to Calculation History
+          </Link>
+        </p>
+      </main>
+    );
+  }
+
   return (
     <main>
       <p>
-        <Link to={`/projects/${numericProjectId}/calculations`}>
+        <Link to={`/projects/${projectId}/calculations`}>
           Back to Calculation History
         </Link>
       </p>
 
       <h1>{calculation.title}</h1>
+
+      <p>
+        {project
+          ? `${project.project_code} · ${project.project_name} · ${project.status}`
+          : projectQuery.isPending
+            ? "Loading project..."
+            : `Project ${projectId}`}
+      </p>
 
       <dl>
         <dt>Calculation Code</dt>

@@ -4,9 +4,9 @@ import {
 } from "react";
 
 import { useMutation } from "@tanstack/react-query";
-import { useParams } from "react-router";
 
 import { useAuth } from "../features/auth/AuthProvider";
+import { useProjectContext } from "../features/projects/useProjectContext";
 import {
   executeCompressorSelection,
 } from "../features/projects/selectionService";
@@ -15,8 +15,13 @@ import type {
 } from "../features/projects/selectionTypes";
 
 export function CompressorSelectionPage() {
-  const { projectId } = useParams();
   const { accessToken } = useAuth();
+  const {
+    projectId,
+    hasValidProjectId,
+    project,
+    projectQuery,
+  } = useProjectContext();
 
   const [requiredFlow, setRequiredFlow] = useState("3000");
   const [suctionPressure, setSuctionPressure] = useState("1.0");
@@ -38,6 +43,10 @@ export function CompressorSelectionPage() {
     throw new Error("Authenticated access token is required.");
   }
 
+  if (!hasValidProjectId) {
+    throw new Error("Valid project ID is required.");
+  }
+
   const selectionMutation = useMutation({
     mutationFn: () =>
       executeCompressorSelection(
@@ -56,8 +65,8 @@ export function CompressorSelectionPage() {
           execution: {
             persist_result: persistResult,
             project_id:
-              persistResult && projectId
-                ? Number(projectId)
+              persistResult
+                ? projectId
                 : null,
             calculation_code:
               persistResult ? calculationCode : null,
@@ -87,6 +96,14 @@ export function CompressorSelectionPage() {
   return (
     <main>
       <h1>Compressor Type Selection</h1>
+
+      <p>
+        {project
+          ? `${project.project_code} · ${project.project_name} · ${project.status}`
+          : projectQuery.isPending
+            ? "Loading project..."
+            : `Project ${projectId}`}
+      </p>
 
       <p>
         Compare reciprocating and centrifugal compressor suitability.

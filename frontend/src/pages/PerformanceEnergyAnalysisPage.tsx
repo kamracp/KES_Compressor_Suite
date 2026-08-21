@@ -7,7 +7,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-import { Link, useParams } from "react-router";
+import { Link } from "react-router";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ import {
   type PerformanceFormState,
 } from "../features/performance/performanceFormState";
 import { analyzeCompressedAirPerformance } from "../features/performance/performanceService";
+import { useProjectContext } from "../features/projects/useProjectContext";
 import { ApiError } from "../services/apiClient";
 
 function extractErrorMessage(error: unknown): string {
@@ -61,14 +62,23 @@ function extractErrorMessage(error: unknown): string {
 }
 
 export function PerformanceEnergyAnalysisPage() {
-  const { projectId } = useParams();
   const { accessToken } = useAuth();
+  const {
+    projectId,
+    hasValidProjectId,
+    project,
+    projectQuery,
+  } = useProjectContext();
 
   const [formState, setFormState] = useState<PerformanceFormState>(
     createInitialPerformanceFormState,
   );
 
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  if (!hasValidProjectId) {
+    throw new Error("Valid project ID is required.");
+  }
 
   const performanceMutation = useMutation({
     mutationFn: () => {
@@ -143,8 +153,18 @@ export function PerformanceEnergyAnalysisPage() {
 
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge variant="secondary">
-                Project {projectId ?? "Unknown"}
+                {project
+                  ? `${project.project_code} · ${project.project_name}`
+                  : projectQuery.isPending
+                    ? "Loading project..."
+                    : `Project ${projectId}`}
               </Badge>
+
+              {project && (
+                <Badge variant="outline">
+                  {project.status}
+                </Badge>
+              )}
 
               <Badge variant="outline">
                 Measured Performance

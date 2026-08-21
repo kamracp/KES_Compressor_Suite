@@ -7,7 +7,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-import { Link, useParams } from "react-router";
+import { Link } from "react-router";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,7 @@ import {
   type SkidFormState,
 } from "../features/skid/skidFormState";
 import { assessCompressedAirSkid } from "../features/skid/skidService";
+import { useProjectContext } from "../features/projects/useProjectContext";
 import { ApiError } from "../services/apiClient";
 
 function extractErrorMessage(error: unknown): string {
@@ -60,8 +61,13 @@ function extractErrorMessage(error: unknown): string {
 }
 
 export function SkidEngineeringPage() {
-  const { projectId } = useParams();
   const { accessToken } = useAuth();
+  const {
+    projectId: projectIdNumber,
+    hasValidProjectId,
+    project,
+    projectQuery,
+  } = useProjectContext();
 
   const [formState, setFormState] = useState<SkidFormState>(
     createInitialSkidFormState,
@@ -70,8 +76,6 @@ export function SkidEngineeringPage() {
   const [validationErrors, setValidationErrors] = useState<string[]>(
     [],
   );
-
-  const projectIdNumber = Number(projectId);
 
   const skidMutation = useMutation({
     mutationFn: () => {
@@ -82,8 +86,7 @@ export function SkidEngineeringPage() {
       }
 
       if (
-        !Number.isInteger(projectIdNumber) ||
-        projectIdNumber <= 0
+        !hasValidProjectId
       ) {
         throw new Error("A valid project ID is required.");
       }
@@ -116,8 +119,7 @@ export function SkidEngineeringPage() {
     const errors = validateSkidFormState(formState);
 
     if (
-      !Number.isInteger(projectIdNumber) ||
-      projectIdNumber <= 0
+      !hasValidProjectId
     ) {
       errors.unshift("A valid project ID is required.");
     }
@@ -160,8 +162,18 @@ export function SkidEngineeringPage() {
 
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge variant="secondary">
-                Project {projectId ?? "Unknown"}
+                {project
+                  ? `${project.project_code} · ${project.project_name}`
+                  : projectQuery.isPending
+                    ? "Loading project..."
+                    : `Project ${projectIdNumber}`}
               </Badge>
+
+              {project && (
+                <Badge variant="outline">
+                  {project.status}
+                </Badge>
+              )}
 
               <Badge variant="outline">
                 Capacity
@@ -328,7 +340,7 @@ export function SkidEngineeringPage() {
           asChild
           variant="ghost"
         >
-          <Link to={`/projects/${projectId}`}>
+          <Link to={`/projects/${projectIdNumber}`}>
             Return to Project Workspace
           </Link>
         </Button>

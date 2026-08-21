@@ -7,7 +7,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-import { Link, useParams } from "react-router";
+import { Link } from "react-router";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ import {
   type LeakageFormState,
 } from "../features/leakage/leakageFormState";
 import { analyzeCompressedAirLeakage } from "../features/leakage/leakageService";
+import { useProjectContext } from "../features/projects/useProjectContext";
 import { ApiError } from "../services/apiClient";
 
 function extractErrorMessage(error: unknown): string {
@@ -61,8 +62,13 @@ function extractErrorMessage(error: unknown): string {
 }
 
 export function LeakageManagementPage() {
-  const { projectId } = useParams();
   const { accessToken } = useAuth();
+  const {
+    projectId: projectIdNumber,
+    hasValidProjectId,
+    project,
+    projectQuery,
+  } = useProjectContext();
 
   const [formState, setFormState] = useState<LeakageFormState>(
     createInitialLeakageFormState,
@@ -71,8 +77,6 @@ export function LeakageManagementPage() {
   const [validationErrors, setValidationErrors] = useState<string[]>(
     [],
   );
-
-  const projectIdNumber = Number(projectId);
 
   const leakageMutation = useMutation({
     mutationFn: () => {
@@ -83,8 +87,7 @@ export function LeakageManagementPage() {
       }
 
       if (
-        !Number.isInteger(projectIdNumber) ||
-        projectIdNumber <= 0
+        !hasValidProjectId
       ) {
         throw new Error("A valid project ID is required.");
       }
@@ -117,8 +120,7 @@ export function LeakageManagementPage() {
     const errors = validateLeakageFormState(formState);
 
     if (
-      !Number.isInteger(projectIdNumber) ||
-      projectIdNumber <= 0
+      !hasValidProjectId
     ) {
       errors.unshift("A valid project ID is required.");
     }
@@ -161,8 +163,18 @@ export function LeakageManagementPage() {
 
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge variant="secondary">
-                Project {projectId ?? "Unknown"}
+                {project
+                  ? `${project.project_code} · ${project.project_name}`
+                  : projectQuery.isPending
+                    ? "Loading project..."
+                    : `Project ${projectIdNumber}`}
               </Badge>
+
+              {project && (
+                <Badge variant="outline">
+                  {project.status}
+                </Badge>
+              )}
 
               <Badge variant="outline">
                 Leak Register
@@ -336,7 +348,7 @@ export function LeakageManagementPage() {
           asChild
           variant="ghost"
         >
-          <Link to={`/projects/${projectId}`}>
+          <Link to={`/projects/${projectIdNumber}`}>
             Return to Project Workspace
           </Link>
         </Button>

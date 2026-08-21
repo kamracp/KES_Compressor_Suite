@@ -4,9 +4,9 @@ import {
 } from "react";
 
 import { useMutation } from "@tanstack/react-query";
-import { useParams } from "react-router";
 
 import { useAuth } from "../features/auth/AuthProvider";
+import { useProjectContext } from "../features/projects/useProjectContext";
 import {
   executeCentrifugalCalculation,
 } from "../features/projects/centrifugalService";
@@ -15,8 +15,13 @@ import type {
 } from "../features/projects/centrifugalTypes";
 
 export function CentrifugalEngineeringPage() {
-  const { projectId } = useParams();
   const { accessToken } = useAuth();
+  const {
+    projectId,
+    hasValidProjectId,
+    project,
+    projectQuery,
+  } = useProjectContext();
 
   const [suctionPressure, setSuctionPressure] = useState("1.013");
   const [dischargePressure, setDischargePressure] = useState("8.0");
@@ -60,6 +65,10 @@ export function CentrifugalEngineeringPage() {
 
   if (!accessToken) {
     throw new Error("Authenticated access token is required.");
+  }
+
+  if (!hasValidProjectId) {
+    throw new Error("Valid project ID is required.");
   }
 
   const calculationMutation = useMutation({
@@ -107,8 +116,8 @@ export function CentrifugalEngineeringPage() {
             persist_result: persistResult,
 
             project_id:
-              persistResult && projectId
-                ? Number(projectId)
+              persistResult
+                ? projectId
                 : null,
 
             calculation_code:
@@ -147,7 +156,13 @@ export function CentrifugalEngineeringPage() {
     <main>
       <h1>Centrifugal Compressor Engineering</h1>
 
-      <p>Project ID: {projectId}</p>
+      <p>
+        {project
+          ? `${project.project_code} · ${project.project_name} · ${project.status}`
+          : projectQuery.isPending
+            ? "Loading project..."
+            : `Project ${projectId}`}
+      </p>
 
       <p>
         Evaluate centrifugal compressor head, power,

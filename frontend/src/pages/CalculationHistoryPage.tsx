@@ -1,35 +1,39 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link, useParams } from "react-router";
+import { Link } from "react-router";
 
 import { useAuth } from "../features/auth/AuthProvider";
+import { useProjectContext } from "../features/projects/useProjectContext";
 import {
   listProjectCalculationCases,
 } from "../features/projects/calculationCaseService";
 
 export function CalculationHistoryPage() {
-  const { projectId } = useParams();
   const { accessToken } = useAuth();
+  const {
+    projectId,
+    hasValidProjectId,
+    project,
+    projectQuery,
+  } = useProjectContext();
 
   if (!accessToken) {
     throw new Error("Authenticated access token is required.");
   }
 
-  if (!projectId) {
-    throw new Error("Project ID is required.");
+  if (!hasValidProjectId) {
+    throw new Error("Valid project ID is required.");
   }
-
-  const numericProjectId = Number(projectId);
 
   const calculationCasesQuery = useQuery({
     queryKey: [
       "projects",
-      numericProjectId,
+      projectId,
       "calculation-cases",
     ],
     queryFn: () =>
       listProjectCalculationCases(
         accessToken,
-        numericProjectId,
+        projectId,
       ),
   });
 
@@ -38,7 +42,11 @@ export function CalculationHistoryPage() {
       <h1>Calculation History</h1>
 
       <p>
-        Project ID: {numericProjectId}
+        {project
+          ? `${project.project_code} · ${project.project_name} · ${project.status}`
+          : projectQuery.isPending
+            ? "Loading project..."
+            : `Project ${projectId}`}
       </p>
 
       <p>
@@ -119,7 +127,7 @@ export function CalculationHistoryPage() {
                     <td>
                       <Link
                         to={
-                          `/projects/${numericProjectId}` +
+                          `/projects/${projectId}` +
                           `/calculations/${calculationCase.id}`
                         }
                       >
