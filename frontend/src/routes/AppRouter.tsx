@@ -2,9 +2,11 @@ import {
   BrowserRouter,
   Route,
   Routes,
+  useParams,
 } from "react-router";
 
 import { AppLayout } from "../layouts/AppLayout";
+import { ProjectContextRoute } from "../features/projects/ProjectContextRoute";
 import { AssessmentsPage } from "../pages/AssessmentsPage";
 import { BrownfieldPlantAssessmentPage } from "../pages/BrownfieldPlantAssessmentPage";
 import { DashboardPage } from "../pages/DashboardPage";
@@ -32,10 +34,18 @@ function ProtectedPage({
 }: {
   children: React.ReactNode;
 }) {
+  const { projectId } = useParams();
+
   return (
     <ProtectedRoute>
       <AppLayout>
-        {children}
+        {projectId ? (
+          <ProjectContextRoute>
+            {children}
+          </ProjectContextRoute>
+        ) : (
+          children
+        )}
       </AppLayout>
     </ProtectedRoute>
   );
