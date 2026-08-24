@@ -60,8 +60,15 @@ export function DashboardPage() {
     queryFn: () => listCalculationCases(accessToken),
   });
 
-  const projects = projectsQuery.data ?? [];
-  const calculations = calculationsQuery.data ?? [];
+  const projects = useMemo(
+    () => projectsQuery.data ?? [],
+    [projectsQuery.data],
+  );
+
+  const calculations = useMemo(
+    () => calculationsQuery.data ?? [],
+    [calculationsQuery.data],
+  );
 
   const completedCalculations = useMemo(
     () =>

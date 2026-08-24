@@ -120,6 +120,8 @@ export function AuthProvider({
   );
 }
 
+// The hook intentionally shares the provider's private context boundary.
+// oxlint-disable-next-line react/only-export-components
 export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext);
 
