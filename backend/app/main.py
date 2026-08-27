@@ -237,3 +237,5 @@ app.include_router(multi_compressor_router, prefix="/api/v1")
 app.include_router(air_dryer_router, prefix="/api/v1")
 app.include_router(receiver_piping_router, prefix="/api/v1")
 app.include_router(system_orchestrator_router, prefix="/api/v1")
+
+app.include_router(api_v1_router, prefix="/api/v1")

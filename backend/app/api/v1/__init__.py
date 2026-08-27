@@ -7,7 +7,7 @@ from app.api.v1.air_dryer import router as air_dryer_router
 from app.api.v1.receiver_piping import router as receiver_piping_router
 from app.api.v1.system_orchestrator import router as system_orchestrator_router
 
-api_router = APIRouter(prefix="/api/v1")
+api_router = APIRouter()
 
 api_router.include_router(demand_router)
 api_router.include_router(rotary_screw_router)
