@@ -1,8 +1,3 @@
-from app.api.v1.rotary_screw import router as rotary_screw_router
-from app.api.v1.multi_compressor import router as multi_compressor_router
-from app.api.v1.air_dryer import router as air_dryer_router
-from app.api.v1.receiver_piping import router as receiver_piping_router
-from app.api.v1.system_orchestrator import router as system_orchestrator_router
 from app.api.v1 import api_router as api_v1_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,12 +33,6 @@ from app.core.config import get_settings
 settings = get_settings()
 
 
-from app.api.v1.demand import router as demand_router
-from app.api.v1.rotary_screw import router as rotary_screw_router
-from app.api.v1.multi_compressor import router as multi_compressor_router
-from app.api.v1.air_dryer import router as air_dryer_router
-from app.api.v1.receiver_piping import router as receiver_piping_router
-from app.api.v1.system_orchestrator import router as system_orchestrator_router
 
 app = FastAPI(
     title=settings.app_name,
@@ -233,11 +222,15 @@ app.include_router(api_v1_router)
 
 app.include_router(api_v1_router)
 
-app.include_router(rotary_screw_router, prefix="/api/v1")
-app.include_router(multi_compressor_router, prefix="/api/v1")
-app.include_router(air_dryer_router, prefix="/api/v1")
-app.include_router(receiver_piping_router, prefix="/api/v1")
-app.include_router(system_orchestrator_router, prefix="/api/v1")
+
+# --- Compressed Air Engine Routers Registration ---
+from app.api.v1.demand import router as demand_router
+from app.api.v1.rotary_screw import router as rotary_screw_router
+from app.api.v1.multi_compressor import router as multi_compressor_router
+from app.api.v1.air_dryer import router as air_dryer_router
+from app.api.v1.receiver_piping import router as receiver_piping_router
+from app.api.v1.system_orchestrator import router as system_orchestrator_router
+
 app.include_router(demand_router, prefix="/api/v1")
 app.include_router(rotary_screw_router, prefix="/api/v1")
 app.include_router(multi_compressor_router, prefix="/api/v1")
