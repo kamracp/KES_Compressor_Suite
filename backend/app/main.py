@@ -218,4 +218,4 @@ def version() -> dict[str, str]:
 
 app.include_router(api_v1_router)
 
-app.include_router(api_router)
+app.include_router(api_v1_router)
