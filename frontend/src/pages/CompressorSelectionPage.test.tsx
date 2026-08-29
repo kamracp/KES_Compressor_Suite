@@ -75,6 +75,8 @@ const resultFixture: CompressorSelectionExecutionResponse = {
       turndown_rating: "EXCELLENT",
       efficiency_rating: "GOOD",
       maintenance_rating: "ACCEPTABLE",
+      air_quality_rating: "GOOD",
+      lifecycle_energy_rating: "EXCELLENT",
       overall_score: "82",
       rationale: [
         "Strong turndown capability.",
@@ -88,6 +90,8 @@ const resultFixture: CompressorSelectionExecutionResponse = {
       turndown_rating: "ACCEPTABLE",
       efficiency_rating: "EXCELLENT",
       maintenance_rating: "GOOD",
+      air_quality_rating: "EXCELLENT",
+      lifecycle_energy_rating: "GOOD",
       overall_score: "86",
       rationale: [
         "Strong capacity fit for the required flow.",
@@ -101,6 +105,8 @@ const resultFixture: CompressorSelectionExecutionResponse = {
       turndown_rating: "EXCELLENT",
       efficiency_rating: "GOOD",
       maintenance_rating: "EXCELLENT",
+      air_quality_rating: "EXCELLENT",
+      lifecycle_energy_rating: "EXCELLENT",
       overall_score: "78",
       rationale: [
         "Wide turndown is well matched to variable-speed-drive rotary screw control.",
@@ -216,6 +222,7 @@ describe("CompressorSelectionPage", () => {
           discharge_pressure_bar: 8,
           required_turndown_fraction: 0.3,
           continuous_operation: true,
+          oil_free_air_required: false,
           gas_molecular_weight: 28.97,
           estimated_operating_hours_per_year: 8000,
         },

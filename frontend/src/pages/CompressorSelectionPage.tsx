@@ -229,6 +229,14 @@ function TechnologyAssessment({
             label="Maintenance Fit"
             rating={assessment.maintenance_rating}
           />
+          <AssessmentRating
+            label="Air Quality Fit"
+            rating={assessment.air_quality_rating}
+          />
+          <AssessmentRating
+            label="Lifecycle Energy Fit"
+            rating={assessment.lifecycle_energy_rating}
+          />
         </dl>
 
         <div>
@@ -288,6 +296,7 @@ export function CompressorSelectionPage() {
   const [dischargePressure, setDischargePressure] = useState("8.0");
   const [turndown, setTurndown] = useState("0.30");
   const [continuousOperation, setContinuousOperation] = useState(true);
+  const [oilFreeAirRequired, setOilFreeAirRequired] = useState(false);
   const [molecularWeight, setMolecularWeight] = useState("28.97");
   const [operatingHours, setOperatingHours] = useState("8000");
 
@@ -346,6 +355,7 @@ export function CompressorSelectionPage() {
             discharge_pressure_bar: dischargePressureValue,
             required_turndown_fraction: turndownValue,
             continuous_operation: continuousOperation,
+            oil_free_air_required: oilFreeAirRequired,
             gas_molecular_weight: molecularWeightValue,
             estimated_operating_hours_per_year: operatingHoursValue,
           },
@@ -413,6 +423,7 @@ export function CompressorSelectionPage() {
     setDischargePressure("8.0");
     setTurndown("0.30");
     setContinuousOperation(true);
+    setOilFreeAirRequired(false);
     setMolecularWeight("28.97");
     setOperatingHours("8000");
     setPersistResult(false);
@@ -750,6 +761,30 @@ export function CompressorSelectionPage() {
                 <span className="mt-1 block text-sm leading-6 text-slate-600">
                   Include continuous-duty suitability and maintainability in
                   the technology recommendation.
+                </span>
+              </span>
+            </label>
+
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <input
+                type="checkbox"
+                className="mt-1 size-4 rounded border-slate-300"
+                checked={oilFreeAirRequired}
+                onChange={(event) =>
+                  updateBoolean(
+                    setOilFreeAirRequired,
+                    event.target.checked,
+                  )
+                }
+              />
+
+              <span>
+                <span className="block text-sm font-semibold text-slate-950">
+                  Oil-Free Air Required
+                </span>
+                <span className="mt-1 block text-sm leading-6 text-slate-600">
+                  Rate each technology on delivering Class 0 / oil-free air
+                  quality for sensitive downstream processes.
                 </span>
               </span>
             </label>

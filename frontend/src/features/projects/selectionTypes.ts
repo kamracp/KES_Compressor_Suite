@@ -17,6 +17,7 @@ export type CompressorSelectionCalculation = {
   continuous_operation: boolean;
   gas_molecular_weight: number;
   estimated_operating_hours_per_year: number;
+  oil_free_air_required: boolean;
 };
 
 export type CalculationExecutionMetadata = {
@@ -39,6 +40,8 @@ export type CompressorOptionAssessment = {
   turndown_rating: SelectionRating;
   efficiency_rating: SelectionRating;
   maintenance_rating: SelectionRating;
+  air_quality_rating: SelectionRating;
+  lifecycle_energy_rating: SelectionRating;
   overall_score: string;
   rationale: string[];
 };
