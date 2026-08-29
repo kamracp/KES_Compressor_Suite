@@ -3,6 +3,7 @@ from collections import Counter
 from fastapi.routing import APIRoute
 from fastapi.testclient import TestClient
 
+from app.core.config import get_settings
 from app.main import app
 
 client = TestClient(app)
@@ -38,7 +39,7 @@ def test_version_endpoint() -> None:
     data = response.json()
 
     assert data["version"] == "0.1.0"
-    assert data["environment"] == "development"
+    assert data["environment"] == get_settings().environment
 
 
 def test_api_route_signatures_are_unique() -> None:
