@@ -23,6 +23,14 @@ from app.domain.reciprocating.recip_models import (
     CylinderAction,
     ReciprocatingCylinderGeometry,
 )
+from app.domain.rotary_screw.engine import (
+    RotaryScrewEngineInput,
+    calculate_rotary_screw_case,
+)
+from app.domain.rotary_screw.models import (
+    RotaryScrewOperatingPoint,
+    RotaryScrewRotorGeometry,
+)
 from app.domain.selection.selection_engine import select_compressor_type
 from app.domain.selection.selection_models import CompressorSelectionCriteria
 from app.schemas.compressor_calculation import (
@@ -30,6 +38,7 @@ from app.schemas.compressor_calculation import (
     CompressionCalculationRequest,
     CompressorSelectionRequest,
     ReciprocatingCalculationRequest,
+    RotaryScrewCalculationRequest,
 )
 
 router = APIRouter(
@@ -128,6 +137,44 @@ def calculate_centrifugal(
     )
 
     result = calculate_centrifugal_case(inputs)
+
+    return asdict(result)
+
+
+@router.post("/rotary-screw/calculate")
+def calculate_rotary_screw(
+    payload: RotaryScrewCalculationRequest,
+) -> dict[str, Any]:
+    operating_point = RotaryScrewOperatingPoint(
+        inlet_pressure_bar_a=payload.inlet_pressure_bar_a,
+        inlet_temperature_k=payload.inlet_temperature_k,
+        discharge_pressure_bar_g=payload.discharge_pressure_bar_g,
+        rotational_speed_rpm=payload.rotational_speed_rpm,
+        oil_type=payload.oil_type,
+        control_type=payload.control_type,
+        stage_count=payload.stage_count,
+    )
+
+    rotor_geometry = None
+    if payload.rotor_geometry is not None:
+        rotor_geometry = RotaryScrewRotorGeometry(
+            male_rotor_diameter_mm=payload.rotor_geometry.male_rotor_diameter_mm,
+            rotor_length_mm=payload.rotor_geometry.rotor_length_mm,
+            area_utilisation_coefficient=(
+                payload.rotor_geometry.area_utilisation_coefficient
+            ),
+        )
+
+    inputs = RotaryScrewEngineInput(
+        operating_point=operating_point,
+        rated_fad_m3_per_min=payload.rated_fad_m3_per_min,
+        package_input_power_kw=payload.package_input_power_kw,
+        rotor_geometry=rotor_geometry,
+        standard_reference_pressure_bar_a=payload.standard_reference_pressure_bar_a,
+        standard_reference_temperature_k=payload.standard_reference_temperature_k,
+    )
+
+    result = calculate_rotary_screw_case(inputs)
 
     return asdict(result)
 

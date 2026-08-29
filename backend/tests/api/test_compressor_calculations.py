@@ -155,3 +155,80 @@ def test_invalid_selection_request_returns_422() -> None:
     )
 
     assert response.status_code == 422
+
+
+def test_rotary_screw_endpoint_minimal_payload() -> None:
+    response = client.post(
+        "/api/v1/compressor/rotary-screw/calculate",
+        json={
+            "inlet_pressure_bar_a": "1",
+            "inlet_temperature_k": "300",
+            "discharge_pressure_bar_g": "7",
+            "rotational_speed_rpm": "3000",
+            "oil_type": "OIL_INJECTED",
+            "control_type": "FIXED_SPEED_LOAD_UNLOAD",
+            "rated_fad_m3_per_min": "10",
+            "package_input_power_kw": "60",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["displacement"] is None
+    assert data["standard_air_correction"] is None
+    assert Decimal(data["performance"]["specific_power_kw_per_m3_min"]) == Decimal("6.000")
+
+
+def test_rotary_screw_endpoint_full_payload() -> None:
+    response = client.post(
+        "/api/v1/compressor/rotary-screw/calculate",
+        json={
+            "inlet_pressure_bar_a": "1",
+            "inlet_temperature_k": "300",
+            "discharge_pressure_bar_g": "7",
+            "rotational_speed_rpm": "3000",
+            "oil_type": "OIL_FREE",
+            "control_type": "VARIABLE_SPEED_DRIVE",
+            "stage_count": "TWO_STAGE",
+            "rated_fad_m3_per_min": "10",
+            "package_input_power_kw": "60",
+            "rotor_geometry": {
+                "male_rotor_diameter_mm": "200",
+                "rotor_length_mm": "300",
+                "area_utilisation_coefficient": "0.5",
+            },
+            "standard_reference_pressure_bar_a": "1",
+            "standard_reference_temperature_k": "300",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert Decimal(data["displacement"]["theoretical_displacement_m3_per_min"]) == Decimal(
+        "18.000"
+    )
+    assert Decimal(
+        data["standard_air_correction"]["corrected_fad_m3_per_min"]
+    ) == Decimal("10.0")
+
+
+def test_invalid_rotary_screw_request_returns_422() -> None:
+    response = client.post(
+        "/api/v1/compressor/rotary-screw/calculate",
+        json={
+            "inlet_pressure_bar_a": "0",
+            "inlet_temperature_k": "300",
+            "discharge_pressure_bar_g": "7",
+            "rotational_speed_rpm": "3000",
+            "oil_type": "OIL_INJECTED",
+            "control_type": "FIXED_SPEED_LOAD_UNLOAD",
+            "rated_fad_m3_per_min": "10",
+            "package_input_power_kw": "60",
+        },
+    )
+
+    assert response.status_code == 422
