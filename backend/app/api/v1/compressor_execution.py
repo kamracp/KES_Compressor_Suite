@@ -10,6 +10,7 @@ from app.schemas.compressor_execution import (
     CentrifugalExecutionRequest,
     CompressionExecutionRequest,
     ReciprocatingExecutionRequest,
+    RotaryScrewExecutionRequest,
     SelectionExecutionRequest,
 )
 from app.services.calculation_case import (
@@ -133,6 +134,29 @@ def execute_selection(
 ) -> dict[str, Any]:
     try:
         return compressor_execution_service.execute_selection(
+            db,
+            organization_id=current_user.organization_id,
+            calculation=payload.calculation,
+            execution=payload.execution,
+        )
+    except (
+        CalculationCaseAlreadyExistsError,
+        CalculationCaseProjectNotFoundError,
+        InvalidCalculationPersistenceMetadataError,
+    ) as exc:
+        _raise_execution_error(exc)
+
+    raise RuntimeError("Unreachable execution path.")
+
+
+@router.post("/rotary-screw")
+def execute_rotary_screw(
+    payload: RotaryScrewExecutionRequest,
+    db: DatabaseSession,
+    current_user: EngineeringCalculator,
+) -> dict[str, Any]:
+    try:
+        return compressor_execution_service.execute_rotary_screw(
             db,
             organization_id=current_user.organization_id,
             calculation=payload.calculation,

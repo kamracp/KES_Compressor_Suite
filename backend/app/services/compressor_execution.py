@@ -23,6 +23,14 @@ from app.domain.reciprocating.recip_models import (
     CylinderAction,
     ReciprocatingCylinderGeometry,
 )
+from app.domain.rotary_screw.engine import (
+    RotaryScrewEngineInput,
+    calculate_rotary_screw_case,
+)
+from app.domain.rotary_screw.models import (
+    RotaryScrewOperatingPoint,
+    RotaryScrewRotorGeometry,
+)
 from app.domain.selection.selection_engine import select_compressor_type
 from app.domain.selection.selection_models import CompressorSelectionCriteria
 from app.models.calculation_case import CalculationType
@@ -32,6 +40,7 @@ from app.schemas.compressor_calculation import (
     CompressionCalculationRequest,
     CompressorSelectionRequest,
     ReciprocatingCalculationRequest,
+    RotaryScrewCalculationRequest,
 )
 from app.services.calculation_execution import calculation_execution_service
 
@@ -258,6 +267,63 @@ class CompressorExecutionService:
             organization_id=organization_id,
             execution=execution,
             calculation_type=CalculationType.SELECTION,
+            input_data=calculation.model_dump(mode="json"),
+            result=result,
+        )
+
+        return {
+            "result": asdict(result),
+            "calculation_case_id": calculation_case_id,
+        }
+
+    def execute_rotary_screw(
+        self,
+        db: Session,
+        *,
+        organization_id: int,
+        calculation: RotaryScrewCalculationRequest,
+        execution: CalculationExecutionMetadata,
+    ) -> dict[str, Any]:
+        operating_point = RotaryScrewOperatingPoint(
+            inlet_pressure_bar_a=calculation.inlet_pressure_bar_a,
+            inlet_temperature_k=calculation.inlet_temperature_k,
+            discharge_pressure_bar_g=calculation.discharge_pressure_bar_g,
+            rotational_speed_rpm=calculation.rotational_speed_rpm,
+            oil_type=calculation.oil_type,
+            control_type=calculation.control_type,
+            stage_count=calculation.stage_count,
+        )
+
+        rotor_geometry = None
+        if calculation.rotor_geometry is not None:
+            rotor_geometry = RotaryScrewRotorGeometry(
+                male_rotor_diameter_mm=calculation.rotor_geometry.male_rotor_diameter_mm,
+                rotor_length_mm=calculation.rotor_geometry.rotor_length_mm,
+                area_utilisation_coefficient=(
+                    calculation.rotor_geometry.area_utilisation_coefficient
+                ),
+            )
+
+        inputs = RotaryScrewEngineInput(
+            operating_point=operating_point,
+            rated_fad_m3_per_min=calculation.rated_fad_m3_per_min,
+            package_input_power_kw=calculation.package_input_power_kw,
+            rotor_geometry=rotor_geometry,
+            standard_reference_pressure_bar_a=(
+                calculation.standard_reference_pressure_bar_a
+            ),
+            standard_reference_temperature_k=(
+                calculation.standard_reference_temperature_k
+            ),
+        )
+
+        result = calculate_rotary_screw_case(inputs)
+
+        calculation_case_id = self._persist_if_requested(
+            db,
+            organization_id=organization_id,
+            execution=execution,
+            calculation_type=CalculationType.ROTARY_SCREW,
             input_data=calculation.model_dump(mode="json"),
             result=result,
         )

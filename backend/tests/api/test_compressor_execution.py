@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from fastapi.testclient import TestClient
 from sqlalchemy import delete
 
@@ -65,6 +67,38 @@ def build_selection_payload(
             "continuous_operation": True,
             "gas_molecular_weight": "19.075",
             "estimated_operating_hours_per_year": "8400",
+        },
+        "execution": execution,
+    }
+
+
+def build_rotary_screw_payload(
+    *,
+    persist_result: bool,
+    project_id: int | None = None,
+    calculation_code: str | None = None,
+) -> dict:
+    execution = {
+        "persist_result": persist_result,
+    }
+
+    if project_id is not None:
+        execution["project_id"] = project_id
+
+    if calculation_code is not None:
+        execution["calculation_code"] = calculation_code
+        execution["title"] = "Rotary Screw Execution"
+
+    return {
+        "calculation": {
+            "inlet_pressure_bar_a": "1",
+            "inlet_temperature_k": "300",
+            "discharge_pressure_bar_g": "7",
+            "rotational_speed_rpm": "3000",
+            "oil_type": "OIL_INJECTED",
+            "control_type": "FIXED_SPEED_LOAD_UNLOAD",
+            "rated_fad_m3_per_min": "10",
+            "package_input_power_kw": "60",
         },
         "execution": execution,
     }
@@ -203,3 +237,64 @@ def test_missing_persistence_metadata_returns_422() -> None:
     )
 
     assert response.status_code == 422
+
+
+def test_execute_rotary_screw_without_persistence() -> None:
+    reset_data()
+    headers = prepare_context()
+
+    response = client.post(
+        "/api/v1/compressor-execution/rotary-screw",
+        headers=headers,
+        json=build_rotary_screw_payload(
+            persist_result=False,
+        ),
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["calculation_case_id"] is None
+    assert Decimal(
+        data["result"]["performance"]["specific_power_kw_per_m3_min"]
+    ) == Decimal("6.000")
+
+
+def test_execute_rotary_screw_with_persistence() -> None:
+    reset_data()
+    headers = prepare_context()
+
+    project_id = create_project(
+        headers=headers,
+    )
+
+    response = client.post(
+        "/api/v1/compressor-execution/rotary-screw",
+        headers=headers,
+        json=build_rotary_screw_payload(
+            persist_result=True,
+            project_id=project_id,
+            calculation_code="RS-API-001",
+        ),
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["calculation_case_id"] is not None
+
+    case_response = client.get(
+        f"/api/v1/calculation-cases/{data['calculation_case_id']}",
+        headers=headers,
+    )
+
+    assert case_response.status_code == 200
+
+    stored = case_response.json()
+
+    assert stored["project_id"] == project_id
+    assert stored["calculation_code"] == "RS-API-001"
+    assert stored["calculation_type"] == "ROTARY_SCREW"
+    assert stored["status"] == "COMPLETED"
