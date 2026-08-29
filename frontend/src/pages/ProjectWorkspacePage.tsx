@@ -1,8 +1,8 @@
 import {
-  Activity,
   AlertTriangle,
   ArrowRight,
   Calculator,
+  CheckCircle2,
   ClipboardCheck,
   Factory,
   FileText,
@@ -10,10 +10,11 @@ import {
   History,
   Package,
   Search,
+  ShieldCheck,
+  Wind,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { Link, useParams } from "react-router";
-import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,251 +25,310 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useAuth } from "../features/auth/AuthProvider";
-import { getProject } from "../features/projects/projectService";
 
-type WorkflowStatus = "Available" | "Integration Pending";
+import { useProjectContext } from "../features/projects/useProjectContext";
 
 type EngineeringWorkflow = {
   title: string;
+  phase: string;
   description: string;
   icon: LucideIcon;
-  status: WorkflowStatus;
-  path?: string;
+  path: string;
+  actionLabel: string;
   secondaryPath?: string;
   secondaryLabel?: string;
 };
 
+type GovernanceWorkspace = {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  path: string;
+  actionLabel: string;
+};
+
+function getStatusClassName(status: string): string {
+  switch (status.trim().toUpperCase()) {
+    case "ACTIVE":
+      return "border-emerald-300/40 bg-emerald-400/10 text-emerald-100";
+    case "COMPLETED":
+      return "border-sky-300/40 bg-sky-400/10 text-sky-100";
+    case "DRAFT":
+      return "border-amber-300/40 bg-amber-400/10 text-amber-100";
+    default:
+      return "border-white/15 bg-white/10 text-slate-200";
+  }
+}
+
 export function ProjectWorkspacePage() {
-  const { projectId } = useParams();
-  const { accessToken } = useAuth();
-
-  const numericProjectId = Number(projectId);
-  const hasValidProjectId =
-    Number.isInteger(numericProjectId) && numericProjectId > 0;
-
-  const projectQuery = useQuery({
-    queryKey: ["projects", numericProjectId],
-    queryFn: () => {
-      if (!accessToken) {
-        throw new Error("Authenticated access token is required.");
-      }
-
-      return getProject(
-        accessToken,
-        numericProjectId,
-      );
-    },
-    enabled: Boolean(accessToken) && hasValidProjectId,
-  });
+  const { projectId, hasValidProjectId, project } = useProjectContext();
 
   if (!hasValidProjectId) {
-    return (
-      <main>
-        <h1>Invalid Project</h1>
-        <p>The requested project ID is not valid.</p>
-      </main>
-    );
+    throw new Error("Valid project ID is required.");
   }
 
-  const project = projectQuery.data;
+  if (!project) {
+    throw new Error("Authenticated project context is required.");
+  }
 
   const workflows: EngineeringWorkflow[] = [
     {
-      title: "Greenfield System Design",
+      title: "New System Design",
+      phase: "System Planning",
       description:
         "Design a new factory compressed-air system from consumer demand through pressure, station capacity, treatment, storage, energy, and engineering review.",
       icon: Factory,
-      status: "Available",
-      path: `/projects/${numericProjectId}/greenfield`,
+      path: `/projects/${projectId}/greenfield`,
+      actionLabel: "Open New System Design",
     },
     {
-      title: "Brownfield Plant Assessment",
+      title: "Existing Plant Assessment",
+      phase: "Plant Assessment",
       description:
-        "Assess an existing compressor station, operating profile, system condition, capacity utilisation, losses, controls, and improvement opportunities.",
+        "Assess an existing compressor station, operating profile, system condition, capacity utilization, losses, controls, and improvement opportunities.",
       icon: Search,
-      status: "Available",
-      path: `/projects/${numericProjectId}/brownfield`,
+      path: `/projects/${projectId}/brownfield`,
+      actionLabel: "Open Plant Assessment",
     },
     {
       title: "Performance & Energy Analysis",
+      phase: "Energy Performance",
       description:
         "Evaluate compressor and system specific power, operating efficiency, energy consumption, cost, deviation, and improvement potential.",
       icon: Gauge,
-      status: "Available",
-      path: `/projects/${numericProjectId}/performance`,
+      path: `/projects/${projectId}/performance`,
+      actionLabel: "Open Performance Analysis",
     },
     {
       title: "Leakage Management",
+      phase: "Loss Management",
       description:
         "Quantify compressed-air leakage, energy loss, annual cost, repair priority, and verified post-repair savings.",
       icon: AlertTriangle,
-      status: "Available",
-      path: `/projects/${numericProjectId}/leakage`,
+      path: `/projects/${projectId}/leakage`,
+      actionLabel: "Open Leakage Management",
     },
     {
       title: "Allied Equipment Engineering",
+      phase: "Air Treatment & Storage",
       description:
         "Engineer receivers, storage, dryers, treatment, aftercoolers, moisture separators, filters, condensate drains, and allied-equipment pressure losses.",
       icon: Package,
-      status: "Available",
-      path: `/projects/${numericProjectId}/allied-equipment`,
-      secondaryPath: `/projects/${numericProjectId}/skid`,
+      path: `/projects/${projectId}/allied-equipment`,
+      actionLabel: "Open Allied Equipment",
+      secondaryPath: `/projects/${projectId}/skid`,
       secondaryLabel: "Open Skid Engineering",
     },
     {
       title: "Advanced Compressor Engineering",
+      phase: "Specialist Calculations",
       description:
-        "Open specialist gas-property, compressor-selection, compression, reciprocating, centrifugal, and saved calculation workflows.",
+        "Open gas-property, technology-selection, compression, reciprocating, centrifugal, and saved-calculation workflows.",
       icon: Calculator,
-      status: "Available",
-      path: `/projects/${numericProjectId}/compressor`,
+      path: `/projects/${projectId}/compressor`,
+      actionLabel: "Open Compressor Engineering",
+    },
+  ];
+
+  const governanceWorkspaces: GovernanceWorkspace[] = [
+    {
+      title: "Calculation Records",
+      description:
+        "Review saved engineering calculations, revisions, results, and engineering notes for this project.",
+      icon: History,
+      path: `/projects/${projectId}/calculations`,
+      actionLabel: "Open Calculation Records",
+    },
+    {
+      title: "Assessments",
+      description:
+        "Review structured assessment records and organization-authorized engineering observations.",
+      icon: ClipboardCheck,
+      path: "/assessments",
+      actionLabel: "Open Assessments",
+    },
+    {
+      title: "Reports",
+      description:
+        "Open the controlled report workspace for engineering presentation and authorized outputs.",
+      icon: FileText,
+      path: "/reports",
+      actionLabel: "Open Reports",
     },
   ];
 
   return (
-    <main className="space-y-6">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <div className="max-w-3xl">
-          <Badge variant="outline">
-            Project Engineering Workspace
-          </Badge>
+    <main className="space-y-8">
+      <section
+        aria-labelledby="project-workspace-title"
+        className="overflow-hidden rounded-2xl bg-slate-950 text-white shadow-sm"
+      >
+        <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div className="max-w-3xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge className="border-sky-400/30 bg-sky-400/10 text-sky-100 hover:bg-sky-400/10">
+                Project Engineering Workspace
+              </Badge>
 
-          {projectQuery.isPending && (
-            <p className="mt-4 text-sm text-slate-600">
-              Loading project...
+              <Badge
+                variant="outline"
+                className={getStatusClassName(project.status)}
+              >
+                {project.status}
+              </Badge>
+            </div>
+
+            <p className="mt-5 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-sky-300">
+              {project.project_code}
             </p>
-          )}
 
-          {projectQuery.isError && (
-            <p className="mt-4 text-sm font-medium text-red-700">
-              Unable to load this project.
+            <h1
+              id="project-workspace-title"
+              className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl"
+            >
+              {project.project_name}
+            </h1>
+
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
+              {project.service_description ??
+                "Select the engineering workflow required for this project. Calculations, assessments, revisions, and reports remain linked to the authenticated project context."}
             </p>
-          )}
+          </div>
 
-          {project && (
-            <>
-              <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-                {project.project_name}
-              </h1>
+          <Button asChild variant="secondary" className="w-full sm:w-auto">
+            <Link to="/projects">
+              Return to Projects
+              <ArrowRight aria-hidden="true" className="ml-2 size-4" />
+            </Link>
+          </Button>
+        </div>
 
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                {project.service_description ??
-                  "Select the engineering problem to solve. This project is the common engineering record for design, assessment, calculations, optimization, and reporting."}
-              </p>
+        <div className="grid border-t border-white/10 bg-slate-900/70 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="border-b border-white/10 px-6 py-4 sm:border-r lg:border-b-0">
+            <p className="text-xs uppercase tracking-wide text-slate-400">
+              Client
+            </p>
+            <p className="mt-1 truncate text-sm font-medium text-slate-100">
+              {project.client_name ?? "Not specified"}
+            </p>
+          </div>
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Badge variant="secondary">
-                  {project.project_code}
-                </Badge>
+          <div className="border-b border-white/10 px-6 py-4 lg:border-b-0 lg:border-r">
+            <p className="text-xs uppercase tracking-wide text-slate-400">
+              Plant
+            </p>
+            <p className="mt-1 truncate text-sm font-medium text-slate-100">
+              {project.plant_name ?? "Not specified"}
+            </p>
+          </div>
 
-                <Badge variant="outline">
-                  {project.status}
-                </Badge>
+          <div className="border-b border-white/10 px-6 py-4 sm:border-b-0 sm:border-r">
+            <p className="text-xs uppercase tracking-wide text-slate-400">
+              Location
+            </p>
+            <p className="mt-1 truncate text-sm font-medium text-slate-100">
+              {project.location ?? "Not specified"}
+            </p>
+          </div>
 
-                {project.client_name && (
-                  <Badge variant="outline">
-                    {project.client_name}
-                  </Badge>
-                )}
-
-                {project.location && (
-                  <Badge variant="outline">
-                    {project.location}
-                  </Badge>
-                )}
-              </div>
-            </>
-          )}
+          <div className="px-6 py-4">
+            <p className="text-xs uppercase tracking-wide text-slate-400">
+              Project Control
+            </p>
+            <p className="mt-1 inline-flex items-center gap-2 text-sm font-medium text-slate-100">
+              <ShieldCheck
+                aria-hidden="true"
+                className="size-4 text-emerald-300"
+              />
+              Tenant secured
+            </p>
+          </div>
         </div>
       </section>
 
-      <section>
-        <div className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            Engineering Workflows
+      <section aria-labelledby="engineering-workflows-title">
+        <div className="max-w-3xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
+            Engineering workflows
           </p>
 
-          <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-            Choose Engineering Work
+          <h2
+            id="engineering-workflows-title"
+            className="mt-1 text-2xl font-semibold tracking-tight text-slate-950"
+          >
+            Select the engineering workstream
           </h2>
 
-          <p className="mt-2 text-sm text-slate-600">
-            Greenfield and Advanced Engineering are connected now. Remaining
-            system workflows will be activated as their engineering integration
-            is completed.
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Each workspace operates within this project and retains
+            tenant-scoped engineering context.
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {workflows.map((workflow) => {
             const Icon = workflow.icon;
-            const available = workflow.status === "Available";
 
             return (
               <Card
                 key={workflow.title}
-                className="group flex flex-col transition-shadow hover:shadow-md"
+                className="group flex h-full flex-col border-slate-200/80 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md"
               >
-                <CardHeader className="flex-1">
-                  <div className="mb-3 flex items-start justify-between gap-3">
-                    <div className="flex size-11 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
-                      <Icon className="size-5" />
+                <CardHeader className="flex-1 pb-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex size-11 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
+                      <Icon aria-hidden="true" className="size-5" />
                     </div>
 
-                    <Badge
-                      variant={available ? "secondary" : "outline"}
-                    >
-                      {workflow.status}
+                    <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
+                      <CheckCircle2
+                        aria-hidden="true"
+                        className="mr-1 size-3.5"
+                      />
+                      Ready
                     </Badge>
                   </div>
 
-                  <CardTitle className="text-lg">
-                    {workflow.title}
-                  </CardTitle>
+                  <div className="pt-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      {workflow.phase}
+                    </p>
 
-                  <CardDescription className="leading-6">
+                    <CardTitle className="mt-2 text-lg text-slate-950">
+                      {workflow.title}
+                    </CardTitle>
+                  </div>
+
+                  <CardDescription className="leading-6 text-slate-600">
                     {workflow.description}
                   </CardDescription>
                 </CardHeader>
 
-                <CardContent>
-                  {available && workflow.path ? (
-                    <div className="space-y-2">
-                      <Button
-                        asChild
-                        variant="ghost"
-                        className="w-full justify-between"
-                      >
-                        <Link to={workflow.path}>
-                          Open Engineering Workspace
-                          <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-                        </Link>
-                      </Button>
+                <CardContent className="space-y-2 pt-0">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full justify-between border-slate-200 group-hover:border-sky-300 group-hover:text-sky-800"
+                  >
+                    <Link to={workflow.path}>
+                      {workflow.actionLabel}
+                      <ArrowRight
+                        aria-hidden="true"
+                        className="size-4 transition-transform group-hover:translate-x-1"
+                      />
+                    </Link>
+                  </Button>
 
-                      {workflow.secondaryPath &&
-                        workflow.secondaryLabel && (
-                          <Button
-                            asChild
-                            variant="outline"
-                            className="w-full justify-between"
-                          >
-                            <Link to={workflow.secondaryPath}>
-                              {workflow.secondaryLabel}
-                              <ArrowRight className="size-4" />
-                            </Link>
-                          </Button>
-                        )}
-                    </div>
-                  ) : (
+                  {workflow.secondaryPath && workflow.secondaryLabel && (
                     <Button
-                      type="button"
+                      asChild
                       variant="ghost"
                       className="w-full justify-between"
-                      disabled
                     >
-                      Engineering Integration Pending
-                      <Activity className="size-4" />
+                      <Link to={workflow.secondaryPath}>
+                        {workflow.secondaryLabel}
+                        <ArrowRight aria-hidden="true" className="size-4" />
+                      </Link>
                     </Button>
                   )}
                 </CardContent>
@@ -278,97 +338,66 @@ export function ProjectWorkspacePage() {
         </div>
       </section>
 
-      <section>
-        <div className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            Project Records
-          </p>
+      <section
+        aria-labelledby="governance-title"
+        className="rounded-2xl bg-slate-100 p-5 sm:p-6"
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white">
+            <Wind aria-hidden="true" className="size-5" />
+          </div>
 
-          <h2 className="mt-1 text-xl font-semibold text-slate-950">
-            Engineering Records & Governance
-          </h2>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Project governance
+            </p>
+            <h2
+              id="governance-title"
+              className="mt-1 text-xl font-semibold tracking-tight text-slate-950"
+            >
+              Engineering Records &amp; Governance
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Continue into controlled records, assessment registers, and
+              authorized engineering reports.
+            </p>
+          </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <History className="mb-2 size-5 text-slate-500" />
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          {governanceWorkspaces.map((workspace) => {
+            const Icon = workspace.icon;
 
-              <CardTitle className="text-base">
-                Calculation Records
-              </CardTitle>
-
-              <CardDescription>
-                Saved engineering calculations, revisions, results, and notes.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent>
-              <Button
-                asChild
-                variant="outline"
-                className="w-full"
+            return (
+              <Card
+                key={workspace.title}
+                className="border-slate-200/80 bg-white shadow-sm"
               >
-                <Link to={`/projects/${numericProjectId}/calculations`}>
-                  Open Records
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+                <CardHeader>
+                  <Icon aria-hidden="true" className="size-5 text-slate-500" />
+                  <CardTitle className="pt-2 text-base">
+                    {workspace.title}
+                  </CardTitle>
+                  <CardDescription className="leading-6">
+                    {workspace.description}
+                  </CardDescription>
+                </CardHeader>
 
-          <Card>
-            <CardHeader>
-              <ClipboardCheck className="mb-2 size-5 text-slate-500" />
-
-              <CardTitle className="text-base">
-                Assessments
-              </CardTitle>
-
-              <CardDescription>
-                Assessment workspace exists; project-level workflow integration
-                will follow Brownfield implementation.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent>
-              <Button
-                asChild
-                variant="outline"
-                className="w-full"
-              >
-                <Link to="/assessments">
-                  Open Assessment Workspace
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <FileText className="mb-2 size-5 text-slate-500" />
-
-              <CardTitle className="text-base">
-                Reports
-              </CardTitle>
-
-              <CardDescription>
-                Report presentation is retained, but secure export and PDF
-                integration remains gated until report security is completed.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent>
-              <Button
-                asChild
-                variant="outline"
-                className="w-full"
-              >
-                <Link to="/reports">
-                  Open Report Workspace
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+                <CardContent>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full justify-between"
+                  >
+                    <Link to={workspace.path}>
+                      {workspace.actionLabel}
+                      <ArrowRight aria-hidden="true" className="size-4" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </section>
     </main>
