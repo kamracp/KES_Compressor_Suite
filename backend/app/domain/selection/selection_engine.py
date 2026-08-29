@@ -110,12 +110,32 @@ def _assess_reciprocating(
     else:
         maintenance_rating = SelectionRating.GOOD
 
+    if criteria.oil_free_air_required:
+        air_quality_rating = SelectionRating.ACCEPTABLE
+        rationale.append(
+            "Non-lubricated reciprocating designs can meet oil-free duty but with "
+            "reduced ring life relative to standard lubricated machines."
+        )
+    else:
+        air_quality_rating = SelectionRating.GOOD
+
+    if criteria.required_turndown_fraction <= Decimal("0.50"):
+        lifecycle_energy_rating = SelectionRating.EXCELLENT
+        rationale.append(
+            "Step/unloader capacity control tracks part-load duty efficiently over a "
+            "wide turndown range."
+        )
+    else:
+        lifecycle_energy_rating = SelectionRating.GOOD
+
     ratings = (
         capacity_rating,
         pressure_ratio_rating,
         turndown_rating,
         efficiency_rating,
         maintenance_rating,
+        air_quality_rating,
+        lifecycle_energy_rating,
     )
 
     return CompressorOptionAssessment(
@@ -125,6 +145,8 @@ def _assess_reciprocating(
         turndown_rating=turndown_rating,
         efficiency_rating=efficiency_rating,
         maintenance_rating=maintenance_rating,
+        air_quality_rating=air_quality_rating,
+        lifecycle_energy_rating=lifecycle_energy_rating,
         overall_score=_score_assessment(ratings),
         rationale=tuple(rationale),
     )
@@ -178,12 +200,32 @@ def _assess_centrifugal(
         efficiency_rating = SelectionRating.GOOD
         maintenance_rating = SelectionRating.GOOD
 
+    air_quality_rating = SelectionRating.EXCELLENT
+    rationale.append(
+        "Centrifugal compressors are inherently oil-free in the gas path, since "
+        "lubricated bearings and seals are isolated from the process gas."
+    )
+
+    if criteria.required_turndown_fraction >= Decimal("0.70"):
+        lifecycle_energy_rating = SelectionRating.GOOD
+        rationale.append(
+            "Narrow required turndown keeps operation near the efficient design point."
+        )
+    else:
+        lifecycle_energy_rating = SelectionRating.POOR
+        rationale.append(
+            "Wide turndown against a centrifugal machine is typically met with "
+            "recycle or blow-off, wasting compression energy at part load."
+        )
+
     ratings = (
         capacity_rating,
         pressure_ratio_rating,
         turndown_rating,
         efficiency_rating,
         maintenance_rating,
+        air_quality_rating,
+        lifecycle_energy_rating,
     )
 
     return CompressorOptionAssessment(
@@ -193,6 +235,8 @@ def _assess_centrifugal(
         turndown_rating=turndown_rating,
         efficiency_rating=efficiency_rating,
         maintenance_rating=maintenance_rating,
+        air_quality_rating=air_quality_rating,
+        lifecycle_energy_rating=lifecycle_energy_rating,
         overall_score=_score_assessment(ratings),
         rationale=tuple(rationale),
     )
@@ -263,12 +307,36 @@ def _assess_rotary_screw(
         "reducing wearing-part maintenance relative to reciprocating machines."
     )
 
+    if criteria.oil_free_air_required:
+        air_quality_rating = SelectionRating.GOOD
+        rationale.append(
+            "Oil-free (dry) rotary screw packages are a mature, widely available "
+            "technology for oil-free air-quality duty."
+        )
+    else:
+        air_quality_rating = SelectionRating.EXCELLENT
+        rationale.append(
+            "Standard oil-injected rotary screw is the most common and lowest-cost "
+            "configuration where oil-free air is not required."
+        )
+
+    if criteria.required_turndown_fraction <= Decimal("0.60"):
+        lifecycle_energy_rating = SelectionRating.EXCELLENT
+        rationale.append(
+            "Variable-speed-drive rotary screw control tracks part-load duty with "
+            "minimal energy penalty across a wide turndown range."
+        )
+    else:
+        lifecycle_energy_rating = SelectionRating.GOOD
+
     ratings = (
         capacity_rating,
         pressure_ratio_rating,
         turndown_rating,
         efficiency_rating,
         maintenance_rating,
+        air_quality_rating,
+        lifecycle_energy_rating,
     )
 
     return CompressorOptionAssessment(
@@ -278,6 +346,8 @@ def _assess_rotary_screw(
         turndown_rating=turndown_rating,
         efficiency_rating=efficiency_rating,
         maintenance_rating=maintenance_rating,
+        air_quality_rating=air_quality_rating,
+        lifecycle_energy_rating=lifecycle_energy_rating,
         overall_score=_score_assessment(ratings),
         rationale=tuple(rationale),
     )

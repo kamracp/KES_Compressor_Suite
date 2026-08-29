@@ -84,6 +84,21 @@ class RotaryScrewPerformanceResult:
 
 
 @dataclass(frozen=True, slots=True)
+class RotaryScrewAnnualEnergyCostResult:
+    """Annual electrical energy consumption and cost at a given duty.
+
+    A direct arithmetic result (energy = power x time, cost = energy x
+    tariff) from the manufacturer-verified package input power -- not an
+    estimate or prediction.
+    """
+
+    annual_operating_hours: Decimal
+    electricity_tariff_per_kwh: Decimal
+    annual_energy_kwh: Decimal
+    annual_energy_cost: Decimal
+
+
+@dataclass(frozen=True, slots=True)
 class RotaryScrewSizingResult:
     """Combined rotary screw compressor evaluation result."""
 
@@ -91,3 +106,4 @@ class RotaryScrewSizingResult:
     displacement: RotaryScrewDisplacementResult | None
     standard_air_correction: RotaryScrewStandardAirCorrectionResult | None
     performance: RotaryScrewPerformanceResult
+    annual_energy_cost: RotaryScrewAnnualEnergyCostResult | None

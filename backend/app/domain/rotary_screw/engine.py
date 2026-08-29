@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
+from app.domain.rotary_screw.annual_energy_cost import calculate_annual_energy_cost
 from app.domain.rotary_screw.displacement import calculate_theoretical_displacement
 from app.domain.rotary_screw.models import (
     RotaryScrewOperatingPoint,
@@ -25,6 +26,8 @@ class RotaryScrewEngineInput:
     rotor_geometry: RotaryScrewRotorGeometry | None = None
     standard_reference_pressure_bar_a: Decimal | None = None
     standard_reference_temperature_k: Decimal | None = None
+    annual_operating_hours: Decimal | None = None
+    electricity_tariff_per_kwh: Decimal | None = None
 
 
 def calculate_rotary_screw_case(
@@ -63,9 +66,21 @@ def calculate_rotary_screw_case(
             site_inlet_temperature_k=inputs.operating_point.inlet_temperature_k,
         )
 
+    annual_energy_cost = None
+    if (
+        inputs.annual_operating_hours is not None
+        and inputs.electricity_tariff_per_kwh is not None
+    ):
+        annual_energy_cost = calculate_annual_energy_cost(
+            package_input_power_kw=inputs.package_input_power_kw,
+            annual_operating_hours=inputs.annual_operating_hours,
+            electricity_tariff_per_kwh=inputs.electricity_tariff_per_kwh,
+        )
+
     return RotaryScrewSizingResult(
         operating_point=inputs.operating_point,
         displacement=displacement,
         standard_air_correction=standard_air_correction,
         performance=performance,
+        annual_energy_cost=annual_energy_cost,
     )

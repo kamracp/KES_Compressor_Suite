@@ -27,6 +27,7 @@ class CompressorSelectionCriteria:
     continuous_operation: bool
     gas_molecular_weight: Decimal
     estimated_operating_hours_per_year: Decimal
+    oil_free_air_required: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,6 +40,8 @@ class CompressorOptionAssessment:
     turndown_rating: SelectionRating
     efficiency_rating: SelectionRating
     maintenance_rating: SelectionRating
+    air_quality_rating: SelectionRating
+    lifecycle_energy_rating: SelectionRating
     overall_score: Decimal
     rationale: tuple[str, ...]
 

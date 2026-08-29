@@ -203,6 +203,8 @@ def test_rotary_screw_endpoint_full_payload() -> None:
             },
             "standard_reference_pressure_bar_a": "1",
             "standard_reference_temperature_k": "300",
+            "annual_operating_hours": "8000",
+            "electricity_tariff_per_kwh": "5",
         },
     )
 
@@ -216,6 +218,8 @@ def test_rotary_screw_endpoint_full_payload() -> None:
     assert Decimal(
         data["standard_air_correction"]["corrected_fad_m3_per_min"]
     ) == Decimal("10.0")
+    assert Decimal(data["annual_energy_cost"]["annual_energy_kwh"]) == Decimal("480000")
+    assert Decimal(data["annual_energy_cost"]["annual_energy_cost"]) == Decimal("2400000")
 
 
 def test_invalid_rotary_screw_request_returns_422() -> None:

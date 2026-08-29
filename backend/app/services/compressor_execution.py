@@ -258,6 +258,7 @@ class CompressorExecutionService:
             continuous_operation=calculation.continuous_operation,
             gas_molecular_weight=calculation.gas_molecular_weight,
             estimated_operating_hours_per_year=(calculation.estimated_operating_hours_per_year),
+            oil_free_air_required=calculation.oil_free_air_required,
         )
 
         result = select_compressor_type(criteria)
@@ -315,6 +316,8 @@ class CompressorExecutionService:
             standard_reference_temperature_k=(
                 calculation.standard_reference_temperature_k
             ),
+            annual_operating_hours=calculation.annual_operating_hours,
+            electricity_tariff_per_kwh=calculation.electricity_tariff_per_kwh,
         )
 
         result = calculate_rotary_screw_case(inputs)

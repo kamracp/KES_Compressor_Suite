@@ -93,7 +93,7 @@ class CentrifugalCalculationRequest(BaseModel):
 
 
 class CompressorSelectionRequest(BaseModel):
-    """Request payload for reciprocating-versus-centrifugal selection."""
+    """Request payload for reciprocating/centrifugal/rotary-screw selection."""
 
     required_flow_m3_per_hr: Decimal = Field(gt=0)
     suction_pressure_bar: Decimal = Field(gt=0)
@@ -105,6 +105,8 @@ class CompressorSelectionRequest(BaseModel):
 
     gas_molecular_weight: Decimal = Field(gt=0)
     estimated_operating_hours_per_year: Decimal = Field(ge=0)
+
+    oil_free_air_required: bool = False
 
 
 class RotaryScrewGeometryInput(BaseModel):
@@ -122,6 +124,9 @@ class RotaryScrewCalculationRequest(BaseModel):
     displacement estimate is wanted. ``standard_reference_pressure_bar_a``
     and ``standard_reference_temperature_k`` are optional together -- supply
     both only when an ISO 1217 standard-air correction is wanted.
+    ``annual_operating_hours`` and ``electricity_tariff_per_kwh`` are
+    optional together -- supply both only when an annual energy cost is
+    wanted.
     """
 
     inlet_pressure_bar_a: Decimal = Field(gt=0)
@@ -138,3 +143,5 @@ class RotaryScrewCalculationRequest(BaseModel):
     rotor_geometry: RotaryScrewGeometryInput | None = None
     standard_reference_pressure_bar_a: Decimal | None = Field(default=None, gt=0)
     standard_reference_temperature_k: Decimal | None = Field(default=None, gt=0)
+    annual_operating_hours: Decimal | None = Field(default=None, ge=0, le=8760)
+    electricity_tariff_per_kwh: Decimal | None = Field(default=None, ge=0)
