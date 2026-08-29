@@ -35,6 +35,7 @@ def test_calculation_type_values() -> None:
         "COMPRESSION",
         "RECIPROCATING",
         "CENTRIFUGAL",
+        "ROTARY_SCREW",
         "SELECTION",
     }
 
