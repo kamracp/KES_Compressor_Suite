@@ -81,7 +81,7 @@ describe("CompressorEngineeringPage", () => {
     const workflow = screen.getByRole("list");
     const steps = within(workflow).getAllByRole("listitem");
 
-    expect(steps).toHaveLength(5);
+    expect(steps).toHaveLength(6);
     expect(steps[0]).toHaveTextContent("Step 1 · Define Gas");
     expect(steps[0]).toHaveTextContent("Gas Properties");
     expect(steps[1]).toHaveTextContent("Step 2 · Select Technology");
@@ -92,7 +92,9 @@ describe("CompressorEngineeringPage", () => {
     expect(steps[3]).toHaveTextContent("Reciprocating Compressor");
     expect(steps[4]).toHaveTextContent("Step 5 · Detailed Engineering");
     expect(steps[4]).toHaveTextContent("Centrifugal Compressor");
-    expect(within(workflow).getAllByText("Ready")).toHaveLength(5);
+    expect(steps[5]).toHaveTextContent("Step 6 · Detailed Engineering");
+    expect(steps[5]).toHaveTextContent("Rotary Screw Compressor");
+    expect(within(workflow).getAllByText("Ready")).toHaveLength(6);
   });
 
   it("provides project-scoped links for every engineering workspace", () => {
@@ -118,6 +120,9 @@ describe("CompressorEngineeringPage", () => {
     expect(
       screen.getByRole("link", { name: "Open Centrifugal Compressor" }),
     ).toHaveAttribute("href", "/projects/42/compressor/centrifugal");
+    expect(
+      screen.getByRole("link", { name: "Open Rotary Screw Compressor" }),
+    ).toHaveAttribute("href", "/projects/42/compressor/rotary-screw");
   });
 
   it("separates calculation records as governance and audit", () => {

@@ -109,6 +109,14 @@ const CentrifugalEngineeringPage = lazy(
   }),
 );
 
+const RotaryScrewEngineeringPage = lazy(
+  async () => ({
+    default: (
+      await import("../pages/RotaryScrewEngineeringPage")
+    ).RotaryScrewEngineeringPage,
+  }),
+);
+
 const CalculationHistoryPage = lazy(
   async () => ({
     default: (
@@ -300,6 +308,15 @@ export function AppRouter() {
             element={
               <ProtectedPage>
                 <CentrifugalEngineeringPage />
+              </ProtectedPage>
+            }
+          />
+
+          <Route
+            path="/projects/:projectId/compressor/rotary-screw"
+            element={
+              <ProtectedPage>
+                <RotaryScrewEngineeringPage />
               </ProtectedPage>
             }
           />

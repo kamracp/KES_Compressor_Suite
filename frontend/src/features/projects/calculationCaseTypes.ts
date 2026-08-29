@@ -2,6 +2,7 @@ export type CalculationType =
   | "COMPRESSION"
   | "RECIPROCATING"
   | "CENTRIFUGAL"
+  | "ROTARY_SCREW"
   | "SELECTION";
 
 export type CalculationStatus =

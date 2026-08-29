@@ -9,6 +9,7 @@ import {
   MoveRight,
   Settings2,
   ShieldCheck,
+  Wind,
 } from "lucide-react";
 import { Link } from "react-router";
 
@@ -86,6 +87,15 @@ export function CompressorEngineeringPage() {
         "Evaluate polytropic performance, head, stages, power requirement, surge margin, and operating limits.",
       path: `/projects/${projectId}/compressor/centrifugal`,
       icon: Fan,
+    },
+    {
+      step: 6,
+      title: "Rotary Screw Compressor",
+      phase: "Detailed Engineering",
+      description:
+        "Verify manufacturer CAGI-tested performance data, optionally estimate theoretical rotor displacement, and apply an ISO 1217 standard-air correction.",
+      path: `/projects/${projectId}/compressor/rotary-screw`,
+      icon: Wind,
     },
   ];
 

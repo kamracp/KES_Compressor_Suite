@@ -36,6 +36,7 @@ const CALCULATION_TYPE_LABELS: Record<CalculationType, string> = {
   COMPRESSION: "Compression Engineering",
   RECIPROCATING: "Reciprocating Compressor",
   CENTRIFUGAL: "Centrifugal Compressor",
+  ROTARY_SCREW: "Rotary Screw Compressor",
   SELECTION: "Compressor Technology Selection",
 };
 
@@ -86,6 +87,10 @@ function modulePath(
 
   if (calculationType === "CENTRIFUGAL") {
     return `/projects/${projectId}/compressor/centrifugal`;
+  }
+
+  if (calculationType === "ROTARY_SCREW") {
+    return `/projects/${projectId}/compressor/rotary-screw`;
   }
 
   return `/projects/${projectId}/compressor/selection`;

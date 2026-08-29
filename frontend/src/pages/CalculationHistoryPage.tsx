@@ -41,6 +41,7 @@ const CALCULATION_TYPE_LABELS: Record<CalculationType, string> = {
   COMPRESSION: "Compression",
   RECIPROCATING: "Reciprocating",
   CENTRIFUGAL: "Centrifugal",
+  ROTARY_SCREW: "Rotary Screw",
   SELECTION: "Technology Selection",
 };
 
@@ -363,6 +364,7 @@ export function CalculationHistoryPage() {
                 <option value="COMPRESSION">Compression</option>
                 <option value="RECIPROCATING">Reciprocating</option>
                 <option value="CENTRIFUGAL">Centrifugal</option>
+                <option value="ROTARY_SCREW">Rotary Screw</option>
                 <option value="SELECTION">Technology Selection</option>
               </select>
             </div>
