@@ -6,11 +6,13 @@ class StandardAuthority(StrEnum):
     API = "API"
     ASME = "ASME"
     GPSA = "GPSA"
+    ISO = "ISO"
 
 
 class StandardApplicability(StrEnum):
     CENTRIFUGAL = "CENTRIFUGAL"
     RECIPROCATING = "RECIPROCATING"
+    ROTARY_SCREW = "ROTARY_SCREW"
     PERFORMANCE_TESTING = "PERFORMANCE_TESTING"
     GAS_PROCESSING_DATA = "GAS_PROCESSING_DATA"
 
@@ -105,11 +107,35 @@ GPSA_ENGINEERING_DATA_BOOK = EngineeringStandard(
 )
 
 
+ISO_1217 = EngineeringStandard(
+    standard_id="ISO-1217",
+    authority=StandardAuthority.ISO,
+    title="Displacement compressors -- Acceptance tests",
+    edition="Fourth edition, with Amendment 1",
+    publication_date="2009 (Amd 1: 2016)",
+    applicability=(
+        StandardApplicability.ROTARY_SCREW,
+        StandardApplicability.RECIPROCATING,
+        StandardApplicability.PERFORMANCE_TESTING,
+    ),
+    verification_status=(StandardVerificationStatus.CLAUSE_MAPPING_PENDING),
+    notes=(
+        "Standard identity and edition verified from an official ISO source. "
+        "ISO 1217 is an acceptance-test standard for volume flow rate and "
+        "power of displacement compressors (Annex C: simplified acceptance "
+        "test for packaged displacement air compressors), not a design or "
+        "performance-prediction formula. Clause-level requirements must be "
+        "mapped from an authorized copy."
+    ),
+)
+
+
 ENGINEERING_STANDARDS: tuple[EngineeringStandard, ...] = (
     API_617,
     API_618,
     ASME_PTC_10,
     GPSA_ENGINEERING_DATA_BOOK,
+    ISO_1217,
 )
 
 

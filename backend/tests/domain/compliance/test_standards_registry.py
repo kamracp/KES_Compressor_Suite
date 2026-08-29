@@ -4,6 +4,7 @@ from app.domain.compliance.standards_registry import (
     ASME_PTC_10,
     ENGINEERING_STANDARDS,
     GPSA_ENGINEERING_DATA_BOOK,
+    ISO_1217,
     EngineeringStandard,
     StandardApplicability,
     StandardAuthority,
@@ -18,6 +19,7 @@ def test_registry_contains_expected_standards() -> None:
         API_618,
         ASME_PTC_10,
         GPSA_ENGINEERING_DATA_BOOK,
+        ISO_1217,
     )
 
 
@@ -69,6 +71,18 @@ def test_gpsa_data_book_applicability() -> None:
     assert StandardApplicability.CENTRIFUGAL in standard.applicability
 
     assert StandardApplicability.RECIPROCATING in standard.applicability
+
+
+def test_iso_1217_metadata() -> None:
+    standard = ISO_1217
+
+    assert standard.standard_id == "ISO-1217"
+    assert standard.authority == StandardAuthority.ISO
+
+    assert StandardApplicability.ROTARY_SCREW in standard.applicability
+    assert StandardApplicability.PERFORMANCE_TESTING in standard.applicability
+
+    assert standard.verification_status == StandardVerificationStatus.CLAUSE_MAPPING_PENDING
 
 
 def test_get_standard_returns_exact_match() -> None:
