@@ -1,6 +1,7 @@
 export type CompressorType =
   | "RECIPROCATING"
-  | "CENTRIFUGAL";
+  | "CENTRIFUGAL"
+  | "ROTARY_SCREW";
 
 export type SelectionRating =
   | "EXCELLENT"
@@ -46,6 +47,7 @@ export type CompressorSelectionResult = {
   recommended_type: CompressorType;
   reciprocating: CompressorOptionAssessment;
   centrifugal: CompressorOptionAssessment;
+  rotary_screw: CompressorOptionAssessment;
   score_difference: string;
   recommendation_summary: string;
 };

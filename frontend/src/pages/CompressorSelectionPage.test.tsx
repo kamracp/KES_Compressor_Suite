@@ -94,6 +94,19 @@ const resultFixture: CompressorSelectionExecutionResponse = {
         "High annual utilization supports the efficiency case.",
       ],
     },
+    rotary_screw: {
+      compressor_type: "ROTARY_SCREW",
+      capacity_rating: "GOOD",
+      pressure_ratio_rating: "GOOD",
+      turndown_rating: "EXCELLENT",
+      efficiency_rating: "GOOD",
+      maintenance_rating: "EXCELLENT",
+      overall_score: "78",
+      rationale: [
+        "Wide turndown is well matched to variable-speed-drive rotary screw control.",
+        "Rotary screw compressors have no suction/discharge valves or piston rings.",
+      ],
+    },
     score_difference: "4",
     recommendation_summary:
       "Centrifugal compression is preferred for the submitted duty.",

@@ -114,9 +114,15 @@ function formatNumericValue(
 }
 
 function formatCompressorType(compressorType: CompressorType): string {
-  return compressorType === "RECIPROCATING"
-    ? "Reciprocating"
-    : "Centrifugal";
+  if (compressorType === "RECIPROCATING") {
+    return "Reciprocating";
+  }
+
+  if (compressorType === "CENTRIFUGAL") {
+    return "Centrifugal";
+  }
+
+  return "Rotary Screw";
 }
 
 function ResultMetric({
@@ -443,9 +449,10 @@ export function CompressorSelectionPage() {
                 </h1>
 
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                  Compare reciprocating and centrifugal compressor suitability
-                  using flow, pressure ratio, turndown, operating profile, gas
-                  molecular weight, efficiency, and maintainability criteria.
+                  Compare reciprocating, centrifugal, and rotary screw
+                  compressor suitability using flow, pressure ratio, turndown,
+                  operating profile, gas molecular weight, efficiency, and
+                  maintainability criteria.
                 </p>
               </div>
 
@@ -939,7 +946,7 @@ export function CompressorSelectionPage() {
           </CardHeader>
 
           <CardContent className="space-y-6">
-            <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
               <ResultMetric
                 label="Recommended Technology"
                 value={formatCompressorType(result.result.recommended_type)}
@@ -957,6 +964,13 @@ export function CompressorSelectionPage() {
                 label="Centrifugal Score"
                 value={formatNumericValue(
                   result.result.centrifugal.overall_score,
+                )}
+              />
+
+              <ResultMetric
+                label="Rotary Screw Score"
+                value={formatNumericValue(
+                  result.result.rotary_screw.overall_score,
                 )}
               />
 
@@ -990,7 +1004,7 @@ export function CompressorSelectionPage() {
                 Technology Assessment Matrix
               </h2>
 
-              <div className="grid gap-4 lg:grid-cols-2">
+              <div className="grid gap-4 lg:grid-cols-3">
                 <TechnologyAssessment
                   title="Reciprocating Compressor"
                   assessment={result.result.reciprocating}
@@ -1004,6 +1018,14 @@ export function CompressorSelectionPage() {
                   assessment={result.result.centrifugal}
                   recommended={
                     result.result.recommended_type === "CENTRIFUGAL"
+                  }
+                />
+
+                <TechnologyAssessment
+                  title="Rotary Screw Compressor"
+                  assessment={result.result.rotary_screw}
+                  recommended={
+                    result.result.recommended_type === "ROTARY_SCREW"
                   }
                 />
               </div>
