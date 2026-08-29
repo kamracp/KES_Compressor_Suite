@@ -124,6 +124,7 @@ def test_execute_selection_without_persistence() -> None:
     assert data["result"]["recommended_type"] in {
         "RECIPROCATING",
         "CENTRIFUGAL",
+        "ROTARY_SCREW",
     }
 
 

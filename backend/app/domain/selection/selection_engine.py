@@ -198,35 +198,120 @@ def _assess_centrifugal(
     )
 
 
+def _assess_rotary_screw(
+    criteria: CompressorSelectionCriteria,
+) -> CompressorOptionAssessment:
+    """Assess rotary screw compressor suitability.
+
+    Rotary screw compressors dominate small-to-medium industrial
+    compressed-air and gas duty at low-to-moderate pressure ratios, offer
+    strong turndown (particularly with variable-speed drive), and have
+    fewer wearing parts than reciprocating machines since they carry no
+    suction/discharge valves or piston rings.
+    """
+
+    overall_ratio = criteria.discharge_pressure_bar / criteria.suction_pressure_bar
+
+    rationale: list[str] = []
+
+    if criteria.required_flow_m3_per_hr <= Decimal("8000"):
+        capacity_rating = SelectionRating.EXCELLENT
+        rationale.append(
+            "Required flow is well within a single-package rotary screw compressor range."
+        )
+    elif criteria.required_flow_m3_per_hr <= Decimal("20000"):
+        capacity_rating = SelectionRating.GOOD
+        rationale.append(
+            "Required flow is feasible with a larger package or multiple parallel "
+            "screw compressors."
+        )
+    else:
+        capacity_rating = SelectionRating.ACCEPTABLE
+        rationale.append(
+            "Very high flow is more typically served by centrifugal compression."
+        )
+
+    if overall_ratio <= Decimal("4"):
+        pressure_ratio_rating = SelectionRating.EXCELLENT
+        rationale.append(
+            "Pressure ratio is typical of standard single-stage rotary screw duty."
+        )
+    elif overall_ratio <= Decimal("8"):
+        pressure_ratio_rating = SelectionRating.GOOD
+        rationale.append(
+            "Pressure ratio is feasible with a two-stage rotary screw package."
+        )
+    else:
+        pressure_ratio_rating = SelectionRating.ACCEPTABLE
+        rationale.append(
+            "Very high pressure ratio is uncommon for standard rotary screw packages."
+        )
+
+    if criteria.required_turndown_fraction <= Decimal("0.60"):
+        turndown_rating = SelectionRating.EXCELLENT
+        rationale.append(
+            "Wide turndown is well matched to variable-speed-drive rotary screw control."
+        )
+    else:
+        turndown_rating = SelectionRating.GOOD
+
+    efficiency_rating = SelectionRating.GOOD
+
+    maintenance_rating = SelectionRating.EXCELLENT
+    rationale.append(
+        "Rotary screw compressors have no suction/discharge valves or piston rings, "
+        "reducing wearing-part maintenance relative to reciprocating machines."
+    )
+
+    ratings = (
+        capacity_rating,
+        pressure_ratio_rating,
+        turndown_rating,
+        efficiency_rating,
+        maintenance_rating,
+    )
+
+    return CompressorOptionAssessment(
+        compressor_type=CompressorType.ROTARY_SCREW,
+        capacity_rating=capacity_rating,
+        pressure_ratio_rating=pressure_ratio_rating,
+        turndown_rating=turndown_rating,
+        efficiency_rating=efficiency_rating,
+        maintenance_rating=maintenance_rating,
+        overall_score=_score_assessment(ratings),
+        rationale=tuple(rationale),
+    )
+
+
 def select_compressor_type(
     criteria: CompressorSelectionCriteria,
 ) -> CompressorSelectionResult:
-    """Compare reciprocating and centrifugal compressor suitability."""
+    """Compare reciprocating, centrifugal, and rotary screw compressor suitability."""
 
     _validate_criteria(criteria)
 
     reciprocating = _assess_reciprocating(criteria)
     centrifugal = _assess_centrifugal(criteria)
+    rotary_screw = _assess_rotary_screw(criteria)
 
-    if reciprocating.overall_score >= centrifugal.overall_score:
-        recommended_type = CompressorType.RECIPROCATING
-        recommendation_summary = (
-            "Reciprocating compressor has the higher suitability score for the "
-            "specified operating criteria."
-        )
-    else:
-        recommended_type = CompressorType.CENTRIFUGAL
-        recommendation_summary = (
-            "Centrifugal compressor has the higher suitability score for the "
-            "specified operating criteria."
-        )
+    assessments = (reciprocating, centrifugal, rotary_screw)
+    best_assessment = max(assessments, key=lambda assessment: assessment.overall_score)
+    recommended_type = best_assessment.compressor_type
 
-    score_difference = abs(reciprocating.overall_score - centrifugal.overall_score)
+    recommendation_summary = (
+        f"{recommended_type.value.replace('_', ' ').title()} compressor has the "
+        "highest suitability score among the evaluated technologies for the "
+        "specified operating criteria."
+    )
+
+    scores = tuple(assessment.overall_score for assessment in assessments)
+    score_difference = max(scores) - min(scores)
 
     return CompressorSelectionResult(
         recommended_type=recommended_type,
         reciprocating=reciprocating,
         centrifugal=centrifugal,
+        rotary_screw=rotary_screw,
         score_difference=score_difference,
         recommendation_summary=recommendation_summary,
     )

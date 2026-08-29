@@ -30,13 +30,16 @@ def test_select_compressor_type_returns_assessments() -> None:
 
     assert result.reciprocating.compressor_type == CompressorType.RECIPROCATING
     assert result.centrifugal.compressor_type == CompressorType.CENTRIFUGAL
+    assert result.rotary_screw.compressor_type == CompressorType.ROTARY_SCREW
 
     assert result.reciprocating.overall_score > Decimal("0")
     assert result.centrifugal.overall_score > Decimal("0")
+    assert result.rotary_screw.overall_score > Decimal("0")
 
     assert result.recommended_type in {
         CompressorType.RECIPROCATING,
         CompressorType.CENTRIFUGAL,
+        CompressorType.ROTARY_SCREW,
     }
 
     assert result.score_difference >= Decimal("0")
@@ -76,6 +79,25 @@ def test_high_pressure_ratio_and_wide_turndown_favor_reciprocating() -> None:
     assert result.recommended_type == CompressorType.RECIPROCATING
     assert result.reciprocating.pressure_ratio_rating == SelectionRating.EXCELLENT
     assert result.reciprocating.turndown_rating == SelectionRating.EXCELLENT
+
+
+def test_small_flow_moderate_ratio_and_wide_turndown_favor_rotary_screw() -> None:
+    criteria = CompressorSelectionCriteria(
+        required_flow_m3_per_hr=Decimal("5000"),
+        suction_pressure_bar=Decimal("2"),
+        discharge_pressure_bar=Decimal("8"),
+        required_turndown_fraction=Decimal("0.55"),
+        continuous_operation=False,
+        gas_molecular_weight=Decimal("29"),
+        estimated_operating_hours_per_year=Decimal("4000"),
+    )
+
+    result = select_compressor_type(criteria)
+
+    assert result.recommended_type == CompressorType.ROTARY_SCREW
+    assert result.rotary_screw.capacity_rating == SelectionRating.EXCELLENT
+    assert result.rotary_screw.pressure_ratio_rating == SelectionRating.EXCELLENT
+    assert result.rotary_screw.maintenance_rating == SelectionRating.EXCELLENT
 
 
 def test_zero_required_flow_is_rejected() -> None:

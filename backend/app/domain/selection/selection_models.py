@@ -6,6 +6,7 @@ from enum import StrEnum
 class CompressorType(StrEnum):
     RECIPROCATING = "RECIPROCATING"
     CENTRIFUGAL = "CENTRIFUGAL"
+    ROTARY_SCREW = "ROTARY_SCREW"
 
 
 class SelectionRating(StrEnum):
@@ -44,10 +45,11 @@ class CompressorOptionAssessment:
 
 @dataclass(frozen=True, slots=True)
 class CompressorSelectionResult:
-    """Final reciprocating-versus-centrifugal selection result."""
+    """Final compressor-type selection result across evaluated technologies."""
 
     recommended_type: CompressorType
     reciprocating: CompressorOptionAssessment
     centrifugal: CompressorOptionAssessment
+    rotary_screw: CompressorOptionAssessment
     score_difference: Decimal
     recommendation_summary: str

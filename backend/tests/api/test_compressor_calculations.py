@@ -28,9 +28,11 @@ def test_compressor_selection_endpoint() -> None:
     assert data["recommended_type"] in {
         "RECIPROCATING",
         "CENTRIFUGAL",
+        "ROTARY_SCREW",
     }
     assert Decimal(data["reciprocating"]["overall_score"]) > Decimal("0")
     assert Decimal(data["centrifugal"]["overall_score"]) > Decimal("0")
+    assert Decimal(data["rotary_screw"]["overall_score"]) > Decimal("0")
 
 
 def test_common_compression_endpoint() -> None:
