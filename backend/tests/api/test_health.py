@@ -15,7 +15,7 @@ def test_health_endpoint() -> None:
     assert response.status_code == 200
     assert response.json() == {
         "status": "ok",
-        "service": "KES Compressor Engineering Suite",
+        "service": "Kamra Compressor OS",
     }
 
 
@@ -26,7 +26,7 @@ def test_root_endpoint() -> None:
 
     data = response.json()
 
-    assert data["name"] == "KES Compressor Engineering Suite"
+    assert data["name"] == "Kamra Compressor OS"
     assert data["version"] == "0.1.0"
     assert data["status"] == "running"
 

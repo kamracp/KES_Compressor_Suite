@@ -1,7 +1,7 @@
 [project]
-name = "kes-compressor-suite"
+name = "kamra-compressor-os"
 version = "0.1.0"
-description = "KES Compressor Engineering Suite - Compressor sizing, performance, utilities, compliance, and reporting SaaS."
+description = "Kamra Compressor OS - Vendor-neutral factory compressed-air and compressor engineering, audit, optimization, and decision-support platform."
 requires-python = ">=3.12"
 
 dependencies = [
@@ -15,6 +15,7 @@ dependencies = [
     "loguru>=0.7,<1.0",
     "pwdlib[argon2]>=0.3,<1.0",
     "pyjwt>=2.10,<3.0",
+    "reportlab>=4.2,<5.0",
 ]
 
 [project.optional-dependencies]

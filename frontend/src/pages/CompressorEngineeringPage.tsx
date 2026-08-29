@@ -301,7 +301,7 @@ export function CompressorEngineeringPage() {
               id="suite-role-title"
               className="text-sm font-semibold text-slate-900"
             >
-              Role within KES Compressor Engineering Suite
+              Role within Kamra Compressor OS
             </h2>
             <p className="mt-1 text-sm leading-6 text-slate-600">
               This hub provides specialist compressor calculations. New System

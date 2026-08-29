@@ -7,7 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Application configuration loaded from environment variables."""
 
-    app_name: str = "KES Compressor Engineering Suite"
+    app_name: str = "Kamra Compressor OS"
     app_version: str = "0.1.0"
     environment: str = "development"
     debug: bool = False

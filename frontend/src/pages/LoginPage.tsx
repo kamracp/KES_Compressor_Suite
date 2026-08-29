@@ -64,7 +64,7 @@ export function LoginPage() {
 
   return (
     <main>
-      <h1>KES Compressor Engineering Suite</h1>
+      <h1>Kamra Compressor OS</h1>
 
       <h2>Sign in</h2>
 

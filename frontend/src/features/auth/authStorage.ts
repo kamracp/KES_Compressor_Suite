@@ -1,4 +1,4 @@
-const ACCESS_TOKEN_KEY = "kes_compressor_access_token";
+const ACCESS_TOKEN_KEY = "kamra_compressor_access_token";
 
 export function getAccessToken(): string | null {
   return window.localStorage.getItem(ACCESS_TOKEN_KEY);

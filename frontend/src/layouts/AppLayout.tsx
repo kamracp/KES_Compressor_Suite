@@ -290,7 +290,7 @@ export function AppLayout({
                 </p>
 
                 <p className="hidden text-xs text-slate-500 sm:block">
-                  KES Compressor Engineering Suite
+                  Kamra Compressor OS
                 </p>
               </div>
             </div>
