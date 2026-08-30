@@ -17,6 +17,7 @@ class CalculationType(StrEnum):
     CENTRIFUGAL = "CENTRIFUGAL"
     ROTARY_SCREW = "ROTARY_SCREW"
     SELECTION = "SELECTION"
+    DISTRIBUTION = "DISTRIBUTION"
 
 
 class CalculationStatus(StrEnum):

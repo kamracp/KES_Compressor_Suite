@@ -35,6 +35,9 @@ from app.domain.selection.selection_engine import select_compressor_type
 from app.domain.selection.selection_models import CompressorSelectionCriteria
 from app.models.calculation_case import CalculationType
 from app.schemas.calculation_execution import CalculationExecutionMetadata
+from app.schemas.compressed_air_distribution import (
+    DistributionNetworkCalculationRequest,
+)
 from app.schemas.compressor_calculation import (
     CentrifugalCalculationRequest,
     CompressionCalculationRequest,
@@ -327,6 +330,34 @@ class CompressorExecutionService:
             organization_id=organization_id,
             execution=execution,
             calculation_type=CalculationType.ROTARY_SCREW,
+            input_data=calculation.model_dump(mode="json"),
+            result=result,
+        )
+
+        return {
+            "result": asdict(result),
+            "calculation_case_id": calculation_case_id,
+        }
+
+    def execute_distribution(
+        self,
+        db: Session,
+        *,
+        organization_id: int,
+        calculation: DistributionNetworkCalculationRequest,
+        execution: CalculationExecutionMetadata,
+    ) -> dict[str, Any]:
+        from app.services.compressed_air_distribution import (
+            compressed_air_distribution_service,
+        )
+
+        result = compressed_air_distribution_service.calculate(calculation)
+
+        calculation_case_id = self._persist_if_requested(
+            db,
+            organization_id=organization_id,
+            execution=execution,
+            calculation_type=CalculationType.DISTRIBUTION,
             input_data=calculation.model_dump(mode="json"),
             result=result,
         )

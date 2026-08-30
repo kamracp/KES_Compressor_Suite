@@ -37,6 +37,7 @@ def test_calculation_type_values() -> None:
         "CENTRIFUGAL",
         "ROTARY_SCREW",
         "SELECTION",
+        "DISTRIBUTION",
     }
 
 
