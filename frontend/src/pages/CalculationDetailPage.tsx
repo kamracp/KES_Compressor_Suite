@@ -38,6 +38,7 @@ const CALCULATION_TYPE_LABELS: Record<CalculationType, string> = {
   CENTRIFUGAL: "Centrifugal Compressor",
   ROTARY_SCREW: "Rotary Screw Compressor",
   SELECTION: "Compressor Technology Selection",
+  DISTRIBUTION: "Distribution Network",
 };
 
 function formatDateTime(value: string | null): string {
@@ -91,6 +92,10 @@ function modulePath(
 
   if (calculationType === "ROTARY_SCREW") {
     return `/projects/${projectId}/compressor/rotary-screw`;
+  }
+
+  if (calculationType === "DISTRIBUTION") {
+    return `/projects/${projectId}/compressor/distribution`;
   }
 
   return `/projects/${projectId}/compressor/selection`;

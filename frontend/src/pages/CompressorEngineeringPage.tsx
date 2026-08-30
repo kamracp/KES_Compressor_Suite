@@ -9,6 +9,7 @@ import {
   MoveRight,
   Settings2,
   ShieldCheck,
+  Waves,
   Wind,
 } from "lucide-react";
 import { Link } from "react-router";
@@ -96,6 +97,15 @@ export function CompressorEngineeringPage() {
         "Verify manufacturer CAGI-tested performance data, optionally estimate theoretical rotor displacement, and apply an ISO 1217 standard-air correction.",
       path: `/projects/${projectId}/compressor/rotary-screw`,
       icon: Wind,
+    },
+    {
+      step: 7,
+      title: "Distribution Network",
+      phase: "Detailed Engineering",
+      description:
+        "Model the pipe network as nodes, segments and paths; solve Darcy-Weisbach hydraulics with CAGI/BCAS-calibrated velocity screening and optimize deficient paths.",
+      path: `/projects/${projectId}/compressor/distribution`,
+      icon: Waves,
     },
   ];
 

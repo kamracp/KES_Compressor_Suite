@@ -43,6 +43,7 @@ const CALCULATION_TYPE_LABELS: Record<CalculationType, string> = {
   CENTRIFUGAL: "Centrifugal",
   ROTARY_SCREW: "Rotary Screw",
   SELECTION: "Technology Selection",
+  DISTRIBUTION: "Distribution Network",
 };
 
 function formatDateTime(value: string | null): string {
@@ -366,6 +367,7 @@ export function CalculationHistoryPage() {
                 <option value="CENTRIFUGAL">Centrifugal</option>
                 <option value="ROTARY_SCREW">Rotary Screw</option>
                 <option value="SELECTION">Technology Selection</option>
+                <option value="DISTRIBUTION">Distribution Network</option>
               </select>
             </div>
 

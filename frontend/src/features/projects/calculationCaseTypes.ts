@@ -3,7 +3,8 @@ export type CalculationType =
   | "RECIPROCATING"
   | "CENTRIFUGAL"
   | "ROTARY_SCREW"
-  | "SELECTION";
+  | "SELECTION"
+  | "DISTRIBUTION";
 
 export type CalculationStatus =
   | "DRAFT"
