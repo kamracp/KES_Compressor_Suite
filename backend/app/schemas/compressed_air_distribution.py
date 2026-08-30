@@ -91,7 +91,10 @@ class DistributionNetworkCalculationRequest(BaseModel):
     )
 
     maximum_preferred_velocity_m_per_s: Decimal = Field(
-        default=Decimal("10"),
+        # Calibrated default: CAGI recommends <= 20 ft/s (~6 m/s); BCAS design
+        # band is 6-7 m/s with a 9 m/s never-exceed ceiling for mains.
+        # Standards registry: CAGI-CAGH, BCAS-BPG-101.
+        default=Decimal("6"),
         gt=0,
     )
     minimum_pressure_drop_reduction_fraction: Decimal = Field(

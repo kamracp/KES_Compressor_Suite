@@ -239,3 +239,17 @@ def test_execute_persists_distribution_calculation_case() -> None:
     case = case_response.json()
     assert case["calculation_type"] == "DISTRIBUTION"
     assert case["status"] == "COMPLETED"
+
+
+def test_preferred_velocity_default_is_bcas_cagi_calibrated() -> None:
+    from decimal import Decimal as _Decimal
+
+    from app.schemas.compressed_air_distribution import (
+        DistributionNetworkCalculationRequest,
+    )
+
+    field = DistributionNetworkCalculationRequest.model_fields[
+        "maximum_preferred_velocity_m_per_s"
+    ]
+
+    assert field.default == _Decimal("6")

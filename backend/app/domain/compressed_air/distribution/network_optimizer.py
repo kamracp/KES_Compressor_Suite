@@ -8,7 +8,10 @@ from app.domain.compressed_air.distribution.network_models import (
 from app.domain.compressed_air.distribution.network_solver import (
     NetworkHydraulicResult,
 )
-from app.domain.compressed_air.distribution.pipe_sizing import PipeSizingInput
+from app.domain.compressed_air.distribution.pipe_sizing import (
+    VELOCITY_RECOMMENDED_LIMIT_M_PER_S,
+    PipeSizingInput,
+)
 from app.domain.compressed_air.distribution.pressure_drop import (
     PressureDropInput,
     calculate_pressure_drop,
@@ -76,7 +79,10 @@ def optimize_distribution_network(
     candidate_internal_diameters_mm: tuple[Decimal, ...],
     air_density_kg_per_m3: Decimal,
     darcy_friction_factor: Decimal,
-    maximum_preferred_velocity_m_per_s: Decimal = Decimal("10"),
+    # Default calibrated to CAGI (<= 20 ft/s ~ 6 m/s) and BCAS (6-7 m/s
+    # design, never above 9 m/s) guidance -- see standards registry entries
+    # CAGI-CAGH and BCAS-BPG-101.
+    maximum_preferred_velocity_m_per_s: Decimal = VELOCITY_RECOMMENDED_LIMIT_M_PER_S,
     minimum_pressure_drop_reduction_fraction: Decimal = Decimal("0.20"),
 ) -> NetworkOptimizationResult:
     """Recommend pipe-diameter improvements for deficient network paths."""
