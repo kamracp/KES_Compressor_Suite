@@ -187,3 +187,73 @@ def test_invalid_penalty_fraction_is_rejected() -> None:
                 power_penalty_fraction_per_bar=Decimal("1.10"),
             )
         )
+
+
+def test_default_method_is_adiabatic_isentropic() -> None:
+    result = calculate_pressure_energy_saving(
+        PressureEnergyInput(
+            current_discharge_pressure_bar_g=Decimal("7.0"),
+            optimized_discharge_pressure_bar_g=Decimal("6.0"),
+            current_average_power_kw=Decimal("100"),
+            annual_operating_hours=Decimal("6000"),
+            electricity_tariff_per_kwh=Decimal("5"),
+        )
+    )
+
+    assert result.power_saving_method == "ADIABATIC_ISENTROPIC"
+    assert result.power_penalty_fraction_per_bar is None
+
+    # Ideal isentropic work ratio for air (k = 1.4) gives ~8.37% for a
+    # 7.0 -> 6.0 bar(g) reduction -- slightly above the 7%/bar rule of
+    # thumb, exactly as the physics predicts at this pressure level.
+    assert Decimal("0.083") < result.power_saving_fraction < Decimal("0.085")
+
+    assert result.estimated_power_saving_kw == (
+        result.power_saving_fraction * Decimal("100")
+    )
+
+
+def test_explicit_penalty_selects_linear_override() -> None:
+    result = calculate_pressure_energy_saving(
+        PressureEnergyInput(
+            current_discharge_pressure_bar_g=Decimal("7.0"),
+            optimized_discharge_pressure_bar_g=Decimal("6.0"),
+            current_average_power_kw=Decimal("100"),
+            annual_operating_hours=Decimal("6000"),
+            electricity_tariff_per_kwh=Decimal("5"),
+            power_penalty_fraction_per_bar=Decimal("0.07"),
+        )
+    )
+
+    assert result.power_saving_method == "LINEAR_PER_BAR"
+    assert result.power_saving_fraction == Decimal("0.07")
+
+
+def test_adiabatic_saving_grows_with_deeper_reduction() -> None:
+    def fraction_for(target: str) -> Decimal:
+        return calculate_pressure_energy_saving(
+            PressureEnergyInput(
+                current_discharge_pressure_bar_g=Decimal("7.0"),
+                optimized_discharge_pressure_bar_g=Decimal(target),
+                current_average_power_kw=Decimal("100"),
+                annual_operating_hours=Decimal("6000"),
+                electricity_tariff_per_kwh=Decimal("5"),
+            )
+        ).power_saving_fraction
+
+    assert fraction_for("5.0") > fraction_for("6.0") > Decimal("0")
+
+
+def test_adiabatic_no_saving_when_pressure_not_reduced() -> None:
+    result = calculate_pressure_energy_saving(
+        PressureEnergyInput(
+            current_discharge_pressure_bar_g=Decimal("6.5"),
+            optimized_discharge_pressure_bar_g=Decimal("6.5"),
+            current_average_power_kw=Decimal("100"),
+            annual_operating_hours=Decimal("6000"),
+            electricity_tariff_per_kwh=Decimal("5"),
+        )
+    )
+
+    assert result.power_saving_fraction == Decimal("0")
+    assert result.pressure_reduction_is_beneficial is False

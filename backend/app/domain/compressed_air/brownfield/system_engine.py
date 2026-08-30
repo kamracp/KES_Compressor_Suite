@@ -38,7 +38,7 @@ class BrownfieldSystemEngineInput:
 
     expected_leak_repair_fraction: Decimal = Decimal("0.80")
 
-    power_penalty_fraction_per_bar: Decimal = Decimal("0.07")
+    power_penalty_fraction_per_bar: Decimal | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -211,7 +211,10 @@ def _validate_inputs(
             "Expected leak repair fraction must be between zero and one."
         )
 
-    if inputs.power_penalty_fraction_per_bar < 0 or inputs.power_penalty_fraction_per_bar > 1:
+    if inputs.power_penalty_fraction_per_bar is not None and (
+        inputs.power_penalty_fraction_per_bar < 0
+        or inputs.power_penalty_fraction_per_bar > 1
+    ):
         raise InvalidBrownfieldSystemEngineInputError(
             "Power penalty fraction per bar must be between zero and one."
         )

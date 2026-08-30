@@ -90,6 +90,7 @@ def test_performance_analysis_returns_engineering_kpis() -> None:
 def test_performance_analysis_returns_pressure_energy_scenario() -> None:
     payload = performance_payload()
     payload["optimized_discharge_pressure_bar_g"] = "6.0"
+    payload["power_penalty_fraction_per_bar"] = "0.07"
 
     response = client.post(
         ENDPOINT,
@@ -152,3 +153,26 @@ def test_performance_route_is_registered_in_openapi() -> None:
 
     assert ENDPOINT in openapi_schema["paths"]
     assert "post" in openapi_schema["paths"][ENDPOINT]
+
+
+def test_pressure_energy_defaults_to_adiabatic_method() -> None:
+    payload = performance_payload()
+    payload["optimized_discharge_pressure_bar_g"] = "6.0"
+
+    response = client.post(
+        ENDPOINT,
+        json=payload,
+    )
+
+    assert response.status_code == 200
+
+    pressure = response.json()["pressure_energy"]
+
+    assert pressure is not None
+    assert pressure["power_saving_method"] == "ADIABATIC_ISENTROPIC"
+    assert pressure["power_penalty_fraction_per_bar"] is None
+
+    # 6.5 -> 6.0 bar(g): ideal isentropic work ratio for air gives ~4.5%
+    # saving, versus 3.5% under the old linear 7%/bar rule of thumb.
+    saving_fraction = as_decimal(pressure["power_saving_fraction"])
+    assert Decimal("0.043") < saving_fraction < Decimal("0.046")

@@ -66,6 +66,7 @@ class CompressedAirPerformanceService:
                 electricity_tariff_per_kwh=(pressure.electricity_tariff_per_kwh),
                 annual_cost_saving=pressure.annual_cost_saving,
                 power_penalty_fraction_per_bar=(pressure.power_penalty_fraction_per_bar),
+                power_saving_method=pressure.power_saving_method,
                 pressure_reduction_is_beneficial=(pressure.pressure_reduction_is_beneficial),
             )
 

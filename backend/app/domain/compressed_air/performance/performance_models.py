@@ -48,7 +48,7 @@ class PerformanceAnalysisInput:
     reference_specific_power_kw_per_nm3_per_min: Decimal | None = None
 
     optimized_discharge_pressure_bar_g: Decimal | None = None
-    power_penalty_fraction_per_bar: Decimal = Decimal("0.07")
+    power_penalty_fraction_per_bar: Decimal | None = None
 
     notes: str | None = None
 

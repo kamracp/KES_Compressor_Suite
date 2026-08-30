@@ -58,7 +58,7 @@ def identify_brownfield_opportunities(
     analysis: BrownfieldAuditAnalysisResult,
     expected_leak_repair_fraction: Decimal = Decimal("0.80"),
     optimized_discharge_pressure_bar_g: Decimal | None = None,
-    power_penalty_fraction_per_bar: Decimal = Decimal("0.07"),
+    power_penalty_fraction_per_bar: Decimal | None = None,
 ) -> BrownfieldOpportunityResult:
     opportunities: list[BrownfieldOpportunity] = []
 

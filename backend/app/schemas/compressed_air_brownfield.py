@@ -119,8 +119,10 @@ class BrownfieldSystemAuditRequest(BaseModel):
         le=1,
     )
 
-    power_penalty_fraction_per_bar: Decimal = Field(
-        default=Decimal("0.07"),
+    # None (default) selects the adiabatic isentropic-work saving method;
+    # a value selects the legacy linear per-bar override.
+    power_penalty_fraction_per_bar: Decimal | None = Field(
+        default=None,
         ge=0,
         le=1,
     )

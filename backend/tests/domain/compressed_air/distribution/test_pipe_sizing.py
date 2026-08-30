@@ -93,8 +93,8 @@ def test_velocity_screening_thresholds_match_bcas_cagi() -> None:
         _screen_velocity,
     )
 
-    assert VELOCITY_RECOMMENDED_LIMIT_M_PER_S == Decimal("6")
-    assert VELOCITY_ABSOLUTE_LIMIT_M_PER_S == Decimal("9")
+    assert Decimal("6") == VELOCITY_RECOMMENDED_LIMIT_M_PER_S
+    assert Decimal("9") == VELOCITY_ABSOLUTE_LIMIT_M_PER_S
 
     assert _screen_velocity(Decimal("6")) == "RECOMMENDED"
     assert _screen_velocity(Decimal("6.01")) == "CAUTION"
