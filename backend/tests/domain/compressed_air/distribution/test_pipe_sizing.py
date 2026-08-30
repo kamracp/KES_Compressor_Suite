@@ -73,7 +73,7 @@ def test_larger_pipe_reduces_velocity() -> None:
     assert large_pipe.air_velocity_m_per_s < small_pipe.air_velocity_m_per_s
 
 
-def test_velocity_screening_low() -> None:
+def test_velocity_screening_recommended() -> None:
     result = calculate_pipe_velocity(
         PipeSizingInput(
             normal_flow_nm3_per_hr=Decimal("1000"),
@@ -83,7 +83,23 @@ def test_velocity_screening_low() -> None:
         )
     )
 
-    assert result.velocity_screening_status == "LOW"
+    assert result.velocity_screening_status == "RECOMMENDED"
+
+
+def test_velocity_screening_thresholds_match_bcas_cagi() -> None:
+    from app.domain.compressed_air.distribution.pipe_sizing import (
+        VELOCITY_ABSOLUTE_LIMIT_M_PER_S,
+        VELOCITY_RECOMMENDED_LIMIT_M_PER_S,
+        _screen_velocity,
+    )
+
+    assert VELOCITY_RECOMMENDED_LIMIT_M_PER_S == Decimal("6")
+    assert VELOCITY_ABSOLUTE_LIMIT_M_PER_S == Decimal("9")
+
+    assert _screen_velocity(Decimal("6")) == "RECOMMENDED"
+    assert _screen_velocity(Decimal("6.01")) == "CAUTION"
+    assert _screen_velocity(Decimal("9")) == "CAUTION"
+    assert _screen_velocity(Decimal("9.01")) == "EXCESSIVE"
 
 
 def test_velocity_screening_excessive() -> None:

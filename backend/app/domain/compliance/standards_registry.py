@@ -5,6 +5,8 @@ from enum import StrEnum
 class StandardAuthority(StrEnum):
     API = "API"
     ASME = "ASME"
+    BCAS = "BCAS"
+    CAGI = "CAGI"
     GPSA = "GPSA"
     ISO = "ISO"
 
@@ -15,6 +17,7 @@ class StandardApplicability(StrEnum):
     ROTARY_SCREW = "ROTARY_SCREW"
     PERFORMANCE_TESTING = "PERFORMANCE_TESTING"
     GAS_PROCESSING_DATA = "GAS_PROCESSING_DATA"
+    DISTRIBUTION_PIPEWORK = "DISTRIBUTION_PIPEWORK"
 
 
 class StandardVerificationStatus(StrEnum):
@@ -130,12 +133,55 @@ ISO_1217 = EngineeringStandard(
 )
 
 
+CAGI_HANDBOOK = EngineeringStandard(
+    standard_id="CAGI-CAGH",
+    authority=StandardAuthority.CAGI,
+    title="Compressed Air and Gas Handbook",
+    edition="7th Edition",
+    publication_date="2016",
+    applicability=(StandardApplicability.DISTRIBUTION_PIPEWORK,),
+    verification_status=(StandardVerificationStatus.OFFICIAL_SOURCE_VERIFIED),
+    notes=(
+        "CAGI's official Pressure Drop technical brief (cagi.org) recommends "
+        "keeping air velocity through piping at 20 ft/s (~6.1 m/s) or lower "
+        "to minimize turbulence and pressure drop, and refers to the "
+        "Handbook's 'Loss of Air Pressure Due to Friction' tables for piping "
+        "pressure-loss data. Basis for the RECOMMENDED velocity screening "
+        "threshold (<= 6 m/s) in distribution pipe sizing."
+    ),
+)
+
+
+BCAS_BPG_101 = EngineeringStandard(
+    standard_id="BCAS-BPG-101",
+    authority=StandardAuthority.BCAS,
+    title="Best Practice Guide 101 -- Installation of Compressed Air Systems",
+    edition="BPG 101-6",
+    publication_date="2023",
+    applicability=(StandardApplicability.DISTRIBUTION_PIPEWORK,),
+    verification_status=(StandardVerificationStatus.CLAUSE_MAPPING_PENDING),
+    notes=(
+        "BCAS guidance, as published by manufacturer engineering references "
+        "(e.g. Atlas Copco pipe-sizing guidance citing BCAS): a velocity of "
+        "6 m/s or less prevents moisture and debris being carried past drain "
+        "legs into controls; above 9 m/s water and debris are transported in "
+        "the air stream. Recommended design velocity for interconnecting "
+        "piping and main headers is 6-7 m/s, never exceeding 9 m/s. Basis "
+        "for the CAUTION band (6-9 m/s) and the EXCESSIVE threshold "
+        "(> 9 m/s) in distribution pipe sizing. Clause-level mapping from "
+        "the authorized BCAS guide remains pending."
+    ),
+)
+
+
 ENGINEERING_STANDARDS: tuple[EngineeringStandard, ...] = (
     API_617,
     API_618,
     ASME_PTC_10,
     GPSA_ENGINEERING_DATA_BOOK,
     ISO_1217,
+    CAGI_HANDBOOK,
+    BCAS_BPG_101,
 )
 
 

@@ -2,6 +2,8 @@ from app.domain.compliance.standards_registry import (
     API_617,
     API_618,
     ASME_PTC_10,
+    BCAS_BPG_101,
+    CAGI_HANDBOOK,
     ENGINEERING_STANDARDS,
     GPSA_ENGINEERING_DATA_BOOK,
     ISO_1217,
@@ -20,6 +22,8 @@ def test_registry_contains_expected_standards() -> None:
         ASME_PTC_10,
         GPSA_ENGINEERING_DATA_BOOK,
         ISO_1217,
+        CAGI_HANDBOOK,
+        BCAS_BPG_101,
     )
 
 
@@ -110,3 +114,31 @@ def test_all_registered_standards_have_verification_status() -> None:
         standard.verification_status in StandardVerificationStatus
         for standard in ENGINEERING_STANDARDS
     )
+
+
+def test_cagi_handbook_metadata() -> None:
+    standard = CAGI_HANDBOOK
+
+    assert standard.standard_id == "CAGI-CAGH"
+    assert standard.authority == StandardAuthority.CAGI
+    assert standard.edition == "7th Edition"
+
+    assert standard.applicability == (StandardApplicability.DISTRIBUTION_PIPEWORK,)
+
+    assert standard.verification_status == StandardVerificationStatus.OFFICIAL_SOURCE_VERIFIED
+
+
+def test_bcas_bpg_101_metadata() -> None:
+    standard = BCAS_BPG_101
+
+    assert standard.standard_id == "BCAS-BPG-101"
+    assert standard.authority == StandardAuthority.BCAS
+
+    assert standard.applicability == (StandardApplicability.DISTRIBUTION_PIPEWORK,)
+
+    assert standard.verification_status == StandardVerificationStatus.CLAUSE_MAPPING_PENDING
+
+
+def test_distribution_standards_resolvable_by_id() -> None:
+    assert get_standard("cagi-cagh") == CAGI_HANDBOOK
+    assert get_standard(" bcas-bpg-101 ") == BCAS_BPG_101

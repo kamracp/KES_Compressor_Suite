@@ -12,6 +12,20 @@ PI = Decimal("3.141592653589793238462643383")
 SECONDS_PER_HOUR = Decimal("3600")
 ATMOSPHERIC_PRESSURE_BAR = Decimal("1.01325")
 
+# Velocity screening thresholds calibrated to published industry guidance.
+#
+# - CAGI Pressure Drop technical brief / Compressed Air and Gas Handbook
+#   (7th Edition, 2016): keep piping velocity at or below 20 ft/s
+#   (~6.1 m/s) to minimize turbulence and pressure drop.
+# - BCAS (Best Practice Guide 101, Installation): <= 6 m/s prevents
+#   moisture/debris being carried past drain legs; > 9 m/s transports
+#   water and debris in the air stream; design mains at 6-7 m/s and
+#   never exceed 9 m/s.
+#
+# Standards registry references: CAGI-CAGH, BCAS-BPG-101.
+VELOCITY_RECOMMENDED_LIMIT_M_PER_S = Decimal("6")
+VELOCITY_ABSOLUTE_LIMIT_M_PER_S = Decimal("9")
+
 
 @dataclass(frozen=True, slots=True)
 class PipeSizingInput:
@@ -93,14 +107,11 @@ def calculate_pipe_velocity(
 def _screen_velocity(
     velocity_m_per_s: Decimal,
 ) -> str:
-    if velocity_m_per_s <= Decimal("6"):
-        return "LOW"
+    if velocity_m_per_s <= VELOCITY_RECOMMENDED_LIMIT_M_PER_S:
+        return "RECOMMENDED"
 
-    if velocity_m_per_s <= Decimal("10"):
-        return "PREFERRED"
-
-    if velocity_m_per_s <= Decimal("15"):
-        return "HIGH"
+    if velocity_m_per_s <= VELOCITY_ABSOLUTE_LIMIT_M_PER_S:
+        return "CAUTION"
 
     return "EXCESSIVE"
 
