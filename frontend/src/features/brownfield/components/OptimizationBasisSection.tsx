@@ -245,8 +245,9 @@ export function OptimizationBasisSection({
               />
 
               <p className="text-xs leading-5 text-slate-500">
-                Fractional power impact used by the current pressure-energy
-                model for each bar of pressure change.
+                Leave blank to use the adiabatic isentropic-work method
+                (recommended); enter a fraction per bar only to force the
+                legacy linear rule of thumb.
               </p>
             </div>
           </div>

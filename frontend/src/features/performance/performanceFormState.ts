@@ -46,7 +46,7 @@ export function createInitialPerformanceFormState(): PerformanceFormState {
     ratedPowerKw: "",
     referenceSpecificPowerKwPerNm3PerMin: "",
     optimizedDischargePressureBarG: "",
-    powerPenaltyFractionPerBar: "0.07",
+    powerPenaltyFractionPerBar: "",
     notes: "",
   };
 }
@@ -235,7 +235,7 @@ export function validatePerformanceFormState(
     errors,
   );
 
-  requireFraction(
+  validateOptionalFraction(
     state.powerPenaltyFractionPerBar,
     "Power penalty fraction per bar",
     errors,
@@ -294,7 +294,7 @@ export function buildPerformanceAnalysisRequest(
       optionalDecimal(state.optimizedDischargePressureBarG),
 
     power_penalty_fraction_per_bar:
-      state.powerPenaltyFractionPerBar.trim(),
+      optionalDecimal(state.powerPenaltyFractionPerBar),
 
     notes: optionalText(state.notes),
   };

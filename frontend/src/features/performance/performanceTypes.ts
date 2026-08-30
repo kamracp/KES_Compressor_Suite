@@ -39,7 +39,7 @@ export type CompressedAirPerformanceAnalysisRequest = {
     | DecimalString
     | null;
 
-  power_penalty_fraction_per_bar: DecimalString;
+  power_penalty_fraction_per_bar: DecimalString | null;
 
   notes?: string | null;
 };
@@ -62,7 +62,9 @@ export type PressureEnergyPerformanceResponse = {
   electricity_tariff_per_kwh: DecimalString;
   annual_cost_saving: DecimalString;
 
-  power_penalty_fraction_per_bar: DecimalString;
+  power_penalty_fraction_per_bar: DecimalString | null;
+
+  power_saving_method: string;
 
   pressure_reduction_is_beneficial: boolean;
 };

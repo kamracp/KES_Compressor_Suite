@@ -98,7 +98,7 @@ export type BrownfieldSystemAuditRequest = {
 
   optimized_discharge_pressure_bar_g: DecimalString | null;
   expected_leak_repair_fraction: DecimalString;
-  power_penalty_fraction_per_bar: DecimalString;
+  power_penalty_fraction_per_bar: DecimalString | null;
 
   notes?: string | null;
 };

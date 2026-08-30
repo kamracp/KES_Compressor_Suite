@@ -401,6 +401,13 @@ export function PerformanceEngineeringReviewSection({
 
               {result.pressure_energy ? (
                 <>
+                  <p className="text-xs text-slate-500">
+                    {result.pressure_energy.power_saving_method ===
+                    "ADIABATIC_ISENTROPIC"
+                      ? "Saving basis: adiabatic isentropic work ratio (air, k = 1.4)."
+                      : "Saving basis: linear per-bar override supplied by the user."}
+                  </p>
+
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <Metric
                       label="Current Pressure"

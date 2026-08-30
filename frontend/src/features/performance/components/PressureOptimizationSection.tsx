@@ -99,7 +99,7 @@ export function PressureOptimizationSection({
               max="1"
               step="any"
               value={state.powerPenaltyFractionPerBar}
-              placeholder="Example: 0.07"
+              placeholder="Blank = adiabatic (physics-based)"
               onChange={(event) =>
                 onChange({
                   powerPenaltyFractionPerBar:
@@ -109,7 +109,9 @@ export function PressureOptimizationSection({
             />
 
             <p className="text-xs text-slate-500">
-              Fraction / bar
+              Fraction / bar. Leave blank to use the adiabatic
+              isentropic-work method (recommended); enter a value only to
+              force the legacy linear rule of thumb.
             </p>
 
             <p className="text-xs leading-5 text-slate-500">

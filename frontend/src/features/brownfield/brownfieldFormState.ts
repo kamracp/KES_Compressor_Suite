@@ -94,7 +94,7 @@ export function createInitialBrownfieldFormState(): BrownfieldFormState {
 
     optimizedDischargePressureBarG: "",
     expectedLeakRepairFraction: "0.80",
-    powerPenaltyFractionPerBar: "0.07",
+    powerPenaltyFractionPerBar: "",
 
     notes: "",
   };
@@ -375,7 +375,7 @@ export function validateBrownfieldFormState(
     errors,
   );
 
-  requireFraction(
+  validateOptionalFraction(
     state.powerPenaltyFractionPerBar,
     "Power penalty fraction per bar",
     errors,
@@ -453,7 +453,9 @@ export function buildBrownfieldAuditRequest(
       state.expectedLeakRepairFraction,
 
     power_penalty_fraction_per_bar:
-      state.powerPenaltyFractionPerBar,
+      state.powerPenaltyFractionPerBar.trim() === ""
+        ? null
+        : state.powerPenaltyFractionPerBar,
 
     notes: nullableText(state.notes),
   };
