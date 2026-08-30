@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kamra Compressor OS — Interactive User Manual</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --steel:#16232e;        /* deep panel steel */
+    --steel-2:#1f3242;
+    --paper:#f4f6f5;        /* shop-floor light */
+    --card:#ffffff;
+    --ink:#182430;
+    --muted:#5b6b78;
+    --line:#d7dee2;
+    --pneumatic:#0e7c9e;    /* compressed-air blue */
+    --brass:#b98a2f;        /* valve-tag brass */
+    --ok:#1e7f5c; --ok-bg:#e6f4ee;
+    --warn:#9a6a00; --warn-bg:#fdf3dd;
+    --bad:#b3362b; --bad-bg:#fbe9e7;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --body:'IBM Plex Sans',system-ui,sans-serif;
+    --disp:'Saira Semi Condensed','IBM Plex Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.55}
+
+  /* ---------- layout: pipeline rail + content ---------- */
+  .shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+  nav.rail{background:var(--steel);color:#cfe0ea;position:sticky;top:0;height:100vh;overflow-y:auto;padding:18px 0 40px}
+  .brand{padding:0 20px 14px;border-bottom:1px solid #2c4356}
+  .brand .kes{display:inline-block;background:var(--brass);color:#1b1508;font-family:var(--disp);font-weight:700;letter-spacing:.06em;padding:2px 8px;border-radius:4px;font-size:13px}
+  .brand h1{font-family:var(--disp);font-weight:700;font-size:20px;color:#fff;margin-top:8px;line-height:1.15}
+  .brand p{font-size:11.5px;color:#8fa9ba;margin-top:4px}
+  .search{margin:12px 16px}
+  .search input{width:100%;background:var(--steel-2);border:1px solid #33506a;color:#e8f1f6;border-radius:6px;padding:7px 10px;font-size:13px;font-family:var(--body)}
+  .search input::placeholder{color:#7d94a5}
+  .navgroup{margin-top:14px}
+  .navgroup>span{display:block;padding:4px 20px;font-size:10.5px;letter-spacing:.14em;color:#7d94a5;text-transform:uppercase;font-weight:600}
+  nav a{display:flex;align-items:center;gap:10px;color:#cfe0ea;text-decoration:none;padding:6px 20px;font-size:13.5px;border-left:3px solid transparent}
+  nav a .tag{font-family:var(--mono);font-size:10.5px;background:#233a4c;border:1px solid #33506a;color:#9fc2d6;border-radius:3px;padding:0 5px;min-width:34px;text-align:center}
+  nav a:hover{background:#1c2f3e}
+  nav a.active{border-left-color:var(--brass);background:#1c2f3e;color:#fff}
+  nav a.active .tag{background:var(--brass);color:#1b1508;border-color:var(--brass)}
+
+  main{padding:34px 46px 90px;max-width:1000px}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.12em;color:var(--pneumatic);text-transform:uppercase}
+  main>header h2{font-family:var(--disp);font-size:38px;font-weight:700;line-height:1.05;margin:6px 0 10px}
+  main>header p.lede{font-size:15.5px;color:var(--muted);max-width:70ch}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .chip{font-family:var(--mono);font-size:11.5px;font-weight:500;border-radius:999px;padding:2px 10px;border:1px solid}
+  .chip.ok{color:var(--ok);background:var(--ok-bg);border-color:#bfe3d4}
+  .chip.warn{color:var(--warn);background:var(--warn-bg);border-color:#eed9a8}
+  .chip.bad{color:var(--bad);background:var(--bad-bg);border-color:#f2c2bc}
+
+  section.module{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-top:30px;overflow:hidden;scroll-margin-top:24px}
+  .modhead{display:flex;align-items:baseline;gap:14px;padding:18px 24px 14px;border-bottom:1px solid var(--line)}
+  .valvetag{font-family:var(--mono);font-size:12px;font-weight:500;background:var(--steel);color:#ffd98a;border-radius:4px;padding:3px 8px;white-space:nowrap}
+  .modhead h3{font-family:var(--disp);font-size:23px;font-weight:600}
+  .modhead .where{margin-left:auto;font-size:12px;color:var(--muted);font-family:var(--mono);white-space:nowrap}
+  .modbody{padding:18px 24px 22px}
+  .modbody p{margin-bottom:10px;font-size:14.5px}
+  .modbody .why{color:var(--muted)}
+  h4{font-family:var(--disp);font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--pneumatic);margin:16px 0 8px}
+  ol.steps{margin:0 0 6px 20px}
+  ol.steps li{margin-bottom:6px;font-size:14.5px}
+  ul.notes{margin:6px 0 0 20px}
+  ul.notes li{margin-bottom:5px;font-size:13.5px;color:var(--muted)}
+
+  .dataset{border:1px solid var(--line);border-radius:8px;margin:10px 0 4px;overflow:hidden}
+  .dataset .dhead{display:flex;align-items:center;gap:10px;background:#eef3f2;padding:8px 12px;border-bottom:1px solid var(--line)}
+  .dhead .dname{font-family:var(--disp);font-weight:600;font-size:14px}
+  .dhead .dnote{font-size:12px;color:var(--muted)}
+  .dhead button{margin-left:auto;font-family:var(--mono);font-size:11.5px;border:1px solid var(--pneumatic);color:var(--pneumatic);background:#fff;border-radius:5px;padding:3px 10px;cursor:pointer}
+  .dhead button:hover{background:var(--pneumatic);color:#fff}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:left;padding:7px 12px;background:#fafbfb;border-bottom:1px solid var(--line)}
+  td{padding:6px 12px;border-bottom:1px solid #edf1f0;vertical-align:top}
+  td.val{font-family:var(--mono);font-size:13px;white-space:nowrap}
+  td.unit{color:var(--muted);font-size:12.5px;white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+
+  details.expect{border:1px dashed #bcd6df;background:#f3f9fb;border-radius:8px;margin-top:12px}
+  details.expect summary{cursor:pointer;font-family:var(--disp);font-size:14px;font-weight:600;color:var(--pneumatic);padding:10px 14px;list-style:none}
+  details.expect summary::before{content:"▸ ";font-family:var(--mono)}
+  details.expect[open] summary::before{content:"▾ "}
+  details.expect .inner{padding:0 16px 12px;font-size:13.5px}
+  details.expect .inner li{margin:4px 0 4px 18px}
+
+  .callout{border-left:4px solid var(--brass);background:#fbf6ea;padding:10px 14px;border-radius:0 8px 8px 0;font-size:13.5px;margin-top:12px}
+  .callout b{color:#7a5a12}
+  .flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:var(--mono);font-size:12px;margin:8px 0 4px}
+  .flow .n{background:var(--steel);color:#dff0fa;border-radius:5px;padding:4px 9px}
+  .flow .a{color:var(--muted)}
+  footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+  .hidden{display:none !important}
+  code{font-family:var(--mono);font-size:.92em;background:#eef3f2;border-radius:4px;padding:1px 5px}
+  @media (max-width:900px){.shell{grid-template-columns:1fr}nav.rail{position:relative;height:auto}main{padding:24px 18px 70px}.modhead .where{display:none}}
+  @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<nav class="rail" id="rail">
+  <div class="brand">
+    <span class="kes">KES</span>
+    <h1>Kamra Compressor OS<br>User Manual</h1>
+    <p>Vendor-neutral compressed-air engineering · v1.0 · Aug 2026</p>
+  </div>
+  <div class="search"><input id="q" type="search" placeholder="Filter modules… (e.g. dryer, leakage)"></div>
+
+  <div class="navgroup"><span>Start Here</span>
+    <a href="#start"><span class="tag">M-00</span>Sign in &amp; navigate</a>
+    <a href="#project"><span class="tag">M-01</span>Create a project</a>
+    <a href="#map"><span class="tag">MAP</span>Which tool when?</a>
+  </div>
+  <div class="navgroup"><span>Project Workstreams</span>
+    <a href="#greenfield"><span class="tag">W-01</span>New System Design</a>
+    <a href="#brownfield"><span class="tag">W-02</span>Existing Plant Assessment</a>
+    <a href="#performance"><span class="tag">W-03</span>Performance &amp; Energy</a>
+    <a href="#leakage"><span class="tag">W-04</span>Leakage Management</a>
+    <a href="#allied"><span class="tag">W-05</span>Allied Equipment</a>
+    <a href="#skid"><span class="tag">W-06</span>Skid Engineering</a>
+  </div>
+  <div class="navgroup"><span>Compressor Engineering Hub</span>
+    <a href="#gas"><span class="tag">S-1</span>Gas Properties</a>
+    <a href="#selection"><span class="tag">S-2</span>Technology Selection</a>
+    <a href="#compression"><span class="tag">S-3</span>Compression Engineering</a>
+    <a href="#recip"><span class="tag">S-4</span>Reciprocating</a>
+    <a href="#centrifugal"><span class="tag">S-5</span>Centrifugal</a>
+    <a href="#rotary"><span class="tag">S-6</span>Rotary Screw</a>
+    <a href="#distribution"><span class="tag">S-7</span>Distribution Network</a>
+  </div>
+  <div class="navgroup"><span>Governance</span>
+    <a href="#records"><span class="tag">G-01</span>Records · Assessments · Reports</a>
+    <a href="#standards"><span class="tag">STD</span>Standards behind the numbers</a>
+    <a href="#trouble"><span class="tag">FIX</span>Troubleshooting</a>
+  </div>
+</nav>
+
+<main>
+<header>
+  <span class="kicker">Instrument datasheet style · every number has a source</span>
+  <h2>Operate the platform end to end</h2>
+  <p class="lede">This manual walks through every card in Kamra Compressor OS with a ready-to-type sample dataset. Hub pages (S-1…S-7) open pre-filled with a tested sample — press <b>Run</b> and read. Workstream pages (W-01…W-06) use the <b>KES Demo Plant</b>: a ceramic-ware unit running two 75&nbsp;kW oil-injected screw compressors (600&nbsp;Nm³/hr each) at 7&nbsp;bar&nbsp;g, 6,000&nbsp;hrs/year, electricity at ₹5/kWh.</p>
+  <div class="legend">
+    <span class="chip ok">RECOMMENDED ≤ 6 m/s</span>
+    <span class="chip warn">CAUTION 6–9 m/s</span>
+    <span class="chip bad">EXCESSIVE &gt; 9 m/s</span>
+    <span class="dnote" style="font-size:12px;color:var(--muted);align-self:center">Pipe-velocity bands per CAGI ≤20&nbsp;ft/s &amp; BCAS 6–7&nbsp;m/s design / 9&nbsp;m/s ceiling</span>
+  </div>
+</header>
+
+<!-- ================= START ================= -->
+<section class="module" id="start">
+  <div class="modhead"><span class="valvetag">M-00</span><h3>Sign in &amp; find your way</h3><span class="where">Sidebar → Dashboard</span></div>
+  <div class="modbody">
+    <p class="why">One secure workspace per organization. Everything you save stays inside your tenant.</p>
+    <h4>Steps</h4>
+    <ol class="steps">
+      <li>Open the app URL and sign in with your <b>Organization ID</b> (a number), email and password.</li>
+      <li>The <b>Dashboard</b> shows project count, saved calculations, and platform status (Backend API should read <code>ok</code>).</li>
+      <li>Left sidebar: <b>Dashboard · Projects · Assessments · Reports</b>. All engineering work lives inside a project.</li>
+    </ol>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Sample sign-in (dev workspace)</span><span class="dnote">use your own credentials in production</span><button data-copy>Copy</button></div>
+      <table><tr><th>Field</th><th>Value</th><th>Note</th></tr>
+        <tr><td>Organization ID</td><td class="val">6971</td><td class="unit">numeric tenant id</td></tr>
+        <tr><td>Email</td><td class="val">chander@kamraengineeringsolution.com</td><td class="unit">your login email</td></tr>
+        <tr><td>Password</td><td class="val">••••••••</td><td class="unit">never share or store in documents</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PROJECT ================= -->
+<section class="module" id="project">
+  <div class="modhead"><span class="valvetag">M-01</span><h3>Create a project</h3><span class="where">Sidebar → Projects</span></div>
+  <div class="modbody">
+    <p class="why">A project is the container for one plant or one engagement. Calculations, revisions, assessments and reports all attach to it.</p>
+    <h4>Steps</h4>
+    <ol class="steps">
+      <li>Projects → <b>New Project</b>, fill the identity fields, save.</li>
+      <li>Open the project — you land on the <b>Project Workspace</b> with the six workstream cards (W-01…W-06) and governance cards.</li>
+    </ol>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Sample project — KES Demo Plant</span><button data-copy>Copy</button></div>
+      <table><tr><th>Field</th><th>Value</th><th>Note</th></tr>
+        <tr><td>Project Code</td><td class="val">KES-DEMO-001</td><td class="unit">your numbering system</td></tr>
+        <tr><td>Project Name</td><td class="val">KES Compressor Engineering Demonstration</td><td></td></tr>
+        <tr><td>Client</td><td class="val">Kamra Engineering Solutions</td><td></td></tr>
+        <tr><td>Plant</td><td class="val">Ceramic-ware Unit 1</td><td class="unit">optional</td></tr>
+        <tr><td>Location</td><td class="val">Mohali, Punjab</td><td class="unit">optional</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MAP ================= -->
+<section class="module" id="map">
+  <div class="modhead"><span class="valvetag">MAP</span><h3>Which tool, when?</h3><span class="where">decision guide</span></div>
+  <div class="modbody">
+    <p><b>Designing a new plant?</b></p>
+    <div class="flow"><span class="n">W-01 New System Design</span><span class="a">→</span><span class="n">S-2 Selection</span><span class="a">→</span><span class="n">S-4/5/6 machine detail</span><span class="a">→</span><span class="n">S-7 Distribution</span><span class="a">→</span><span class="n">W-05 Allied</span><span class="a">→</span><span class="n">W-06 Skid</span></div>
+    <p style="margin-top:12px"><b>Auditing a running plant?</b></p>
+    <div class="flow"><span class="n">W-02 Plant Assessment</span><span class="a">→</span><span class="n">W-03 Performance</span><span class="a">→</span><span class="n">W-04 Leakage</span><span class="a">→</span><span class="n">S-7 Distribution check</span><span class="a">→</span><span class="n">G-01 Report</span></div>
+    <p style="margin-top:12px"><b>One specific machine question?</b> Go straight to the hub step for that technology (S-3…S-6). <b>Non-air gas?</b> Start at S-1 Gas Properties.</p>
+  </div>
+</section>
+
+<!-- ================= GREENFIELD ================= -->
+<section class="module" id="greenfield">
+  <div class="modhead"><span class="valvetag">W-01</span><h3>New System Design (Greenfield)</h3><span class="where">Workspace → System Planning</span></div>
+  <div class="modbody">
+    <p class="why">Design a factory compressed-air system from scratch: consumer register → design pressure → station capacity with standby philosophy → treatment → storage → energy.</p>
+    <h4>Steps</h4>
+    <ol class="steps">
+      <li>Add each air consumer with its flow, pressure and running pattern.</li>
+      <li>Set system allowances (leakage, future expansion) and control margin.</li>
+      <li>Choose the standby philosophy (N / N+1) and review station capacity.</li>
+      <li>Enter tariff and hours to see the annual energy picture. Persist when done.</li>
+    </ol>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Sample consumers — Demo Plant</span><span class="dnote">add three rows</span><button data-copy>Copy</button></div>
+      <table><tr><th>Consumer</th><th>Category</th><th>Flow / unit</th><th>Pressure</th><th>Duty × Simult.</th><th>Hours</th></tr>
+        <tr><td class="val">AC-001 · Spray Booth</td><td>Production machine</td><td class="val">420 Nm³/hr</td><td class="val">6.0 bar g</td><td class="val">0.85 × 1.0</td><td class="val">16 h/d · 300 d/y</td></tr>
+        <tr><td class="val">AC-002 · Press Line</td><td>Production machine</td><td class="val">300 Nm³/hr</td><td class="val">6.0 bar g</td><td class="val">0.70 × 0.9</td><td class="val">16 h/d · 300 d/y</td></tr>
+        <tr><td class="val">AC-003 · Instrument Air</td><td>Instrumentation</td><td class="val">80 Nm³/hr</td><td class="val">6.0 bar g</td><td class="val">1.0 × 1.0 · critical</td><td class="val">24 h/d · 365 d/y</td></tr>
+      </table>
+    </div>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Sample system settings</span><button data-copy>Copy</button></div>
+      <table><tr><th>Field</th><th>Value</th><th>Note</th></tr>
+        <tr><td>Minimum point-of-use pressure</td><td class="val">6.0</td><td class="unit">bar g</td></tr>
+        <tr><td>Leakage allowance</td><td class="val">0.10</td><td class="unit">fraction — design allowance you choose</td></tr>
+        <tr><td>Future expansion</td><td class="val">0.15</td><td class="unit">fraction</td></tr>
+        <tr><td>Control margin</td><td class="val">0.5</td><td class="unit">bar</td></tr>
+        <tr><td>Standby philosophy</td><td class="val">N+1</td><td class="unit">one full standby machine</td></tr>
+        <tr><td>Electricity tariff</td><td class="val">5</td><td class="unit">₹/kWh (edit per client)</td></tr>
+      </table>
+    </div>
+    <details class="expect"><summary>What a good result looks like</summary><div class="inner"><ul>
+      <li>Diversified demand lands near <b>~700 Nm³/hr</b>; with allowances the design demand approaches <b>~900 Nm³/hr</b>.</li>
+      <li>Station sizing proposes e.g. 2 × 600 Nm³/hr duty + 1 standby under N+1.</li>
+      <li>Annual energy shows the ₹ cost driven by your tariff — sanity-check against your field experience.</li>
+    </ul></div></details>
+  </div>
+</section>
+
+<!-- ================= BROWNFIELD ================= -->
+<section class="module" id="brownfield">
+  <div class="modhead"><span class="valvetag">W-02</span><h3>Existing Plant Assessment (Brownfield)</h3><span class="where">Workspace → Plant Assessment</span></div>
+  <div class="modbody">
+    <p class="why">The audit workhorse. Inventory the installed machines, log measured operating points, and get losses and improvement opportunities in ₹.</p>
+    <h4>Steps</h4>
+    <ol class="steps">
+      <li>Add each installed compressor (technology, control mode, rated FAD / pressure / motor kW).</li>
+      <li>Log measured points per machine (state: loaded / unloaded / part-load, with flow, pressure, power).</li>
+      <li>Enter system snapshot (total flow, header pressure, total power) and any measured leakage.</li>
+      <li>Set tariff, annual hours and the optimized target pressure — read the opportunity list.</li>
+    </ol>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Sample machine inventory</span><button data-copy>Copy</button></div>
+      <table><tr><th>Machine</th><th>Technology</th><th>Control</th><th>Rated FAD</th><th>Rated P</th><th>Motor</th></tr>
+        <tr><td class="val">C-101</td><td>Rotary Screw — Oil Injected</td><td>Load / Unload</td><td class="val">600 Nm³/hr</td><td class="val">7.5 bar g</td><td class="val">75 kW</td></tr>
+        <tr><td class="val">C-102</td><td>Rotary Screw — Oil Injected</td><td>Variable Speed Drive</td><td class="val">600 Nm³/hr</td><td class="val">7.5 bar g</td><td class="val">75 kW</td></tr>
+      </table>
+    </div>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Sample measured points</span><span class="dnote">from your clamp meter &amp; flow survey</span><button data-copy>Copy</button></div>
+      <table><tr><th>Machine</th><th>State</th><th>Flow</th><th>Pressure</th><th>Power</th><th>Label</th></tr>
+        <tr><td class="val">C-101</td><td>Loaded</td><td class="val">560 Nm³/hr</td><td class="val">7.2 bar g</td><td class="val">72 kW</td><td class="val">Day shift 11:00</td></tr>
+        <tr><td class="val">C-101</td><td>Unloaded</td><td class="val">0</td><td class="val">7.4 bar g</td><td class="val">24 kW</td><td class="val">Idle blow-down</td></tr>
+        <tr><td class="val">C-102</td><td>Part load</td><td class="val">380 Nm³/hr</td><td class="val">7.2 bar g</td><td class="val">51 kW</td><td class="val">VSD trim</td></tr>
+      </table>
+    </div>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Sample system snapshot &amp; targets</span><button data-copy>Copy</button></div>
+      <table><tr><th>Field</th><th>Value</th><th>Note</th></tr>
+        <tr><td>System total flow</td><td class="val">940</td><td class="unit">Nm³/hr</td></tr>
+        <tr><td>Header pressure</td><td class="val">7.2</td><td class="unit">bar g</td></tr>
+        <tr><td>System total power</td><td class="val">147</td><td class="unit">kW</td></tr>
+        <tr><td>Measured leakage</td><td class="val">90</td><td class="unit">Nm³/hr · ultrasonic survey</td></tr>
+        <tr><td>Expected leak-repair fraction</td><td class="val">0.80</td><td class="unit">realistic achievable share</td></tr>
+        <tr><td>Optimized discharge pressure</td><td class="val">6.7</td><td class="unit">bar g target</td></tr>
+        <tr><td>Electricity tariff / hours</td><td class="val">5 · 6000</td><td class="unit">₹/kWh · hr/yr</td></tr>
+      </table>
+    </div>
+    <details class="expect"><summary>What a good result looks like</summary><div class="inner"><ul>
+      <li>Specific power around <b>~9.4 kW per Nm³/min</b> at system level — flags the unload waste of C-101.</li>
+      <li>Leakage ≈ <b>9–10% of supply</b>; repairing 80% of 90 Nm³/hr shows a clear ₹/year saving.</li>
+      <li>Pressure reduction 7.2 → 6.7 bar g lists its own energy saving line.</li>
+    </ul></div></details>
+    <div class="callout"><b>Field tip:</b> measure the unloaded kW honestly — load/unload machines idling at 30% power are usually the largest single finding.</div>
+  </div>
+</section>
+
+<!-- ================= PERFORMANCE ================= -->
+<section class="module" id="performance">
+  <div class="modhead"><span class="valvetag">W-03</span><h3>Performance &amp; Energy Analysis</h3><span class="where">Workspace → Energy Performance</span></div>
+  <div class="modbody">
+    <p class="why">Focused efficiency check of one machine or one system: measured operating points vs rated capability, specific power, deviation from a reference, and pressure-optimization saving.</p>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Sample dataset — C-101 check</span><button data-copy>Copy</button></div>
+      <table><tr><th>Field</th><th>Value</th><th>Note</th></tr>
+        <tr><td>Operating point 1</td><td class="val">560 Nm³/hr · 7.2 bar g · 72 kW · Loaded</td><td class="unit">repeat for 2–3 points</td></tr>
+        <tr><td>Operating point 2</td><td class="val">0 · 7.4 bar g · 24 kW · Unloaded</td><td></td></tr>
+        <tr><td>Rated capacity / power</td><td class="val">600 Nm³/hr · 75 kW</td><td class="unit">nameplate</td></tr>
+        <tr><td>Reference specific power</td><td class="val">7.5</td><td class="unit">kW per Nm³/min — from this machine's own datasheet</td></tr>
+        <tr><td>Optimized discharge pressure</td><td class="val">6.7</td><td class="unit">bar g</td></tr>
+        <tr><td>Tariff / annual hours</td><td class="val">5 · 6000</td><td class="unit">₹/kWh · hr/yr</td></tr>
+      </table>
+    </div>
+    <details class="expect"><summary>What a good result looks like</summary><div class="inner"><ul>
+      <li>Loaded specific power ≈ <b>7.7 kW/(Nm³/min)</b> vs 7.5 reference → small deviation, machine healthy.</li>
+      <li>Blended (with unload time) specific power far worse → the control-mode story in one number.</li>
+    </ul></div></details>
+    <div class="callout"><b>Rule of the house:</b> the reference specific power must come from the machine's own datasheet or a CAGI data sheet — never a guessed "industry" figure.</div>
+  </div>
+</section>
+
+<!-- ================= LEAKAGE ================= -->
+<section class="module" id="leakage">
+  <div class="modhead"><span class="valvetag">W-04</span><h3>Leakage Management</h3><span class="where">Workspace → Loss Management</span></div>
+  <div class="modbody">
+    <p class="why">Turn a leakage survey into a repair program: register each leak, its quantification basis and repair status, and track ₹/year recovered.</p>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Sample leak register — Demo Plant</span><button data-copy>Copy</button></div>
+      <table><tr><th>Location</th><th>Baseline flow</th><th>Basis</th><th>Category</th><th>Repair frac.</th><th>Status</th></tr>
+        <tr><td class="val">Press line FRL, drop 3</td><td class="val">28 Nm³/hr</td><td>Ultrasonic estimate</td><td>Fittings</td><td class="val">1.0</td><td>Open</td></tr>
+        <tr><td class="val">Spray booth quick coupler</td><td class="val">35 Nm³/hr</td><td>Ultrasonic estimate</td><td>Couplings</td><td class="val">1.0</td><td>Open</td></tr>
+        <tr><td class="val">Old header isolation valve</td><td class="val">27 Nm³/hr</td><td>Ultrasonic estimate</td><td>Valves</td><td class="val">0.8</td><td>Open</td></tr>
+      </table>
+    </div>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Sample analysis basis</span><button data-copy>Copy</button></div>
+      <table><tr><th>Field</th><th>Value</th><th>Note</th></tr>
+        <tr><td>Specific power</td><td class="val">7.5</td><td class="unit">kW per Nm³/min — plant's own measured value</td></tr>
+        <tr><td>Average system demand</td><td class="val">940</td><td class="unit">Nm³/hr</td></tr>
+        <tr><td>Tariff / annual hours</td><td class="val">5 · 6000</td><td class="unit">₹/kWh · hr/yr</td></tr>
+      </table>
+    </div>
+    <details class="expect"><summary>What a good result looks like</summary><div class="inner"><ul>
+      <li>Total register 90 Nm³/hr = <b>1.5 Nm³/min</b> → ≈ 11.3 kW → ≈ <b>₹3.4 lakh/year</b> at 6,000 hrs. Repairing the achievable share ranks each leak by payback.</li>
+    </ul></div></details>
+  </div>
+</section>
+
+<!-- ================= ALLIED ================= -->
+<section class="module" id="allied">
+  <div class="modhead"><span class="valvetag">W-05</span><h3>Allied Equipment Engineering</h3><span class="where">Workspace → Air Treatment &amp; Storage</span></div>
+  <div class="modbody">
+    <p class="why">Everything between compressor and pipe: receiver sizing for demand events, dryer &amp; filter train with pressure-drop budget, aftercooler, moisture separator, condensate drains.</p>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Sample receiver event</span><button data-copy>Copy</button></div>
+      <table><tr><th>Field</th><th>Value</th><th>Note</th></tr>
+        <tr><td>Peak event demand</td><td class="val">1300</td><td class="unit">Nm³/hr — press cycle surge</td></tr>
+        <tr><td>Available compressor flow</td><td class="val">1200</td><td class="unit">Nm³/hr</td></tr>
+        <tr><td>Event duration</td><td class="val">30</td><td class="unit">s</td></tr>
+        <tr><td>Receiver high / low pressure</td><td class="val">7.0 / 6.5</td><td class="unit">bar g swing</td></tr>
+        <tr><td>Reserve fraction</td><td class="val">0.20</td><td class="unit">design headroom</td></tr>
+      </table>
+    </div>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Sample treatment train</span><button data-copy>Copy</button></div>
+      <table><tr><th>Field</th><th>Value</th><th>Note</th></tr>
+        <tr><td>Required delivered flow</td><td class="val">1000</td><td class="unit">Nm³/hr</td></tr>
+        <tr><td>Air quality target</td><td class="val">General plant air</td><td class="unit">tighten for food/pharma clients</td></tr>
+        <tr><td>Dryer type / correction</td><td class="val">Refrigerated · 1.0</td><td class="unit">purge 0 for refrigerated</td></tr>
+        <tr><td>Pre / after-filter ΔP</td><td class="val">0.10 / 0.15</td><td class="unit">bar, dirty condition</td></tr>
+        <tr><td>Dryer ΔP</td><td class="val">0.20</td><td class="unit">bar</td></tr>
+        <tr><td>Capacity margin</td><td class="val">0.10</td><td class="unit">fraction</td></tr>
+        <tr><td>Condensate drains</td><td class="val">Zero-loss, at aftercooler + receiver + dryer</td><td class="unit">timed drains waste air</td></tr>
+      </table>
+    </div>
+    <details class="expect"><summary>What a good result looks like</summary><div class="inner"><ul>
+      <li>Receiver comes out near <b>2–3 m³</b> for this event; the ΔP budget totals ~0.45 bar — every 0.1 bar you shave is real energy.</li>
+    </ul></div></details>
+  </div>
+</section>
+
+<!-- ================= SKID ================= -->
+<section class="module" id="skid">
+  <div class="modhead"><span class="valvetag">W-06</span><h3>Skid Engineering</h3><span class="where">Workspace → Air Treatment &amp; Storage → Skid</span></div>
+  <div class="modbody">
+    <p class="why">Package the station as an installable skid: arrangement, design flow/pressure, component pressure-rating check and total skid ΔP.</p>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Sample skid</span><button data-copy>Copy</button></div>
+      <table><tr><th>Field</th><th>Value</th><th>Note</th></tr>
+        <tr><td>Skid code</td><td class="val">SKID-01</td><td></td></tr>
+        <tr><td>Arrangement</td><td class="val">Centralized</td><td></td></tr>
+        <tr><td>Design flow / pressure</td><td class="val">1200 Nm³/hr · 7.5 bar g</td><td></td></tr>
+        <tr><td>Dryer type</td><td class="val">Refrigerated</td><td></td></tr>
+        <tr><td>Components</td><td class="val">Aftercooler 0.10 · Separator 0.05 · Filter 0.15 · Dryer 0.20</td><td class="unit">name + ΔP bar each</td></tr>
+      </table>
+    </div>
+    <details class="expect"><summary>What a good result looks like</summary><div class="inner"><ul><li>Minimum component pressure rating ≥ design pressure, and the summed skid ΔP (~0.5 bar) feeding your header-pressure decision.</li></ul></div></details>
+  </div>
+</section>
+
+<!-- ================= HUB S1 ================= -->
+<section class="module" id="gas">
+  <div class="modhead"><span class="valvetag">S-1</span><h3>Gas Properties</h3><span class="where">Hub → Step 1 · Define Gas</span></div>
+  <div class="modbody">
+    <p class="why">For non-air services (biogas, process gas): mixture molecular weight, k, and Z-factor at conditions. Air-only projects can skip this.</p>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Pre-filled sample (opens ready to run)</span><button data-copy>Copy</button></div>
+      <table><tr><th>Field</th><th>Value</th><th>Unit</th></tr>
+        <tr><td>Methane CH₄ / Ethane C₂H₆</td><td class="val">0.90 / 0.05</td><td class="unit">mole fraction</td></tr>
+        <tr><td>Nitrogen N₂ / CO₂</td><td class="val">0.03 / 0.02</td><td class="unit">mole fraction (sum = 1.00)</td></tr>
+        <tr><td>Absolute pressure / temperature</td><td class="val">10 · 300</td><td class="unit">bar(a) · K</td></tr>
+      </table>
+    </div>
+    <details class="expect"><summary>What a good result looks like</summary><div class="inner"><ul><li>Mixture MW ≈ 17.6 kg/kmol; Z slightly below 1 at 10 bar(a) — carry these into S-3.</li></ul></div></details>
+  </div>
+</section>
+
+<!-- ================= HUB S2 ================= -->
+<section class="module" id="selection">
+  <div class="modhead"><span class="valvetag">S-2</span><h3>Compressor Technology Selection</h3><span class="where">Hub → Step 2 · Select Technology</span></div>
+  <div class="modbody">
+    <p class="why">Scores reciprocating vs centrifugal vs rotary screw for your duty: flow, pressure ratio, turndown, air quality, reliability, maintenance, lifecycle energy.</p>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Pre-filled sample</span><button data-copy>Copy</button></div>
+      <table><tr><th>Field</th><th>Value</th><th>Unit</th></tr>
+        <tr><td>Required flow</td><td class="val">3000</td><td class="unit">m³/hr</td></tr>
+        <tr><td>Suction / discharge pressure</td><td class="val">1.0 / 8.0</td><td class="unit">bar</td></tr>
+        <tr><td>Required turndown</td><td class="val">0.30</td><td class="unit">fraction</td></tr>
+        <tr><td>Gas molecular weight</td><td class="val">28.97</td><td class="unit">kg/kmol (air)</td></tr>
+        <tr><td>Annual operating hours</td><td class="val">8000</td><td class="unit">hr/yr</td></tr>
+        <tr><td>Oil-free air required</td><td class="val">try both</td><td class="unit">toggle — watch the ranking shift</td></tr>
+      </table>
+    </div>
+    <details class="expect"><summary>What a good result looks like</summary><div class="inner"><ul><li>For this duty the screw typically ranks first on flexibility; toggle oil-free and see the oil-injected option penalised — the scoring explains each criterion.</li></ul></div></details>
+  </div>
+</section>
+
+<!-- ================= HUB S3 ================= -->
+<section class="module" id="compression">
+  <div class="modhead"><span class="valvetag">S-3</span><h3>Compression Engineering</h3><span class="where">Hub → Step 3 · Establish Duty</span></div>
+  <div class="modbody">
+    <p class="why">Technology-neutral thermodynamics: stages, interstage conditions, isentropic/polytropic power, discharge temperature, driver sizing with margin.</p>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Pre-filled sample</span><button data-copy>Copy</button></div>
+      <table><tr><th>Field</th><th>Value</th><th>Unit</th></tr>
+        <tr><td>Suction / discharge pressure</td><td class="val">1.013 / 8.0</td><td class="unit">bar abs</td></tr>
+        <tr><td>Suction temperature</td><td class="val">300</td><td class="unit">K</td></tr>
+        <tr><td>Mass flow</td><td class="val">1.0</td><td class="unit">kg/s</td></tr>
+        <tr><td>MW · k · Z</td><td class="val">28.97 · 1.4 · 1.0</td><td class="unit">air, ideal</td></tr>
+        <tr><td>Stages</td><td class="val">2</td><td class="unit">with intercooling</td></tr>
+        <tr><td>Driver power · margin · motor η</td><td class="val">500 · 0.10 · 0.95</td><td class="unit">kW · fraction · –</td></tr>
+      </table>
+    </div>
+    <details class="expect"><summary>What a good result looks like</summary><div class="inner"><ul><li>Per-stage ratio ≈ 2.8; shaft power in the 250–300 kW zone → the 500 kW driver passes with generous margin.</li></ul></div></details>
+  </div>
+</section>
+
+<!-- ================= HUB S4 ================= -->
+<section class="module" id="recip">
+  <div class="modhead"><span class="valvetag">S-4</span><h3>Reciprocating Compressor</h3><span class="where">Hub → Step 4 · Detailed Engineering</span></div>
+  <div class="modbody">
+    <p class="why">Cylinder-level design: displacement from bore/stroke/speed, volumetric efficiency with clearance, cylinders needed for the duty, and rod-load safety check.</p>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Pre-filled sample</span><button data-copy>Copy</button></div>
+      <table><tr><th>Field</th><th>Value</th><th>Unit</th></tr>
+        <tr><td>Required flow</td><td class="val">1000</td><td class="unit">m³/hr</td></tr>
+        <tr><td>Bore / stroke / rod dia</td><td class="val">250 / 200 / 60</td><td class="unit">mm</td></tr>
+        <tr><td>Speed / clearance</td><td class="val">600 · 0.05</td><td class="unit">rpm · fraction</td></tr>
+        <tr><td>Suction / discharge</td><td class="val">1.013 / 8.0</td><td class="unit">bar(a)</td></tr>
+        <tr><td>Allowable rod load</td><td class="val">150</td><td class="unit">kN</td></tr>
+      </table>
+    </div>
+    <details class="expect"><summary>What a good result looks like</summary><div class="inner"><ul><li>≈ 594 m³/hr delivered per double-acting cylinder → <b>2 cylinders</b>, ~19% capacity margin, rod load ~34 kN vs 150 kN allowable — comfortably adequate.</li></ul></div></details>
+  </div>
+</section>
+
+<!-- ================= HUB S5 ================= -->
+<section class="module" id="centrifugal">
+  <div class="modhead"><span class="valvetag">S-5</span><h3>Centrifugal Compressor</h3><span class="where">Hub → Step 5 · Detailed Engineering</span></div>
+  <div class="modbody">
+    <p class="why">Dynamic-machine engineering: polytropic head and efficiency, stage count from head coefficient and speed, power, surge margin and operating envelope.</p>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Pre-filled sample</span><button data-copy>Copy</button></div>
+      <table><tr><th>Field</th><th>Value</th><th>Unit</th></tr>
+        <tr><td>Suction / discharge</td><td class="val">1.013 / 8.0</td><td class="unit">bar(a)</td></tr>
+        <tr><td>Mass flow / inlet flow</td><td class="val">1.0 / 1.0</td><td class="unit">kg/s · m³/s</td></tr>
+        <tr><td>Polytropic efficiency</td><td class="val">0.82</td><td class="unit">from vendor curve</td></tr>
+        <tr><td>Stages · head coeff. · speed</td><td class="val">4 · 0.65 · 12000</td><td class="unit">– · – · rpm</td></tr>
+        <tr><td>Surge flow fraction</td><td class="val">0.70</td><td class="unit">of design flow</td></tr>
+      </table>
+    </div>
+    <details class="expect"><summary>What a good result looks like</summary><div class="inner"><ul><li>Polytropic head ~230 kJ/kg over 4 stages; ~30% surge margin at design point — the envelope card shows where turndown becomes risky.</li></ul></div></details>
+  </div>
+</section>
+
+<!-- ================= HUB S6 ================= -->
+<section class="module" id="rotary">
+  <div class="modhead"><span class="valvetag">S-6</span><h3>Rotary Screw Compressor</h3><span class="where">Hub → Step 6 · Detailed Engineering</span></div>
+  <div class="modbody">
+    <p class="why">Screw performance is proprietary to each rotor profile, so this workspace <b>verifies manufacturer CAGI-tested data</b> (specific power, annual energy at ₹5/kWh) instead of predicting it; optional rotor-geometry displacement estimate and ISO 1217 standard-air correction.</p>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Pre-filled sample</span><button data-copy>Copy</button></div>
+      <table><tr><th>Field</th><th>Value</th><th>Unit</th></tr>
+        <tr><td>Inlet / discharge</td><td class="val">1.013 bar(a) / 7.0 bar(g)</td><td></td></tr>
+        <tr><td>Oil type · control · stages</td><td class="val">Oil-injected · Fixed speed L/U · Single</td><td></td></tr>
+        <tr><td>Rated FAD / package power</td><td class="val">10 · 60</td><td class="unit">m³/min · kW → 6.0 kW/(m³/min)</td></tr>
+        <tr><td>ISO 1217 reference</td><td class="val">1.013 · 293.15</td><td class="unit">bar(a) · K (enable correction)</td></tr>
+      </table>
+    </div>
+    <details class="expect"><summary>What a good result looks like</summary><div class="inner"><ul><li>Specific power 6.0 kW/(m³/min) verified; annual energy ≈ ₹18 lakh at 6,000 hrs — the number you defend to a client.</li></ul></div></details>
+  </div>
+</section>
+
+<!-- ================= HUB S7 ================= -->
+<section class="module" id="distribution">
+  <div class="modhead"><span class="valvetag">S-7</span><h3>Distribution Network</h3><span class="where">Hub → Step 7 · Detailed Engineering</span></div>
+  <div class="modbody">
+    <p class="why">Model the pipe network as nodes → segments → flow paths; validate structure, solve Darcy-Weisbach pressure drop per path against minimum consumer pressures, and (optionally) optimize deficient paths against your real pipe schedule. Velocity chips follow the CAGI/BCAS calibrated bands shown in the legend above.</p>
+    <h4>Dataset A — healthy network (opens pre-filled)</h4>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Nodes · segment · path</span><button data-copy>Copy</button></div>
+      <table><tr><th>Item</th><th>Value</th><th>Note</th></tr>
+        <tr><td>Node N1</td><td class="val">Compressor Station · elev 0 · demand 0</td><td></td></tr>
+        <tr><td>Node N2</td><td class="val">Consumer · demand 600 Nm³/hr · min 6.0 bar g</td><td></td></tr>
+        <tr><td>Segment S1</td><td class="val">Main header N1→N2 · L 80 m + 20 m fittings · Ø80 mm · roughness 0.045 mm · 600 Nm³/hr · 7.0 bar g · 303.15 K</td><td></td></tr>
+        <tr><td>Path P1</td><td class="val">nodes N1, N2 · segments S1</td><td class="unit">flow order</td></tr>
+        <tr><td>Source pressure · density · f</td><td class="val">7.0 · 9.2 · 0.02</td><td class="unit">bar g · kg/m³ · Darcy</td></tr>
+      </table>
+    </div>
+    <details class="expect"><summary>Expected — Dataset A</summary><div class="inner"><ul><li><b>Structurally Valid</b>, <b>Pressure Adequate</b>; ΔP ≈ 0.025 bar; velocity ≈ 3.6 m/s → <span class="chip ok">RECOMMENDED</span>.</li></ul></div></details>
+    <h4>Dataset B — stress test (see the bands work)</h4>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Change two things, tick Optimization</span><button data-copy>Copy</button></div>
+      <table><tr><th>Field</th><th>Value</th><th>Note</th></tr>
+        <tr><td>Segment S1 internal diameter</td><td class="val">40</td><td class="unit">mm — undersized on purpose</td></tr>
+        <tr><td>Node N2 minimum pressure</td><td class="val">6.8</td><td class="unit">bar g — tight consumer</td></tr>
+        <tr><td>Optimization</td><td class="val">ON · candidates 50, 65, 80, 100, 125, 150 mm</td><td class="unit">max preferred velocity 6 m/s</td></tr>
+      </table>
+    </div>
+    <details class="expect"><summary>Expected — Dataset B</summary><div class="inner"><ul>
+      <li>Velocity jumps to ~14 m/s → <span class="chip bad">EXCESSIVE</span>; path goes <b>Deficient</b>.</li>
+      <li>Optimizer recommends an upgrade from your candidate list that brings velocity back inside <span class="chip ok">RECOMMENDED</span> and restores destination pressure — with rationale text per segment.</li>
+    </ul></div></details>
+    <div class="callout"><b>Reading the chips:</b> hover any band chip for the citation — CAGI ≤ 20 ft/s (~6 m/s); BCAS design 6–7 m/s, never above 9 m/s (registry: CAGI-CAGH, BCAS-BPG-101).</div>
+  </div>
+</section>
+
+<!-- ================= RECORDS ================= -->
+<section class="module" id="records">
+  <div class="modhead"><span class="valvetag">G-01</span><h3>Records, Assessments &amp; Reports</h3><span class="where">Workspace → Governance row</span></div>
+  <div class="modbody">
+    <p class="why">The audit trail. Anything you run with <b>Persist This Analysis</b> ticked becomes a calculation case with a code, title and notes — filterable by type (including Distribution Network), openable in detail, and feeding assessments and controlled reports.</p>
+    <h4>Persistence habit</h4>
+    <ol class="steps">
+      <li>Tick <b>Persist</b> only for runs worth keeping — give a real code (e.g. <code>DIST-001</code>) and a title a colleague would understand.</li>
+      <li>Calculation Records → filter by type → open a case to see inputs + full results as saved.</li>
+      <li>Assessments collect structured observations; Reports is the controlled outward-facing workspace.</li>
+    </ol>
+    <div class="dataset">
+      <div class="dhead"><span class="dname">Sample persistence metadata</span><button data-copy>Copy</button></div>
+      <table><tr><th>Field</th><th>Value</th></tr>
+        <tr><td>Calculation code</td><td class="val">DIST-001</td></tr>
+        <tr><td>Title</td><td class="val">Main header sizing — press line extension</td></tr>
+        <tr><td>Engineering notes</td><td class="val">Basis: 600 Nm³/hr design flow; BCAS 6 m/s target; verify fittings list before construction.</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STANDARDS ================= -->
+<section class="module" id="standards">
+  <div class="modhead"><span class="valvetag">STD</span><h3>The standards behind the numbers</h3><span class="where">why you can defend every result</span></div>
+  <div class="modbody">
+    <p class="why">House rule: no engineering constant enters this platform without a citable standard or manufacturer-verified source. What you'll meet in results:</p>
+    <table style="margin-top:6px"><tr><th>Reference</th><th>Where it acts</th></tr>
+      <tr><td class="val">ISO 1217 (+Amd 1)</td><td>Rotary screw acceptance basis &amp; standard-air correction</td></tr>
+      <tr><td class="val">CAGI Compressed Air &amp; Gas Handbook (7th Ed., 2016) + Pressure Drop brief</td><td>Piping velocity ≤ 20 ft/s (~6 m/s) → RECOMMENDED band</td></tr>
+      <tr><td class="val">BCAS Best Practice Guide 101 (Installation)</td><td>6–7 m/s design band, 9 m/s never-exceed → CAUTION / EXCESSIVE bands</td></tr>
+      <tr><td class="val">API 617 / API 618 / ASME PTC-10</td><td>Centrifugal &amp; reciprocating engineering scope</td></tr>
+      <tr><td class="val">Darcy-Weisbach · ASME B36.10M · Moody (0.045 mm steel)</td><td>Distribution pressure-drop method, pipe IDs, roughness default</td></tr>
+      <tr><td class="val">₹5/kWh industrial tariff</td><td>User-confirmed standing default — editable in every calculation</td></tr>
+    </table>
+    <div class="callout"><b>Costs:</b> CAPEX comparisons are deliberately absent until real manufacturer quotes are loaded — the platform never invents a price.</div>
+  </div>
+</section>
+
+<!-- ================= TROUBLE ================= -->
+<section class="module" id="trouble">
+  <div class="modhead"><span class="valvetag">FIX</span><h3>Troubleshooting</h3><span class="where">the usual suspects</span></div>
+  <div class="modbody">
+    <table><tr><th>Symptom</th><th>Likely cause → fix</th></tr>
+      <tr><td>"Login failed" with correct password</td><td>Frontend pointing at the wrong backend port — check <code>VITE_API_BASE_URL</code> in <code>frontend/.env</code> matches the running backend (dev: <code>http://localhost:8010/api/v1</code>), restart <code>npm run dev</code>.</td></tr>
+      <tr><td>"Address already in use" on backend start</td><td>Another service holds the port (on the dev machine, 8000 = Bill Book). Identify with <code>ss -tlnp | grep &lt;port&gt;</code> and <code>ls -l /proc/&lt;pid&gt;/cwd</code>; run this backend on its own port.</td></tr>
+      <tr><td>Analysis returns HTTP 422 with a message</td><td>That message is the engineering validation itself (e.g. a path referencing an unknown segment) — fix the input it names.</td></tr>
+      <tr><td>Result fine but nothing in Calculation Records</td><td><b>Persist This Analysis</b> wasn't ticked, or code/title left empty — both are required to save.</td></tr>
+      <tr><td>Can't find the way back from a hub page</td><td>Use the <b>Advanced Engineering</b> button (returns to the hub) or the browser Back button. A clearer back label is on the improvement list.</td></tr>
+    </table>
+  </div>
+</section>
+
+<footer>
+  Kamra Compressor OS · Kamra Engineering Solutions, SAS Nagar (Mohali) · Manual v1.0, 30 Aug 2026.<br>
+  Sample datasets are illustrative training data for the KES Demo Plant scenario; replace with measured site data for client work. Velocity screening bands are calibrated to CAGI and BCAS published guidance (standards registry entries CAGI-CAGH, BCAS-BPG-101).
+</footer>
+</main>
+</div>
+
+<script>
+(function(){
+  // copy dataset tables as tab-separated text
+  document.querySelectorAll('[data-copy]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var table = btn.closest('.dataset').querySelector('table');
+      var lines = [];
+      table.querySelectorAll('tr').forEach(function(tr){
+        var cells = [];
+        tr.querySelectorAll('th,td').forEach(function(c){ cells.push(c.innerText.trim()); });
+        lines.push(cells.join('\t'));
+      });
+      var text = lines.join('\n');
+      function done(){ var t=btn.textContent; btn.textContent='Copied ✓'; setTimeout(function(){btn.textContent=t;},1400); }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, done);
+      } else {
+        var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta);
+        ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta); done();
+      }
+    });
+  });
+
+  // search filter: hide modules whose text doesn't match
+  var q = document.getElementById('q');
+  var modules = Array.prototype.slice.call(document.querySelectorAll('section.module'));
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav a'));
+  q.addEventListener('input', function(){
+    var term = q.value.trim().toLowerCase();
+    modules.forEach(function(m){
+      var hit = !term || m.innerText.toLowerCase().indexOf(term) !== -1;
+      m.classList.toggle('hidden', !hit);
+      var link = document.querySelector('nav a[href="#'+m.id+'"]');
+      if (link) link.classList.toggle('hidden', !hit);
+    });
+  });
+
+  // scroll-spy for the rail
+  var byId = {};
+  links.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+  if ('IntersectionObserver' in window) {
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) {
+          links.forEach(function(a){ a.classList.remove('active'); });
+          var a = byId[e.target.id]; if (a) a.classList.add('active');
+        }
+      });
+    }, {rootMargin:'-25% 0px -65% 0px'});
+    modules.forEach(function(m){ obs.observe(m); });
+  }
+})();
+</script>
+</body>
+</html>
