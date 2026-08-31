@@ -71,7 +71,13 @@ class CompressedAirLeakageManagementRequest(BaseModel):
         ge=0,
         le=1,
         description=(
-            "Fraction of avoided air demand that the compressor controls convert into electrical savings. 1 = fully effective turndown (VSD, on/off, or a well-sequenced station); load/unload typically 0.3-0.6; inlet modulation without unloading roughly 0.3. Ref: US DOE / Compressed Air Challenge, 'Improving Compressed Air System Performance: A Sourcebook for Industry'."
+            "Fraction of avoided air demand that the compressor "
+            "controls convert into electrical savings. 1 = fully "
+            "effective turndown (VSD, on/off, or a well-sequenced "
+            "station); load/unload typically 0.3-0.6; inlet modulation "
+            "without unloading roughly 0.3. Ref: US DOE / Compressed "
+            "Air Challenge, 'Improving Compressed Air System "
+            "Performance: A Sourcebook for Industry'."
         ),
     )
 

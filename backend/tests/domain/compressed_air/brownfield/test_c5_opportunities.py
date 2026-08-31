@@ -12,10 +12,6 @@ from decimal import Decimal
 
 import pytest
 
-from app.domain.compressed_air.brownfield.opportunity_engine import (
-    OpportunityCategory,
-    identify_brownfield_opportunities,
-)
 from app.domain.compressed_air.brownfield.audit_analysis import (
     analyze_brownfield_audit,
 )
@@ -25,6 +21,10 @@ from app.domain.compressed_air.brownfield.audit_models import (
     CompressorMeasurementPoint,
     ExistingCompressor,
     SystemMeasurementPoint,
+)
+from app.domain.compressed_air.brownfield.opportunity_engine import (
+    OpportunityCategory,
+    identify_brownfield_opportunities,
 )
 from app.domain.compressed_air.station.station_models import (
     CompressorControlMode,
