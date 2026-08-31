@@ -9,6 +9,10 @@ from app.domain.compressed_air.energy.leakage_energy import (
     LeakageEnergyInput,
     calculate_leakage_energy,
 )
+from app.domain.compressed_air.energy.motor_pfc import (
+    MotorMeasurementInput,
+    calculate_motor_pfc,
+)
 from app.domain.compressed_air.energy.pressure_energy import (
     PressureEnergyInput,
     calculate_pressure_energy_saving,
@@ -23,6 +27,7 @@ class OpportunityCategory(StrEnum):
     UTILIZATION = "UTILIZATION"
     CONDENSATE_DRAIN = "CONDENSATE_DRAIN"
     FILTER_EFFICIENCY = "FILTER_EFFICIENCY"
+    POWER_FACTOR = "POWER_FACTOR"
 
 
 class OpportunityPriority(StrEnum):
@@ -73,6 +78,15 @@ def identify_brownfield_opportunities(
     # pressure, incurring extra power. Ref: DOE/CAC sourcebook;
     # manufacturer filter performance curves.
     filter_excess_pressure_drop_bar: Decimal | None = None,
+    # Field-measured motor electrical data (line voltage, line current,
+    # power factor) for the compressor motor. When supplied, the required
+    # power-factor correction capacitor bank is sized per IS 15167.
+    motor_measurement: MotorMeasurementInput | None = None,
+    # Power-factor penalty (or kVAh surcharge) the utility is currently
+    # billing the site, per year, in local currency. USER-SUPPLIED ONLY:
+    # tariff penalty structures vary by state utility, so no default is
+    # assumed and no penalty saving is claimed without this figure.
+    pf_penalty_annual_cost: Decimal | None = None,
 ) -> BrownfieldOpportunityResult:
     opportunities: list[BrownfieldOpportunity] = []
 
@@ -273,6 +287,67 @@ def identify_brownfield_opportunities(
                     estimated_annual_cost_saving=(
                         filter_pressure_result.annual_cost_saving
                     ),
+                )
+            )
+
+    # -- Power-factor correction opportunity --------------------------
+    #
+    # HONESTY NOTE (project Rule 1): power-factor correction does NOT
+    # reduce the motor's active power draw. The capacitor supplies
+    # reactive current locally, which reduces line current, transformer
+    # and cable loading, I2R distribution losses and -- in most Indian
+    # state tariffs -- the PF penalty / kVAh surcharge on the bill.
+    # Therefore this opportunity reports ZERO kW and ZERO kWh saving,
+    # and reports a cost saving only when the site has told us the PF
+    # penalty it is actually being billed.
+    #
+    # Refs: IEEE Std 141 (Red Book) three-phase power measurement;
+    # IS 15167 shunt capacitor kVAr sizing.
+    if motor_measurement is not None:
+        pfc = calculate_motor_pfc(motor_measurement)
+
+        if pfc.pfc_correction_beneficial:
+            avoided_penalty = (
+                pf_penalty_annual_cost
+                if pf_penalty_annual_cost is not None
+                else Decimal("0")
+            )
+
+            opportunities.append(
+                BrownfieldOpportunity(
+                    opportunity_code="PF-CORRECTION",
+                    category=OpportunityCategory.POWER_FACTOR,
+                    priority=(
+                        OpportunityPriority.MEDIUM
+                        if avoided_penalty > 0
+                        else OpportunityPriority.LOW
+                    ),
+                    title=(
+                        "Install "
+                        f"{pfc.required_capacitor_kvar} kVAr power-factor "
+                        "correction at the compressor motor"
+                    ),
+                    rationale=(
+                        "Measured power factor "
+                        f"{pfc.measured_power_factor} is below the target "
+                        f"{pfc.target_power_factor}. Measured active power "
+                        f"{pfc.measured_active_power_kw} kW "
+                        "(P = sqrt3 x V x I x PF, IEEE Std 141) draws "
+                        f"{pfc.measured_reactive_power_kvar} kVAr reactive; "
+                        "a capacitor bank of "
+                        f"{pfc.required_capacitor_kvar} kVAr "
+                        "(Qc = P x (tan phi1 - tan phi2), IS 15167) brings "
+                        "the motor to target. Power-factor correction "
+                        "reduces reactive current, cable and transformer "
+                        "loading and the utility PF penalty; it does NOT "
+                        "reduce the motor active power draw, so no kW or "
+                        "kWh saving is claimed here. The cost saving shown "
+                        "is the annual PF penalty reported by the site; "
+                        "where no penalty figure was supplied it is zero."
+                    ),
+                    estimated_power_saving_kw=Decimal("0"),
+                    estimated_annual_energy_saving_kwh=Decimal("0"),
+                    estimated_annual_cost_saving=avoided_penalty,
                 )
             )
 
