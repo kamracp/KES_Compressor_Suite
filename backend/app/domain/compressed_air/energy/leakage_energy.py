@@ -22,6 +22,14 @@ class LeakageEnergyInput:
 
     expected_repair_fraction: Decimal = Decimal("1")
 
+    # Fraction of the avoided air demand that the compressor controls
+    # actually convert into electrical savings. 1 = fully effective
+    # turndown (VSD or a well-sequenced multi-machine station); an
+    # inlet-modulating machine without unloading converts roughly half.
+    # Deliberately an explicit input rather than a hidden assumption:
+    # this is the most over-claimed number in compressed-air proposals.
+    demand_saving_control_factor: Decimal = Decimal("1")
+
 
 @dataclass(frozen=True, slots=True)
 class LeakageEnergyResult:
@@ -36,6 +44,7 @@ class LeakageEnergyResult:
     annual_wasted_energy_cost: Decimal
 
     expected_repair_fraction: Decimal
+    demand_saving_control_factor: Decimal
 
     recoverable_leakage_flow_nm3_per_hr: Decimal
     recoverable_power_kw: Decimal
@@ -65,11 +74,26 @@ def calculate_leakage_energy(
         inputs.leakage_flow_nm3_per_hr * inputs.expected_repair_fraction
     )
 
-    recoverable_power_kw = wasted_power_kw * inputs.expected_repair_fraction
+    # Flow quantities stay physical: repaired leaks stop leaking air
+    # regardless of controls. Only the electrical conversion below is
+    # scaled by the demand-saving control factor.
+    recoverable_power_kw = (
+        wasted_power_kw
+        * inputs.expected_repair_fraction
+        * inputs.demand_saving_control_factor
+    )
 
-    annual_energy_saving_kwh = annual_wasted_energy_kwh * inputs.expected_repair_fraction
+    annual_energy_saving_kwh = (
+        annual_wasted_energy_kwh
+        * inputs.expected_repair_fraction
+        * inputs.demand_saving_control_factor
+    )
 
-    annual_cost_saving = annual_wasted_energy_cost * inputs.expected_repair_fraction
+    annual_cost_saving = (
+        annual_wasted_energy_cost
+        * inputs.expected_repair_fraction
+        * inputs.demand_saving_control_factor
+    )
 
     residual_leakage_flow_nm3_per_hr = (
         inputs.leakage_flow_nm3_per_hr - recoverable_leakage_flow_nm3_per_hr
@@ -82,6 +106,7 @@ def calculate_leakage_energy(
         annual_wasted_energy_kwh=annual_wasted_energy_kwh,
         annual_wasted_energy_cost=annual_wasted_energy_cost,
         expected_repair_fraction=inputs.expected_repair_fraction,
+        demand_saving_control_factor=(inputs.demand_saving_control_factor),
         recoverable_leakage_flow_nm3_per_hr=(recoverable_leakage_flow_nm3_per_hr),
         recoverable_power_kw=recoverable_power_kw,
         annual_energy_saving_kwh=annual_energy_saving_kwh,
@@ -104,6 +129,14 @@ def _validate_inputs(
 
     if inputs.electricity_tariff_per_kwh < 0:
         raise InvalidLeakageEnergyInputError("Electricity tariff cannot be negative.")
+
+    if (
+        inputs.demand_saving_control_factor < 0
+        or inputs.demand_saving_control_factor > 1
+    ):
+        raise InvalidLeakageEnergyInputError(
+            "Demand-saving control factor must be between zero and one."
+        )
 
     if inputs.expected_repair_fraction < 0 or inputs.expected_repair_fraction > 1:
         raise InvalidLeakageEnergyInputError(

@@ -87,6 +87,10 @@ class LeakageManagementInput:
     annual_operating_hours: Decimal
     electricity_tariff_per_kwh: Decimal
 
+    # System-level control conversion factor for demand-side savings
+    # (see LeakageEnergyInput.demand_saving_control_factor).
+    demand_saving_control_factor: Decimal = Decimal("1")
+
     average_system_demand_nm3_per_hr: Decimal | None = None
 
     notes: str | None = None

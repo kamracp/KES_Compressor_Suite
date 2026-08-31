@@ -52,6 +52,7 @@ def analyze_leakage_management(
                 annual_operating_hours=inputs.annual_operating_hours,
                 electricity_tariff_per_kwh=(inputs.electricity_tariff_per_kwh),
                 expected_repair_fraction=(item.expected_repair_fraction),
+                demand_saving_control_factor=(inputs.demand_saving_control_factor),
             )
         )
 

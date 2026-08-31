@@ -48,6 +48,7 @@ class CompressedAirLeakageService:
                 specific_power_kw_per_nm3_per_min=(request.specific_power_kw_per_nm3_per_min),
                 annual_operating_hours=request.annual_operating_hours,
                 electricity_tariff_per_kwh=(request.electricity_tariff_per_kwh),
+                demand_saving_control_factor=(request.demand_saving_control_factor),
                 average_system_demand_nm3_per_hr=(request.average_system_demand_nm3_per_hr),
                 notes=request.notes,
             )
@@ -93,6 +94,7 @@ class CompressedAirLeakageService:
                         annual_wasted_energy_kwh=(item.energy.annual_wasted_energy_kwh),
                         annual_wasted_energy_cost=(item.energy.annual_wasted_energy_cost),
                         expected_repair_fraction=(item.energy.expected_repair_fraction),
+                        demand_saving_control_factor=(item.energy.demand_saving_control_factor),
                         recoverable_leakage_flow_nm3_per_hr=(
                             item.energy.recoverable_leakage_flow_nm3_per_hr
                         ),

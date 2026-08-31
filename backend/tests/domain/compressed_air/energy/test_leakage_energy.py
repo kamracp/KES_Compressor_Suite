@@ -197,3 +197,62 @@ def test_invalid_repair_fraction_is_rejected() -> None:
                 expected_repair_fraction=Decimal("1.10"),
             )
         )
+
+
+def test_control_factor_scales_electrical_savings_not_flows() -> None:
+    base = LeakageEnergyInput(
+        leakage_flow_nm3_per_hr=Decimal("90"),
+        specific_power_kw_per_nm3_per_min=Decimal("7.5"),
+        annual_operating_hours=Decimal("6000"),
+        electricity_tariff_per_kwh=Decimal("5"),
+        expected_repair_fraction=Decimal("0.8"),
+    )
+
+    ideal = calculate_leakage_energy(base)
+
+    half = calculate_leakage_energy(
+        LeakageEnergyInput(
+            leakage_flow_nm3_per_hr=Decimal("90"),
+            specific_power_kw_per_nm3_per_min=Decimal("7.5"),
+            annual_operating_hours=Decimal("6000"),
+            electricity_tariff_per_kwh=Decimal("5"),
+            expected_repair_fraction=Decimal("0.8"),
+            demand_saving_control_factor=Decimal("0.5"),
+        )
+    )
+
+    # Electrical conversions scale with the control factor.
+    assert half.recoverable_power_kw == ideal.recoverable_power_kw * Decimal("0.5")
+    assert half.annual_energy_saving_kwh == (
+        ideal.annual_energy_saving_kwh * Decimal("0.5")
+    )
+    assert half.annual_cost_saving == ideal.annual_cost_saving * Decimal("0.5")
+
+    # Physical air quantities do not: repaired leaks stop leaking air
+    # regardless of how well the compressor can turn down.
+    assert half.recoverable_leakage_flow_nm3_per_hr == (
+        ideal.recoverable_leakage_flow_nm3_per_hr
+    )
+    assert half.residual_leakage_flow_nm3_per_hr == (
+        ideal.residual_leakage_flow_nm3_per_hr
+    )
+    assert half.wasted_power_kw == ideal.wasted_power_kw
+
+    assert half.demand_saving_control_factor == Decimal("0.5")
+    assert ideal.demand_saving_control_factor == Decimal("1")
+
+
+def test_control_factor_above_one_is_rejected() -> None:
+    with pytest.raises(
+        InvalidLeakageEnergyInputError,
+        match="Demand-saving control factor must be between zero and one.",
+    ):
+        calculate_leakage_energy(
+            LeakageEnergyInput(
+                leakage_flow_nm3_per_hr=Decimal("90"),
+                specific_power_kw_per_nm3_per_min=Decimal("7.5"),
+                annual_operating_hours=Decimal("6000"),
+                electricity_tariff_per_kwh=Decimal("5"),
+                demand_saving_control_factor=Decimal("1.2"),
+            )
+        )

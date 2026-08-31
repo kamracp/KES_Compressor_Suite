@@ -157,3 +157,32 @@ def test_empty_leak_register_returns_422() -> None:
     )
 
     assert response.status_code == 422
+
+
+def test_control_factor_halves_electrical_savings_via_api() -> None:
+    ideal_payload = valid_request()
+
+    half_payload = valid_request()
+    half_payload["demand_saving_control_factor"] = "0.5"
+
+    ideal = client.post(ENDPOINT, json=ideal_payload)
+    half = client.post(ENDPOINT, json=half_payload)
+
+    assert ideal.status_code == 200
+    assert half.status_code == 200
+
+    ideal_item = ideal.json()["items"][0]
+    half_item = half.json()["items"][0]
+
+    assert Decimal(half_item["energy"]["annual_cost_saving"]) == (
+        Decimal(ideal_item["energy"]["annual_cost_saving"]) / 2
+    )
+
+    # Air quantities are unchanged by the control factor.
+    assert half_item["energy"]["recoverable_leakage_flow_nm3_per_hr"] == (
+        ideal_item["energy"]["recoverable_leakage_flow_nm3_per_hr"]
+    )
+
+    assert Decimal(
+        half_item["energy"]["demand_saving_control_factor"]
+    ) == Decimal("0.5")
