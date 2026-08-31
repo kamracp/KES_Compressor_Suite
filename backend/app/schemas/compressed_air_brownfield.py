@@ -166,6 +166,70 @@ class BrownfieldSystemAuditRequest(BaseModel):
         ),
     )
 
+    # -- Motor & power-factor measurement (C-6) --------------------
+    # All four measurement fields are optional; the PF-CORRECTION
+    # opportunity is raised only when voltage, current and power factor
+    # are all supplied. Ref: IEEE Std 141 (Red Book), IS 15167 Part 1.
+    motor_measured_voltage_v: Decimal | None = Field(
+        default=None,
+        gt=0,
+        description=(
+            "Measured line-to-line voltage at the compressor motor "
+            "terminals (V, three-phase). Ref: IEEE Std 141."
+        ),
+    )
+
+    motor_measured_current_a: Decimal | None = Field(
+        default=None,
+        ge=0,
+        description=(
+            "Measured line current at the compressor motor (A, "
+            "three-phase). Ref: IEEE Std 141."
+        ),
+    )
+
+    motor_measured_power_factor: Decimal | None = Field(
+        default=None,
+        gt=0,
+        le=1,
+        description=(
+            "Measured displacement power factor at the compressor motor "
+            "(0-1). Ref: IEEE Std 141."
+        ),
+    )
+
+    motor_target_power_factor: Decimal = Field(
+        default=Decimal("0.95"),
+        gt=0,
+        le=1,
+        description=(
+            "Target power factor after correction. Default 0.95 is the "
+            "threshold above which most Indian state utility tariffs "
+            "stop levying a power-factor penalty; set to the value your "
+            "own tariff requires. Ref: IS 15167 Part 1."
+        ),
+    )
+
+    motor_rated_power_kw: Decimal | None = Field(
+        default=None,
+        gt=0,
+        description=(
+            "Motor nameplate rated power (kW). Used only to report the "
+            "deviation of measured power from nameplate."
+        ),
+    )
+
+    pf_penalty_annual_cost: Decimal | None = Field(
+        default=None,
+        ge=0,
+        description=(
+            "Power-factor penalty or kVAh surcharge the utility is "
+            "currently billing this site per year, in local currency. "
+            "User-supplied only: penalty structures differ by state "
+            "utility, so no saving is claimed without this figure."
+        ),
+    )
+
     notes: str | None = None
 
 

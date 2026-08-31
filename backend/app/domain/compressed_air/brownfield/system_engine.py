@@ -13,6 +13,9 @@ from app.domain.compressed_air.brownfield.opportunity_engine import (
 from app.domain.compressed_air.energy.leakage_energy import (
     LeakageEnergyResult,
 )
+from app.domain.compressed_air.energy.motor_pfc import (
+    MotorMeasurementInput,
+)
 from app.domain.compressed_air.energy.pressure_energy import (
     PressureEnergyInput,
     PressureEnergyResult,
@@ -43,6 +46,14 @@ class BrownfieldSystemEngineInput:
     demand_saving_control_factor: Decimal = Decimal("1")
 
     power_penalty_fraction_per_bar: Decimal | None = None
+
+    # Field-measured motor electrical data; drives the PF-CORRECTION
+    # opportunity (IEEE Std 141 power, IS 15167 capacitor sizing).
+    motor_measurement: MotorMeasurementInput | None = None
+
+    # Annual PF penalty the utility is currently billing the site.
+    # User-supplied only; never assumed from a tariff.
+    pf_penalty_annual_cost: Decimal | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -93,6 +104,8 @@ def analyze_brownfield_system(
         filter_excess_pressure_drop_bar=(
             inputs.filter_excess_pressure_drop_bar
         ),
+        motor_measurement=inputs.motor_measurement,
+        pf_penalty_annual_cost=inputs.pf_penalty_annual_cost,
     )
 
     leakage_energy = _extract_leakage_energy(

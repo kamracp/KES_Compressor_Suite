@@ -9,6 +9,9 @@ from app.domain.compressed_air.brownfield.system_engine import (
     BrownfieldSystemEngineInput,
     analyze_brownfield_system,
 )
+from app.domain.compressed_air.energy.motor_pfc import (
+    MotorMeasurementInput,
+)
 from app.schemas.compressed_air_brownfield import (
     BrownfieldOpportunityResponse,
     BrownfieldSystemAuditRequest,
@@ -72,6 +75,22 @@ class CompressedAirBrownfieldService:
             notes=request.notes,
         )
 
+        # PF-CORRECTION needs all three measured quantities; a partial
+        # measurement is not enough to compute P = sqrt3 x V x I x PF.
+        motor_measurement = None
+        if (
+            request.motor_measured_voltage_v is not None
+            and request.motor_measured_current_a is not None
+            and request.motor_measured_power_factor is not None
+        ):
+            motor_measurement = MotorMeasurementInput(
+                measured_voltage_v=request.motor_measured_voltage_v,
+                measured_current_a=request.motor_measured_current_a,
+                measured_power_factor=(request.motor_measured_power_factor),
+                target_power_factor=(request.motor_target_power_factor),
+                rated_motor_power_kw=request.motor_rated_power_kw,
+            )
+
         result = analyze_brownfield_system(
             BrownfieldSystemEngineInput(
                 audit=audit,
@@ -85,6 +104,8 @@ class CompressedAirBrownfieldService:
                 filter_excess_pressure_drop_bar=(
                     request.filter_excess_pressure_drop_bar
                 ),
+                motor_measurement=motor_measurement,
+                pf_penalty_annual_cost=(request.pf_penalty_annual_cost),
             )
         )
 
