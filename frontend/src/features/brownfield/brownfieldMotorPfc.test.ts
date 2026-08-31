@@ -78,10 +78,24 @@ describe("brownfield motor and PFC inputs", () => {
   });
 
   it("accepts a form with no motor measurement at all", () => {
+    // The initial form carries one blank compressor row, whose own
+    // "Rated motor power" validation is unrelated to C-6. Assert on the
+    // exact labels this feature added, not on the word "motor".
+    const motorMeasurementLabels = [
+      "Measured motor power factor",
+      "Target power factor",
+      "Measured motor voltage",
+      "Measured motor current",
+      "Motor nameplate power",
+      "Annual power-factor penalty",
+    ];
+
     const errors = validateBrownfieldFormState(baseState());
 
     expect(
-      errors.some((error) => error.toLowerCase().includes("motor")),
+      errors.some((error) =>
+        motorMeasurementLabels.some((label) => error.includes(label)),
+      ),
     ).toBe(false);
   });
 });
