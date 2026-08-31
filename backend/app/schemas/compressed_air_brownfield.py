@@ -139,6 +139,27 @@ class BrownfieldSystemAuditRequest(BaseModel):
         le=1,
     )
 
+    condensate_drain_air_loss_nm3_per_hr: Decimal | None = Field(
+        default=None,
+        ge=0,
+        description=(
+            'Total Nm3/hr of compressed air expelled by timed solenoid '
+            'condensate drains regardless of condensate level. Replacing '
+            'with zero-loss drains eliminates this waste entirely. '
+            'Ref: US DOE / Compressed Air Challenge Sourcebook.'
+        ),
+    )
+
+    filter_excess_pressure_drop_bar: Decimal | None = Field(
+        default=None,
+        ge=0,
+        description=(
+            'Extra pressure drop across dirty or undersized filter '
+            'elements beyond their clean design delta-p (bar). '
+            'Ref: US DOE / Compressed Air Challenge Sourcebook.'
+        ),
+    )
+
     notes: str | None = None
 
 

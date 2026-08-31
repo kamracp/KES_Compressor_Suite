@@ -77,7 +77,14 @@ class CompressedAirBrownfieldService:
                 audit=audit,
                 optimized_discharge_pressure_bar_g=(request.optimized_discharge_pressure_bar_g),
                 expected_leak_repair_fraction=(request.expected_leak_repair_fraction),
+                demand_saving_control_factor=(request.demand_saving_control_factor),
                 power_penalty_fraction_per_bar=(request.power_penalty_fraction_per_bar),
+                condensate_drain_air_loss_nm3_per_hr=(
+                    request.condensate_drain_air_loss_nm3_per_hr
+                ),
+                filter_excess_pressure_drop_bar=(
+                    request.filter_excess_pressure_drop_bar
+                ),
             )
         )
 

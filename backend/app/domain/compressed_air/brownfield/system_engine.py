@@ -35,8 +35,12 @@ class BrownfieldSystemEngineInput:
     audit: BrownfieldAuditCase
 
     optimized_discharge_pressure_bar_g: Decimal | None = None
+    condensate_drain_air_loss_nm3_per_hr: Decimal | None = None
+    filter_excess_pressure_drop_bar: Decimal | None = None
 
     expected_leak_repair_fraction: Decimal = Decimal("0.80")
+
+    demand_saving_control_factor: Decimal = Decimal("1")
 
     power_penalty_fraction_per_bar: Decimal | None = None
 
@@ -80,14 +84,22 @@ def analyze_brownfield_system(
     opportunities = identify_brownfield_opportunities(
         analysis=audit_analysis,
         expected_leak_repair_fraction=(inputs.expected_leak_repair_fraction),
+        demand_saving_control_factor=(inputs.demand_saving_control_factor),
         optimized_discharge_pressure_bar_g=(inputs.optimized_discharge_pressure_bar_g),
         power_penalty_fraction_per_bar=(inputs.power_penalty_fraction_per_bar),
+        condensate_drain_air_loss_nm3_per_hr=(
+            inputs.condensate_drain_air_loss_nm3_per_hr
+        ),
+        filter_excess_pressure_drop_bar=(
+            inputs.filter_excess_pressure_drop_bar
+        ),
     )
 
     leakage_energy = _extract_leakage_energy(
         analysis=audit_analysis,
         opportunities=opportunities,
         expected_repair_fraction=(inputs.expected_leak_repair_fraction),
+        demand_saving_control_factor=(inputs.demand_saving_control_factor),
     )
 
     pressure_energy = _calculate_pressure_energy(
@@ -159,6 +171,7 @@ def _extract_leakage_energy(
     analysis: BrownfieldAuditAnalysisResult,
     opportunities: BrownfieldOpportunityResult,
     expected_repair_fraction: Decimal,
+    demand_saving_control_factor: Decimal,
 ) -> LeakageEnergyResult | None:
     if not analysis.significant_leakage_detected:
         return None
@@ -178,6 +191,7 @@ def _extract_leakage_energy(
             annual_operating_hours=analysis.annual_operating_hours,
             electricity_tariff_per_kwh=(analysis.electricity_tariff_per_kwh),
             expected_repair_fraction=expected_repair_fraction,
+            demand_saving_control_factor=(demand_saving_control_factor),
         )
     )
 
