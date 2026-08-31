@@ -24,6 +24,7 @@ import { BrownfieldEngineeringReviewSection } from "../features/brownfield/compo
 import { CompressorMeasurementsSection } from "../features/brownfield/components/CompressorMeasurementsSection";
 import { ExistingCompressorSection } from "../features/brownfield/components/ExistingCompressorSection";
 import { LeakageSurveySection } from "../features/brownfield/components/LeakageSurveySection";
+import { MotorPfcSection } from "../features/brownfield/components/MotorPfcSection";
 import { OptimizationBasisSection } from "../features/brownfield/components/OptimizationBasisSection";
 import { SystemMeasurementsSection } from "../features/brownfield/components/SystemMeasurementsSection";
 import {
@@ -385,6 +386,21 @@ export function BrownfieldPlantAssessmentPage() {
           changeState((current) => ({
             ...current,
             leakageSummary,
+          }))
+        }
+      />
+
+      <MotorPfcSection
+        motorMeasuredVoltageV={formState.motorMeasuredVoltageV}
+        motorMeasuredCurrentA={formState.motorMeasuredCurrentA}
+        motorMeasuredPowerFactor={formState.motorMeasuredPowerFactor}
+        motorTargetPowerFactor={formState.motorTargetPowerFactor}
+        motorRatedPowerKw={formState.motorRatedPowerKw}
+        pfPenaltyAnnualCost={formState.pfPenaltyAnnualCost}
+        onChange={(field, value) =>
+          changeState((current) => ({
+            ...current,
+            [field]: value,
           }))
         }
       />

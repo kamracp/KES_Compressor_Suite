@@ -25,7 +25,10 @@ export type BrownfieldOpportunityCategory =
   | "UNLOADED_RUNNING"
   | "PRESSURE"
   | "CAPACITY"
-  | "UTILIZATION";
+  | "UTILIZATION"
+  | "CONDENSATE_DRAIN"
+  | "FILTER_EFFICIENCY"
+  | "POWER_FACTOR";
 
 export type BrownfieldOpportunityPriority =
   | "HIGH"
@@ -102,7 +105,37 @@ export type BrownfieldSystemAuditRequest = {
   demand_saving_control_factor?: DecimalString;
   power_penalty_fraction_per_bar: DecimalString | null;
 
+  // Motor electrical measurement (C-6). All three of voltage, current
+  // and power factor must be present for the PF-CORRECTION opportunity
+  // to be raised. Ref: IEEE Std 141, IS 15167 Part 1.
+  motor_measured_voltage_v?: DecimalString | null;
+  motor_measured_current_a?: DecimalString | null;
+  motor_measured_power_factor?: DecimalString | null;
+  motor_target_power_factor?: DecimalString;
+  motor_rated_power_kw?: DecimalString | null;
+
+  // Annual PF penalty the utility currently bills this site.
+  // User-supplied only; no penalty saving is claimed without it.
+  pf_penalty_annual_cost?: DecimalString | null;
+
   notes?: string | null;
+};
+
+export type MotorPfcResult = {
+  measured_voltage_v: DecimalString;
+  measured_current_a: DecimalString;
+  measured_power_factor: DecimalString;
+  target_power_factor: DecimalString;
+
+  measured_active_power_kw: DecimalString;
+  measured_reactive_power_kvar: DecimalString;
+  target_reactive_power_kvar: DecimalString;
+
+  required_capacitor_kvar: DecimalString;
+
+  pfc_correction_beneficial: boolean;
+
+  power_deviation_from_nameplate: DecimalString | null;
 };
 
 export type BrownfieldOpportunity = {
@@ -164,6 +197,8 @@ export type BrownfieldSystemAuditResponse = {
   installed_capacity_is_sufficient_for_peak: boolean;
   high_unloaded_running_detected: boolean;
   significant_leakage_detected: boolean;
+
+  motor_pfc: MotorPfcResult | null;
 
   opportunities: BrownfieldOpportunity[];
 };

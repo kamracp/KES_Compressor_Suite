@@ -85,6 +85,9 @@ export const opportunityCategoryLabels: Record<
   PRESSURE: "Pressure",
   CAPACITY: "Capacity",
   UTILIZATION: "Utilization",
+  CONDENSATE_DRAIN: "Condensate Drain",
+  FILTER_EFFICIENCY: "Filter Efficiency",
+  POWER_FACTOR: "Power Factor",
 };
 
 export const opportunityPriorityLabels: Record<

@@ -522,6 +522,67 @@ export function BrownfieldEngineeringReviewSection({
               </div>
             </section>
 
+            {result.motor_pfc && (
+              <section className="border-t border-slate-100 pt-6">
+                <div className="mb-4 flex items-center gap-2">
+                  <Zap className="size-4 text-slate-500" />
+
+                  <h3 className="text-sm font-semibold text-slate-900">
+                    Motor Measurement & Power Factor
+                  </h3>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                  <Metric
+                    label="Measured Active Power"
+                    value={formatDecimal(
+                      result.motor_pfc.measured_active_power_kw,
+                    )}
+                    unit="kW · P = sqrt3 x V x I x PF"
+                  />
+
+                  <Metric
+                    label="Measured Reactive Power"
+                    value={formatDecimal(
+                      result.motor_pfc.measured_reactive_power_kvar,
+                    )}
+                    unit="kVAr at measured PF"
+                  />
+
+                  <Metric
+                    label="Required Capacitor Bank"
+                    value={formatDecimal(
+                      result.motor_pfc.required_capacitor_kvar,
+                    )}
+                    unit="kVAr · IS 15167"
+                  />
+
+                  <Metric
+                    label="Measured / Target PF"
+                    value={`${result.motor_pfc.measured_power_factor} / ${result.motor_pfc.target_power_factor}`}
+                  />
+                </div>
+
+                {result.motor_pfc.power_deviation_from_nameplate && (
+                  <div className="mt-4 sm:max-w-xs">
+                    <Metric
+                      label="Deviation from Nameplate"
+                      value={`${formatPercent(
+                        result.motor_pfc.power_deviation_from_nameplate,
+                      )}%`}
+                    />
+                  </div>
+                )}
+
+                <p className="mt-4 text-xs leading-5 text-slate-500">
+                  Power-factor correction reduces reactive current, cable and
+                  transformer loading and the utility power-factor penalty. It
+                  does not reduce the motor active power draw, so no kW or kWh
+                  saving is reported against this finding.
+                </p>
+              </section>
+            )}
+
             <section className="border-t border-slate-100 pt-6">
               <div className="mb-4 flex items-center gap-2">
                 <Lightbulb className="size-4 text-slate-500" />

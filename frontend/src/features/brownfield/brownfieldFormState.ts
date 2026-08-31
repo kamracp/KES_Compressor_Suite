@@ -23,6 +23,13 @@ export type BrownfieldFormState = {
   demandSavingControlFactor: string;
   powerPenaltyFractionPerBar: string;
 
+  motorMeasuredVoltageV: string;
+  motorMeasuredCurrentA: string;
+  motorMeasuredPowerFactor: string;
+  motorTargetPowerFactor: string;
+  motorRatedPowerKw: string;
+  pfPenaltyAnnualCost: string;
+
   notes: string;
 };
 
@@ -97,6 +104,13 @@ export function createInitialBrownfieldFormState(): BrownfieldFormState {
     expectedLeakRepairFraction: "0.80",
     demandSavingControlFactor: "1",
     powerPenaltyFractionPerBar: "",
+
+    motorMeasuredVoltageV: "",
+    motorMeasuredCurrentA: "",
+    motorMeasuredPowerFactor: "",
+    motorTargetPowerFactor: "0.95",
+    motorRatedPowerKw: "",
+    pfPenaltyAnnualCost: "",
 
     notes: "",
   };
@@ -388,7 +402,57 @@ export function validateBrownfieldFormState(
     errors,
   );
 
+  // Motor measurement (C-6): each field optional, but a supplied power
+  // factor must be a valid fraction and voltage/current non-negative.
+  validateOptionalFraction(
+    state.motorMeasuredPowerFactor,
+    "Measured motor power factor",
+    errors,
+  );
+
+  validateOptionalFraction(
+    state.motorTargetPowerFactor,
+    "Target power factor",
+    errors,
+  );
+
+  if (state.motorMeasuredVoltageV.trim()) {
+    requireNonNegative(
+      state.motorMeasuredVoltageV,
+      "Measured motor voltage",
+      errors,
+    );
+  }
+
+  if (state.motorMeasuredCurrentA.trim()) {
+    requireNonNegative(
+      state.motorMeasuredCurrentA,
+      "Measured motor current",
+      errors,
+    );
+  }
+
+  if (state.motorRatedPowerKw.trim()) {
+    requireNonNegative(
+      state.motorRatedPowerKw,
+      "Motor nameplate power",
+      errors,
+    );
+  }
+
+  if (state.pfPenaltyAnnualCost.trim()) {
+    requireNonNegative(
+      state.pfPenaltyAnnualCost,
+      "Annual power-factor penalty",
+      errors,
+    );
+  }
+
   return errors;
+}
+
+function nullableDecimal(value: string): string | null {
+  return value.trim() === "" ? null : value.trim();
 }
 
 function nullableText(value: string | null | undefined): string | null {
@@ -465,6 +529,24 @@ export function buildBrownfieldAuditRequest(
       state.powerPenaltyFractionPerBar.trim() === ""
         ? null
         : state.powerPenaltyFractionPerBar,
+
+    // Blank motor fields are sent as null: an unmeasured quantity must
+    // never reach the engine as a guessed number.
+    motor_measured_voltage_v: nullableDecimal(
+      state.motorMeasuredVoltageV,
+    ),
+    motor_measured_current_a: nullableDecimal(
+      state.motorMeasuredCurrentA,
+    ),
+    motor_measured_power_factor: nullableDecimal(
+      state.motorMeasuredPowerFactor,
+    ),
+    motor_target_power_factor:
+      state.motorTargetPowerFactor.trim() === ""
+        ? "0.95"
+        : state.motorTargetPowerFactor,
+    motor_rated_power_kw: nullableDecimal(state.motorRatedPowerKw),
+    pf_penalty_annual_cost: nullableDecimal(state.pfPenaltyAnnualCost),
 
     notes: nullableText(state.notes),
   };
