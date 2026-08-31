@@ -9,6 +9,8 @@ class StandardAuthority(StrEnum):
     CAGI = "CAGI"
     GPSA = "GPSA"
     ISO = "ISO"
+    EVO = "EVO"
+    ACADEMIC = "ACADEMIC"
 
 
 class StandardApplicability(StrEnum):
@@ -18,6 +20,9 @@ class StandardApplicability(StrEnum):
     PERFORMANCE_TESTING = "PERFORMANCE_TESTING"
     GAS_PROCESSING_DATA = "GAS_PROCESSING_DATA"
     DISTRIBUTION_PIPEWORK = "DISTRIBUTION_PIPEWORK"
+    ENERGY_AUDIT = "ENERGY_AUDIT"
+    LEAKAGE_MANAGEMENT = "LEAKAGE_MANAGEMENT"
+    MEASUREMENT_VERIFICATION = "MEASUREMENT_VERIFICATION"
 
 
 class StandardVerificationStatus(StrEnum):
@@ -174,14 +179,114 @@ BCAS_BPG_101 = EngineeringStandard(
 )
 
 
+
+ISO_6358 = EngineeringStandard(
+    standard_id="ISO-6358",
+    authority=StandardAuthority.ISO,
+    title=(
+        "Pneumatic fluid power — Determination of flow-rate characteristics "
+        "of components using compressible fluids — Parts 1–3"
+    ),
+    edition="Parts 1 and 2: 2013; Part 3: 2014",
+    publication_date="2013–2014",
+    applicability=(StandardApplicability.LEAKAGE_MANAGEMENT,),
+    verification_status=(StandardVerificationStatus.CLAUSE_MAPPING_PENDING),
+    notes=(
+        "ISO 6358 defines the choked-flow and subsonic-flow orifice model "
+        "(conductance C and critical pressure ratio b) for pneumatic "
+        "components. This is the citable basis for the leakage-orifice "
+        "flow-rate formula used in the leakage energy engine when "
+        "converting orifice diameter to equivalent flow. Cited in UK "
+        "compressed-air audit practice as the reference for leakage "
+        "quantification from crack/orifice diameter and system pressure. "
+        "Clause-level mapping requires an authorized ISO copy."
+    ),
+)
+
+
+ISO_11011 = EngineeringStandard(
+    standard_id="ISO-11011",
+    authority=StandardAuthority.ISO,
+    title="Compressed air — Energy efficiency — Evaluation",
+    edition="First edition",
+    publication_date="2013-06",
+    applicability=(StandardApplicability.ENERGY_AUDIT,),
+    verification_status=(StandardVerificationStatus.CLAUSE_MAPPING_PENDING),
+    notes=(
+        "ISO 11011:2013 specifies a systematic procedure for evaluating "
+        "the energy efficiency of a compressed-air system encompassing "
+        "supply (generation), transmission (distribution), and demand "
+        "(end use). It defines system boundaries, measurement points, "
+        "specific energy ratio (SER), and the structure of an energy "
+        "efficiency audit report. This is the governing framework for "
+        "the Brownfield audit engine: baseline SER, optimized SER, and "
+        "the opportunity report follow ISO 11011 system boundaries. "
+        "Clause-level mapping requires an authorized ISO copy."
+    ),
+)
+
+
+IPMVP_CORE = EngineeringStandard(
+    standard_id="IPMVP-CORE",
+    authority=StandardAuthority.EVO,
+    title=(
+        "International Performance Measurement and Verification Protocol "
+        "— Core Concepts"
+    ),
+    edition="Current edition",
+    publication_date=None,
+    applicability=(StandardApplicability.MEASUREMENT_VERIFICATION,),
+    verification_status=(StandardVerificationStatus.CLAUSE_MAPPING_PENDING),
+    notes=(
+        "IPMVP (published by the Efficiency Valuation Organization, EVO) "
+        "is the international framework for measuring and verifying energy "
+        "and water savings from efficiency projects. It defines four "
+        "M&V Options (A–D) ranging from stipulation with spot measurement "
+        "to whole-facility metering. In the Kamra Compressor OS context "
+        "IPMVP Option A (stipulated baseline, measured parameter) or "
+        "Option B (all parameters measured) is the recommended basis for "
+        "reporting verified leak-repair and pressure-reduction savings to "
+        "clients. Clause-level mapping requires the current EVO publication."
+    ),
+)
+
+
+ZAIM_2025 = EngineeringStandard(
+    standard_id="ZAIM-2025",
+    authority=StandardAuthority.ACADEMIC,
+    title=(
+        "Energy Efficiency Evaluation of an Industrial Compressed Air "
+        "System: A Case Study Applying ISO 11011"
+    ),
+    edition="Peer-reviewed article",
+    publication_date="2025",
+    applicability=(StandardApplicability.ENERGY_AUDIT,),
+    verification_status=(StandardVerificationStatus.OFFICIAL_SOURCE_VERIFIED),
+    notes=(
+        "Zaim et al. (2025), MDPI Processes, Vol. 13. A full ISO 11011 "
+        "audit of an industrial compressed-air installation with published "
+        "baseline and optimized measured data (flow, pressure, specific "
+        "power, SER). Serves as the external validation anchor for the "
+        "Brownfield engine golden case GC-BF-ZAIM-2025: if the engine "
+        "reproduces the paper's SER, recoverable power, and annual savings "
+        "figures from the published inputs, the audit model is validated "
+        "against a citable peer-reviewed source. DOI to be confirmed from "
+        "the authorized MDPI article page."
+    ),
+)
+
 ENGINEERING_STANDARDS: tuple[EngineeringStandard, ...] = (
     API_617,
     API_618,
     ASME_PTC_10,
     GPSA_ENGINEERING_DATA_BOOK,
     ISO_1217,
+    ISO_6358,
+    ISO_11011,
     CAGI_HANDBOOK,
     BCAS_BPG_101,
+    IPMVP_CORE,
+    ZAIM_2025,
 )
 
 

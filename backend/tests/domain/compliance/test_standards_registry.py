@@ -7,6 +7,10 @@ from app.domain.compliance.standards_registry import (
     ENGINEERING_STANDARDS,
     GPSA_ENGINEERING_DATA_BOOK,
     ISO_1217,
+    ISO_6358,
+    ISO_11011,
+    IPMVP_CORE,
+    ZAIM_2025,
     EngineeringStandard,
     StandardApplicability,
     StandardAuthority,
@@ -22,8 +26,12 @@ def test_registry_contains_expected_standards() -> None:
         ASME_PTC_10,
         GPSA_ENGINEERING_DATA_BOOK,
         ISO_1217,
+        ISO_6358,
+        ISO_11011,
         CAGI_HANDBOOK,
         BCAS_BPG_101,
+        IPMVP_CORE,
+        ZAIM_2025,
     )
 
 
@@ -142,3 +150,39 @@ def test_bcas_bpg_101_metadata() -> None:
 def test_distribution_standards_resolvable_by_id() -> None:
     assert get_standard("cagi-cagh") == CAGI_HANDBOOK
     assert get_standard(" bcas-bpg-101 ") == BCAS_BPG_101
+
+
+def test_iso_6358_metadata() -> None:
+    standard = ISO_6358
+
+    assert standard.standard_id == "ISO-6358"
+    assert standard.authority == StandardAuthority.ISO
+    assert standard.applicability == (StandardApplicability.LEAKAGE_MANAGEMENT,)
+    assert standard.verification_status == StandardVerificationStatus.CLAUSE_MAPPING_PENDING
+
+
+def test_iso_11011_metadata() -> None:
+    standard = ISO_11011
+
+    assert standard.standard_id == "ISO-11011"
+    assert standard.authority == StandardAuthority.ISO
+    assert standard.applicability == (StandardApplicability.ENERGY_AUDIT,)
+    assert standard.verification_status == StandardVerificationStatus.CLAUSE_MAPPING_PENDING
+
+
+def test_ipmvp_core_metadata() -> None:
+    standard = IPMVP_CORE
+
+    assert standard.standard_id == "IPMVP-CORE"
+    assert standard.authority == StandardAuthority.EVO
+    assert standard.applicability == (StandardApplicability.MEASUREMENT_VERIFICATION,)
+    assert standard.verification_status == StandardVerificationStatus.CLAUSE_MAPPING_PENDING
+
+
+def test_zaim_2025_metadata() -> None:
+    standard = ZAIM_2025
+
+    assert standard.standard_id == "ZAIM-2025"
+    assert standard.authority == StandardAuthority.ACADEMIC
+    assert standard.applicability == (StandardApplicability.ENERGY_AUDIT,)
+    assert standard.verification_status == StandardVerificationStatus.OFFICIAL_SOURCE_VERIFIED
