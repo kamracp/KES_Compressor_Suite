@@ -15,6 +15,8 @@ from app.domain.compressed_air.energy.leakage_energy import (
 )
 from app.domain.compressed_air.energy.motor_pfc import (
     MotorMeasurementInput,
+    MotorMeasurementResult,
+    calculate_motor_pfc,
 )
 from app.domain.compressed_air.energy.pressure_energy import (
     PressureEnergyInput,
@@ -64,6 +66,12 @@ class BrownfieldSystemEngineResult:
 
     leakage_energy: LeakageEnergyResult | None
     pressure_energy: PressureEnergyResult | None
+
+    # Present only when motor voltage, current and power factor were all
+    # measured. Reported for transparency even when the measured power
+    # factor already meets target (then no PF-CORRECTION opportunity is
+    # raised, but the measured kW and kVAr are still worth showing).
+    motor_pfc: MotorMeasurementResult | None
 
     opportunities: BrownfieldOpportunityResult
     optimization: SystemOptimizationResult
@@ -121,6 +129,12 @@ def analyze_brownfield_system(
         power_penalty_fraction_per_bar=(inputs.power_penalty_fraction_per_bar),
     )
 
+    motor_pfc = (
+        calculate_motor_pfc(inputs.motor_measurement)
+        if inputs.motor_measurement is not None
+        else None
+    )
+
     optimization = optimize_compressed_air_system(
         brownfield_analysis=audit_analysis,
         brownfield_opportunities=opportunities,
@@ -164,6 +178,7 @@ def analyze_brownfield_system(
         audit_analysis=audit_analysis,
         leakage_energy=leakage_energy,
         pressure_energy=pressure_energy,
+        motor_pfc=motor_pfc,
         opportunities=opportunities,
         optimization=optimization,
         current_average_power_kw=current_average_power_kw,

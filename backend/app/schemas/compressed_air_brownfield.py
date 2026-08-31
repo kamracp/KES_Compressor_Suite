@@ -246,6 +246,30 @@ class BrownfieldOpportunityResponse(BaseModel):
     estimated_annual_cost_saving: Decimal
 
 
+class MotorPfcResponse(BaseModel):
+    """
+    Measured motor power and power-factor correction sizing.
+
+    P    = sqrt3 x V x I x PF        (IEEE Std 141)
+    Q_c  = P x (tan phi1 - tan phi2) (IS 15167 Part 1)
+    """
+
+    measured_voltage_v: Decimal
+    measured_current_a: Decimal
+    measured_power_factor: Decimal
+    target_power_factor: Decimal
+
+    measured_active_power_kw: Decimal
+    measured_reactive_power_kvar: Decimal
+    target_reactive_power_kvar: Decimal
+
+    required_capacitor_kvar: Decimal
+
+    pfc_correction_beneficial: bool
+
+    power_deviation_from_nameplate: Decimal | None
+
+
 class BrownfieldSystemAuditResponse(BaseModel):
     audit_code: str
     project_id: int
@@ -290,5 +314,10 @@ class BrownfieldSystemAuditResponse(BaseModel):
     installed_capacity_is_sufficient_for_peak: bool
     high_unloaded_running_detected: bool
     significant_leakage_detected: bool
+
+    # Populated only when motor voltage, current and power factor were
+    # all supplied. Power-factor correction carries no kW or kWh saving
+    # (see PF-CORRECTION opportunity rationale).
+    motor_pfc: MotorPfcResponse | None = None
 
     opportunities: list[BrownfieldOpportunityResponse]

@@ -16,6 +16,7 @@ from app.schemas.compressed_air_brownfield import (
     BrownfieldOpportunityResponse,
     BrownfieldSystemAuditRequest,
     BrownfieldSystemAuditResponse,
+    MotorPfcResponse,
 )
 
 
@@ -125,6 +126,29 @@ class CompressedAirBrownfieldService:
             for item in result.opportunities.opportunities
         ]
 
+        motor_pfc = (
+            MotorPfcResponse(
+                measured_voltage_v=result.motor_pfc.measured_voltage_v,
+                measured_current_a=result.motor_pfc.measured_current_a,
+                measured_power_factor=(result.motor_pfc.measured_power_factor),
+                target_power_factor=(result.motor_pfc.target_power_factor),
+                measured_active_power_kw=(result.motor_pfc.measured_active_power_kw),
+                measured_reactive_power_kvar=(
+                    result.motor_pfc.measured_reactive_power_kvar
+                ),
+                target_reactive_power_kvar=(
+                    result.motor_pfc.target_reactive_power_kvar
+                ),
+                required_capacitor_kvar=(result.motor_pfc.required_capacitor_kvar),
+                pfc_correction_beneficial=(result.motor_pfc.pfc_correction_beneficial),
+                power_deviation_from_nameplate=(
+                    result.motor_pfc.power_deviation_from_nameplate
+                ),
+            )
+            if result.motor_pfc is not None
+            else None
+        )
+
         return BrownfieldSystemAuditResponse(
             audit_code=analysis.audit_code,
             project_id=analysis.project_id,
@@ -162,6 +186,7 @@ class CompressedAirBrownfieldService:
             ),
             high_unloaded_running_detected=(analysis.high_unloaded_running_detected),
             significant_leakage_detected=(analysis.significant_leakage_detected),
+            motor_pfc=motor_pfc,
             opportunities=opportunities,
         )
 
