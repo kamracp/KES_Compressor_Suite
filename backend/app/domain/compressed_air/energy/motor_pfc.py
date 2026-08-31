@@ -20,6 +20,7 @@ Citations
 - IS 15167 (Part 1): Shunt power capacitors for AC power systems — used
   for kVAr sizing methodology.
 """
+
 from __future__ import annotations
 
 import math
@@ -131,16 +132,14 @@ def calculate_motor_pfc(
         required_capacitor_kvar = Decimal("0")
 
     pfc_beneficial = (
-        inputs.measured_power_factor < inputs.target_power_factor
-        and required_capacitor_kvar > 0
+        inputs.measured_power_factor < inputs.target_power_factor and required_capacitor_kvar > 0
     )
 
     # ── Nameplate deviation ───────────────────────────────────────────────
     if inputs.rated_motor_power_kw is not None and inputs.rated_motor_power_kw > 0:
         power_deviation = (
-            (active_power_kw - inputs.rated_motor_power_kw)
-            / inputs.rated_motor_power_kw
-        )
+            active_power_kw - inputs.rated_motor_power_kw
+        ) / inputs.rated_motor_power_kw
     else:
         power_deviation = None
 
@@ -163,6 +162,7 @@ def calculate_motor_pfc(
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
 
 def _round4(value: Decimal) -> Decimal:
     return value.quantize(Decimal("0.0001"))

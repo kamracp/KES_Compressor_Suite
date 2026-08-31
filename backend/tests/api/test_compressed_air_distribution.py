@@ -248,8 +248,6 @@ def test_preferred_velocity_default_is_bcas_cagi_calibrated() -> None:
         DistributionNetworkCalculationRequest,
     )
 
-    field = DistributionNetworkCalculationRequest.model_fields[
-        "maximum_preferred_velocity_m_per_s"
-    ]
+    field = DistributionNetworkCalculationRequest.model_fields["maximum_preferred_velocity_m_per_s"]
 
     assert field.default == _Decimal("6")

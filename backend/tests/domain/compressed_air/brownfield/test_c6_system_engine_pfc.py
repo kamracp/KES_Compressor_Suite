@@ -6,6 +6,7 @@ The engine must expose the measured motor power and capacitor sizing
 (IEEE Std 141 / IS 15167) as structured data, and must never let a
 power-factor opportunity inflate the station energy-saving totals.
 """
+
 from decimal import Decimal
 
 import pytest
@@ -87,9 +88,7 @@ def result_with_motor():
 
 
 def test_motor_pfc_absent_without_measurement():
-    result = analyze_brownfield_system(
-        BrownfieldSystemEngineInput(audit=_audit())
-    )
+    result = analyze_brownfield_system(BrownfieldSystemEngineInput(audit=_audit()))
     assert result.motor_pfc is None
 
 
@@ -115,17 +114,13 @@ def test_nameplate_deviation_reported(result_with_motor):
 
 
 def test_pf_opportunity_reaches_the_register(result_with_motor):
-    codes = [
-        o.opportunity_code for o in result_with_motor.opportunities.opportunities
-    ]
+    codes = [o.opportunity_code for o in result_with_motor.opportunities.opportunities]
     assert "PF-CORRECTION" in codes
 
 
 def test_pf_opportunity_does_not_change_station_totals(result_with_motor):
     """Station energy totals must be unaffected by the PF opportunity."""
-    without = analyze_brownfield_system(
-        BrownfieldSystemEngineInput(audit=_audit())
-    )
+    without = analyze_brownfield_system(BrownfieldSystemEngineInput(audit=_audit()))
     assert (
         result_with_motor.estimated_total_annual_energy_saving_kwh
         == without.estimated_total_annual_energy_saving_kwh

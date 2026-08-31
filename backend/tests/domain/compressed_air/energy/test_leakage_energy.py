@@ -223,19 +223,13 @@ def test_control_factor_scales_electrical_savings_not_flows() -> None:
 
     # Electrical conversions scale with the control factor.
     assert half.recoverable_power_kw == ideal.recoverable_power_kw * Decimal("0.5")
-    assert half.annual_energy_saving_kwh == (
-        ideal.annual_energy_saving_kwh * Decimal("0.5")
-    )
+    assert half.annual_energy_saving_kwh == (ideal.annual_energy_saving_kwh * Decimal("0.5"))
     assert half.annual_cost_saving == ideal.annual_cost_saving * Decimal("0.5")
 
     # Physical air quantities do not: repaired leaks stop leaking air
     # regardless of how well the compressor can turn down.
-    assert half.recoverable_leakage_flow_nm3_per_hr == (
-        ideal.recoverable_leakage_flow_nm3_per_hr
-    )
-    assert half.residual_leakage_flow_nm3_per_hr == (
-        ideal.residual_leakage_flow_nm3_per_hr
-    )
+    assert half.recoverable_leakage_flow_nm3_per_hr == (ideal.recoverable_leakage_flow_nm3_per_hr)
+    assert half.residual_leakage_flow_nm3_per_hr == (ideal.residual_leakage_flow_nm3_per_hr)
     assert half.wasted_power_kw == ideal.wasted_power_kw
 
     assert half.demand_saving_control_factor == Decimal("0.5")

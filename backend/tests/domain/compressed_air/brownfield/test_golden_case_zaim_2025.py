@@ -18,6 +18,7 @@ Table 3  : Comparative performance indicators (baseline vs optimised)
 §3.1     : Baseline Performance — narrative and Figure 5, 6, 7 values
 §3.4     : CO2 Emissions and Sustainability Gains — annual schedule + EF
 """
+
 from decimal import Decimal
 
 import pytest
@@ -44,17 +45,17 @@ from app.domain.compressed_air.station.station_models import (
 # ---------------------------------------------------------------------------
 
 # Table 1: compressor specification
-RATED_FAD_NM3_PER_HR: Decimal = Decimal("420")   # 7 m³/min × 60
+RATED_FAD_NM3_PER_HR: Decimal = Decimal("420")  # 7 m³/min × 60
 RATED_MOTOR_POWER_KW: Decimal = Decimal("37")
-RATED_PRESSURE_BAR_G: Decimal = Decimal("7.5")   # FAD rated @ 7.5 bar
+RATED_PRESSURE_BAR_G: Decimal = Decimal("7.5")  # FAD rated @ 7.5 bar
 
 # Table 3 / §3.1: baseline 24-h measured averages
 BASELINE_AVG_POWER_KW: Decimal = Decimal("57.1")
-BASELINE_AVG_FLOW_NM3_PER_MIN: Decimal = Decimal("8")    # §3.1 text
+BASELINE_AVG_FLOW_NM3_PER_MIN: Decimal = Decimal("8")  # §3.1 text
 BASELINE_AVG_FLOW_NM3_PER_HR: Decimal = BASELINE_AVG_FLOW_NM3_PER_MIN * 60  # 480
 BASELINE_HEADER_PRESSURE_BAR_G: Decimal = Decimal("6.89")  # P1_avg, Figure 6
-BASELINE_SET_PRESSURE_BAR_G: Decimal = Decimal("7.0")    # Table 1 / Table 3
-BASELINE_DAILY_ENERGY_KWH: Decimal = Decimal("1371")     # Table 3
+BASELINE_SET_PRESSURE_BAR_G: Decimal = Decimal("7.0")  # Table 1 / Table 3
+BASELINE_DAILY_ENERGY_KWH: Decimal = Decimal("1371")  # Table 3
 
 # Table 3: leakage — 77 points detected and repaired
 LEAKAGE_FLOW_NM3_PER_MIN: Decimal = Decimal("2.82")
@@ -64,7 +65,7 @@ LEAKAGE_FLOW_NM3_PER_HR: Decimal = LEAKAGE_FLOW_NM3_PER_MIN * 60  # 169.2
 OPTIMISED_AVG_POWER_KW: Decimal = Decimal("38.5")
 OPTIMISED_DAILY_ENERGY_KWH: Decimal = Decimal("924")
 OPTIMISED_PRESSURE_BAR_G: Decimal = Decimal("6.5")
-DAILY_ENERGY_SAVING_KWH: Decimal = Decimal("447")          # Table 3
+DAILY_ENERGY_SAVING_KWH: Decimal = Decimal("447")  # Table 3
 
 # §3.4: annual schedule and emission factor
 ANNUAL_OPERATING_DAYS: Decimal = Decimal("330")
@@ -83,6 +84,7 @@ INSTALLED_CAPACITY_NM3_PER_HR: Decimal = RATED_FAD_NM3_PER_HR * 2  # 840
 # ---------------------------------------------------------------------------
 # Fixture
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def zaim_2025_baseline() -> BrownfieldAuditCase:
@@ -165,6 +167,7 @@ def zaim_2025_baseline() -> BrownfieldAuditCase:
 # Sanity: registry anchor
 # ---------------------------------------------------------------------------
 
+
 def test_zaim_2025_registry_entry_is_present() -> None:
     """The source standard must be registered before the golden case runs."""
     assert ZAIM_2025.standard_id == "ZAIM-2025"
@@ -174,6 +177,7 @@ def test_zaim_2025_registry_entry_is_present() -> None:
 # ---------------------------------------------------------------------------
 # Baseline characterisation tests
 # ---------------------------------------------------------------------------
+
 
 def test_golden_case_audit_code(
     zaim_2025_baseline: BrownfieldAuditCase,
@@ -286,6 +290,7 @@ def test_golden_case_daily_energy_cross_check(
 # ---------------------------------------------------------------------------
 # CO2 arithmetic cross-check (pure arithmetic, no engine call)
 # ---------------------------------------------------------------------------
+
 
 def test_golden_case_co2_saving_cross_check() -> None:
     """

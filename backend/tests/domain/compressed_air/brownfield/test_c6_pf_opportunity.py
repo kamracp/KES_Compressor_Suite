@@ -10,6 +10,7 @@ not reduce the motor's active power draw, so the opportunity must report
 zero kW and zero kWh saving. A cost saving appears only when the site
 supplies the PF penalty it is actually being billed.
 """
+
 from decimal import Decimal
 
 import pytest
@@ -101,14 +102,13 @@ def _good_pf_motor() -> MotorMeasurementInput:
 
 
 def _pf_opportunity(result):
-    return next(
-        o for o in result.opportunities if o.opportunity_code == "PF-CORRECTION"
-    )
+    return next(o for o in result.opportunities if o.opportunity_code == "PF-CORRECTION")
 
 
 # ---------------------------------------------------------------------------
 # Detection
 # ---------------------------------------------------------------------------
+
 
 def test_pf_opportunity_appears_when_pf_below_target(base_analysis):
     result = identify_brownfield_opportunities(
@@ -145,6 +145,7 @@ def test_pf_opportunity_absent_when_pf_already_above_target(base_analysis):
 # ---------------------------------------------------------------------------
 # Honesty contract: no fabricated kW / kWh saving
 # ---------------------------------------------------------------------------
+
 
 def test_pf_opportunity_claims_no_power_saving(base_analysis):
     result = identify_brownfield_opportunities(
@@ -201,6 +202,7 @@ def test_pf_priority_medium_with_penalty_data(base_analysis):
 # Engineering content
 # ---------------------------------------------------------------------------
 
+
 def test_pf_opportunity_title_carries_capacitor_size(base_analysis):
     """
     Manual cross-check (IEEE 141 / IS 15167):
@@ -236,10 +238,7 @@ def test_pf_opportunity_does_not_inflate_totals(base_analysis):
         analysis=base_analysis,
         motor_measurement=_poor_pf_motor(),
     )
-    assert (
-        with_pf.total_estimated_power_saving_kw
-        == without.total_estimated_power_saving_kw
-    )
+    assert with_pf.total_estimated_power_saving_kw == without.total_estimated_power_saving_kw
     assert (
         with_pf.total_estimated_annual_energy_saving_kwh
         == without.total_estimated_annual_energy_saving_kwh

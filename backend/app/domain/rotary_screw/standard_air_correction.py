@@ -31,9 +31,7 @@ def correct_fad_to_standard_air(
     """
 
     if rated_fad_m3_per_min <= 0:
-        raise InvalidStandardAirCorrectionInputError(
-            "Rated FAD must be greater than zero."
-        )
+        raise InvalidStandardAirCorrectionInputError("Rated FAD must be greater than zero.")
     if reference_pressure_bar_a <= 0 or site_inlet_pressure_bar_a <= 0:
         raise InvalidStandardAirCorrectionInputError(
             "Pressures must be absolute and greater than zero."

@@ -78,9 +78,7 @@ def calculate_leakage_energy(
     # regardless of controls. Only the electrical conversion below is
     # scaled by the demand-saving control factor.
     recoverable_power_kw = (
-        wasted_power_kw
-        * inputs.expected_repair_fraction
-        * inputs.demand_saving_control_factor
+        wasted_power_kw * inputs.expected_repair_fraction * inputs.demand_saving_control_factor
     )
 
     annual_energy_saving_kwh = (
@@ -130,10 +128,7 @@ def _validate_inputs(
     if inputs.electricity_tariff_per_kwh < 0:
         raise InvalidLeakageEnergyInputError("Electricity tariff cannot be negative.")
 
-    if (
-        inputs.demand_saving_control_factor < 0
-        or inputs.demand_saving_control_factor > 1
-    ):
+    if inputs.demand_saving_control_factor < 0 or inputs.demand_saving_control_factor > 1:
         raise InvalidLeakageEnergyInputError(
             "Demand-saving control factor must be between zero and one."
         )

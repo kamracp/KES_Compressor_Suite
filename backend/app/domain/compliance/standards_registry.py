@@ -179,7 +179,6 @@ BCAS_BPG_101 = EngineeringStandard(
 )
 
 
-
 ISO_6358 = EngineeringStandard(
     standard_id="ISO-6358",
     authority=StandardAuthority.ISO,
@@ -229,10 +228,7 @@ ISO_11011 = EngineeringStandard(
 IPMVP_CORE = EngineeringStandard(
     standard_id="IPMVP-CORE",
     authority=StandardAuthority.EVO,
-    title=(
-        "International Performance Measurement and Verification Protocol "
-        "— Core Concepts"
-    ),
+    title=("International Performance Measurement and Verification Protocol — Core Concepts"),
     edition="Current edition",
     publication_date=None,
     applicability=(StandardApplicability.MEASUREMENT_VERIFICATION,),

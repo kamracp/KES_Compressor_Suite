@@ -106,12 +106,8 @@ def analyze_brownfield_system(
         demand_saving_control_factor=(inputs.demand_saving_control_factor),
         optimized_discharge_pressure_bar_g=(inputs.optimized_discharge_pressure_bar_g),
         power_penalty_fraction_per_bar=(inputs.power_penalty_fraction_per_bar),
-        condensate_drain_air_loss_nm3_per_hr=(
-            inputs.condensate_drain_air_loss_nm3_per_hr
-        ),
-        filter_excess_pressure_drop_bar=(
-            inputs.filter_excess_pressure_drop_bar
-        ),
+        condensate_drain_air_loss_nm3_per_hr=(inputs.condensate_drain_air_loss_nm3_per_hr),
+        filter_excess_pressure_drop_bar=(inputs.filter_excess_pressure_drop_bar),
         motor_measurement=inputs.motor_measurement,
         pf_penalty_annual_cost=inputs.pf_penalty_annual_cost,
     )
@@ -254,8 +250,7 @@ def _validate_inputs(
         )
 
     if inputs.power_penalty_fraction_per_bar is not None and (
-        inputs.power_penalty_fraction_per_bar < 0
-        or inputs.power_penalty_fraction_per_bar > 1
+        inputs.power_penalty_fraction_per_bar < 0 or inputs.power_penalty_fraction_per_bar > 1
     ):
         raise InvalidBrownfieldSystemEngineInputError(
             "Power penalty fraction per bar must be between zero and one."

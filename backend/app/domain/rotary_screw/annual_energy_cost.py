@@ -21,14 +21,10 @@ def calculate_annual_energy_cost(
     """
 
     if package_input_power_kw <= 0:
-        raise InvalidAnnualEnergyCostInputError(
-            "Package input power must be greater than zero."
-        )
+        raise InvalidAnnualEnergyCostInputError("Package input power must be greater than zero.")
 
     if annual_operating_hours < 0:
-        raise InvalidAnnualEnergyCostInputError(
-            "Annual operating hours cannot be negative."
-        )
+        raise InvalidAnnualEnergyCostInputError("Annual operating hours cannot be negative.")
 
     if annual_operating_hours > Decimal("8760"):
         raise InvalidAnnualEnergyCostInputError(
@@ -36,9 +32,7 @@ def calculate_annual_energy_cost(
         )
 
     if electricity_tariff_per_kwh < 0:
-        raise InvalidAnnualEnergyCostInputError(
-            "Electricity tariff cannot be negative."
-        )
+        raise InvalidAnnualEnergyCostInputError("Electricity tariff cannot be negative.")
 
     annual_energy_kwh = package_input_power_kw * annual_operating_hours
     annual_energy_cost = annual_energy_kwh * electricity_tariff_per_kwh

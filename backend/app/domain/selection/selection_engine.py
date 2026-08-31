@@ -271,25 +271,17 @@ def _assess_rotary_screw(
         )
     else:
         capacity_rating = SelectionRating.ACCEPTABLE
-        rationale.append(
-            "Very high flow is more typically served by centrifugal compression."
-        )
+        rationale.append("Very high flow is more typically served by centrifugal compression.")
 
     if overall_ratio <= Decimal("4"):
         pressure_ratio_rating = SelectionRating.EXCELLENT
-        rationale.append(
-            "Pressure ratio is typical of standard single-stage rotary screw duty."
-        )
+        rationale.append("Pressure ratio is typical of standard single-stage rotary screw duty.")
     elif overall_ratio <= Decimal("8"):
         pressure_ratio_rating = SelectionRating.GOOD
-        rationale.append(
-            "Pressure ratio is feasible with a two-stage rotary screw package."
-        )
+        rationale.append("Pressure ratio is feasible with a two-stage rotary screw package.")
     else:
         pressure_ratio_rating = SelectionRating.ACCEPTABLE
-        rationale.append(
-            "Very high pressure ratio is uncommon for standard rotary screw packages."
-        )
+        rationale.append("Very high pressure ratio is uncommon for standard rotary screw packages.")
 
     if criteria.required_turndown_fraction <= Decimal("0.60"):
         turndown_rating = SelectionRating.EXCELLENT

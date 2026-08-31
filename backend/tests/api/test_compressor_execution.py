@@ -257,9 +257,9 @@ def test_execute_rotary_screw_without_persistence() -> None:
     data = response.json()
 
     assert data["calculation_case_id"] is None
-    assert Decimal(
-        data["result"]["performance"]["specific_power_kw_per_m3_min"]
-    ) == Decimal("6.000")
+    assert Decimal(data["result"]["performance"]["specific_power_kw_per_m3_min"]) == Decimal(
+        "6.000"
+    )
 
 
 def test_execute_rotary_screw_with_persistence() -> None:

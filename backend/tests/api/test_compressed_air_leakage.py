@@ -179,10 +179,9 @@ def test_control_factor_halves_electrical_savings_via_api() -> None:
     )
 
     # Air quantities are unchanged by the control factor.
-    assert half_item["energy"]["recoverable_leakage_flow_nm3_per_hr"] == (
-        ideal_item["energy"]["recoverable_leakage_flow_nm3_per_hr"]
+    assert (
+        half_item["energy"]["recoverable_leakage_flow_nm3_per_hr"]
+        == (ideal_item["energy"]["recoverable_leakage_flow_nm3_per_hr"])
     )
 
-    assert Decimal(
-        half_item["energy"]["demand_saving_control_factor"]
-    ) == Decimal("0.5")
+    assert Decimal(half_item["energy"]["demand_saving_control_factor"]) == Decimal("0.5")

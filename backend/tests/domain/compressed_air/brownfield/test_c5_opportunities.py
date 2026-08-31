@@ -8,6 +8,7 @@ Both opportunities reuse existing engines:
 Citation: US DOE / Compressed Air Challenge, "Improving Compressed Air
 System Performance: A Sourcebook for Industry."
 """
+
 from decimal import Decimal
 
 import pytest
@@ -79,6 +80,7 @@ def base_analysis():
 # CONDENSATE-DRAIN tests
 # ---------------------------------------------------------------------------
 
+
 def test_condensate_drain_opportunity_appears(base_analysis):
     result = identify_brownfield_opportunities(
         analysis=base_analysis,
@@ -145,6 +147,7 @@ def test_condensate_drain_none_suppressed(base_analysis):
 # FILTER-PENALTY tests
 # ---------------------------------------------------------------------------
 
+
 def test_filter_penalty_opportunity_appears(base_analysis):
     result = identify_brownfield_opportunities(
         analysis=base_analysis,
@@ -207,7 +210,5 @@ def test_total_saving_includes_both(base_analysis):
         condensate_drain_air_loss_nm3_per_hr=Decimal("12"),
         filter_excess_pressure_drop_bar=Decimal("0.3"),
     )
-    individual_sum = sum(
-        o.estimated_power_saving_kw for o in result.opportunities
-    )
+    individual_sum = sum(o.estimated_power_saving_kw for o in result.opportunities)
     assert result.total_estimated_power_saving_kw == individual_sum

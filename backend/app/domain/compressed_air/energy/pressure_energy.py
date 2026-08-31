@@ -142,16 +142,10 @@ def _adiabatic_power_saving_fraction(
     k = 1.4 for air. Ideal isentropic single-stage compression work basis.
     """
 
-    exponent = (
-        ISENTROPIC_EXPONENT_AIR - Decimal("1")
-    ) / ISENTROPIC_EXPONENT_AIR
+    exponent = (ISENTROPIC_EXPONENT_AIR - Decimal("1")) / ISENTROPIC_EXPONENT_AIR
 
-    current_ratio = (
-        current_pressure_bar_g + ATMOSPHERIC_PRESSURE_BAR
-    ) / ATMOSPHERIC_PRESSURE_BAR
-    target_ratio = (
-        target_pressure_bar_g + ATMOSPHERIC_PRESSURE_BAR
-    ) / ATMOSPHERIC_PRESSURE_BAR
+    current_ratio = (current_pressure_bar_g + ATMOSPHERIC_PRESSURE_BAR) / ATMOSPHERIC_PRESSURE_BAR
+    target_ratio = (target_pressure_bar_g + ATMOSPHERIC_PRESSURE_BAR) / ATMOSPHERIC_PRESSURE_BAR
 
     current_work_term = _decimal_power(current_ratio, exponent) - Decimal("1")
     target_work_term = _decimal_power(target_ratio, exponent) - Decimal("1")
@@ -184,8 +178,7 @@ def _validate_inputs(
         raise InvalidPressureEnergyInputError("Electricity tariff cannot be negative.")
 
     if inputs.power_penalty_fraction_per_bar is not None and (
-        inputs.power_penalty_fraction_per_bar < 0
-        or inputs.power_penalty_fraction_per_bar > 1
+        inputs.power_penalty_fraction_per_bar < 0 or inputs.power_penalty_fraction_per_bar > 1
     ):
         raise InvalidPressureEnergyInputError(
             "Power penalty fraction per bar must be between zero and one."

@@ -26,9 +26,7 @@ def verify_manufacturer_performance(
         raise InvalidPerformanceInputError("Rated FAD must be greater than zero.")
 
     if package_input_power_kw <= 0:
-        raise InvalidPerformanceInputError(
-            "Package input power must be greater than zero."
-        )
+        raise InvalidPerformanceInputError("Package input power must be greater than zero.")
 
     specific_power = package_input_power_kw / rated_fad_m3_per_min
 

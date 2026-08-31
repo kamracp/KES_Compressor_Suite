@@ -28,9 +28,7 @@ def calculate_theoretical_displacement(
     """
 
     if geometry.male_rotor_diameter_mm <= 0:
-        raise InvalidRotaryScrewGeometryError(
-            "Male rotor diameter must be greater than zero."
-        )
+        raise InvalidRotaryScrewGeometryError("Male rotor diameter must be greater than zero.")
 
     if geometry.rotor_length_mm <= 0:
         raise InvalidRotaryScrewGeometryError("Rotor length must be greater than zero.")

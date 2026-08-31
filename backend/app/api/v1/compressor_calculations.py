@@ -160,9 +160,7 @@ def calculate_rotary_screw(
         rotor_geometry = RotaryScrewRotorGeometry(
             male_rotor_diameter_mm=payload.rotor_geometry.male_rotor_diameter_mm,
             rotor_length_mm=payload.rotor_geometry.rotor_length_mm,
-            area_utilisation_coefficient=(
-                payload.rotor_geometry.area_utilisation_coefficient
-            ),
+            area_utilisation_coefficient=(payload.rotor_geometry.area_utilisation_coefficient),
         )
 
     inputs = RotaryScrewEngineInput(

@@ -208,9 +208,7 @@ def test_default_method_is_adiabatic_isentropic() -> None:
     # thumb, exactly as the physics predicts at this pressure level.
     assert Decimal("0.083") < result.power_saving_fraction < Decimal("0.085")
 
-    assert result.estimated_power_saving_kw == (
-        result.power_saving_fraction * Decimal("100")
-    )
+    assert result.estimated_power_saving_kw == (result.power_saving_fraction * Decimal("100"))
 
 
 def test_explicit_penalty_selects_linear_override() -> None:

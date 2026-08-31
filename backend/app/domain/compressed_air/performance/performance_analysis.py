@@ -217,8 +217,7 @@ def _validate_inputs(
         )
 
     if inputs.power_penalty_fraction_per_bar is not None and (
-        inputs.power_penalty_fraction_per_bar < 0
-        or inputs.power_penalty_fraction_per_bar > 1
+        inputs.power_penalty_fraction_per_bar < 0 or inputs.power_penalty_fraction_per_bar > 1
     ):
         raise InvalidPerformanceAnalysisInputError(
             "Power penalty fraction per bar must be between zero and one."

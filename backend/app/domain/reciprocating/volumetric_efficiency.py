@@ -28,19 +28,13 @@ def calculate_volumetric_efficiency(
         )
 
     if suction_z_factor <= 0:
-        raise InvalidVolumetricEfficiencyInputError(
-            "Suction Z-factor must be greater than zero."
-        )
+        raise InvalidVolumetricEfficiencyInputError("Suction Z-factor must be greater than zero.")
 
     if discharge_z_factor <= 0:
-        raise InvalidVolumetricEfficiencyInputError(
-            "Discharge Z-factor must be greater than zero."
-        )
+        raise InvalidVolumetricEfficiencyInputError("Discharge Z-factor must be greater than zero.")
 
     if isentropic_exponent <= 1:
-        raise InvalidVolumetricEfficiencyInputError(
-            "Isentropic exponent must be greater than one."
-        )
+        raise InvalidVolumetricEfficiencyInputError("Isentropic exponent must be greater than one.")
 
     if displacement_m3_per_hr <= 0:
         raise InvalidVolumetricEfficiencyInputError(
@@ -48,18 +42,11 @@ def calculate_volumetric_efficiency(
         )
 
     expansion_term = Decimal(
-        str(
-            float(stage_compression_ratio)
-            ** (1.0 / float(isentropic_exponent))
-            - 1.0
-        )
+        str(float(stage_compression_ratio) ** (1.0 / float(isentropic_exponent)) - 1.0)
     )
 
     volumetric_efficiency = (
-        Decimal("1")
-        - clearance_fraction
-        * (suction_z_factor / discharge_z_factor)
-        * expansion_term
+        Decimal("1") - clearance_fraction * (suction_z_factor / discharge_z_factor) * expansion_term
     )
 
     if volumetric_efficiency <= 0 or volumetric_efficiency > 1:
@@ -67,9 +54,7 @@ def calculate_volumetric_efficiency(
             "Calculated volumetric efficiency must be greater than zero and not exceed one."
         )
 
-    delivered_flow_m3_per_hr = (
-        volumetric_efficiency * displacement_m3_per_hr
-    )
+    delivered_flow_m3_per_hr = volumetric_efficiency * displacement_m3_per_hr
 
     return VolumetricEfficiencyResult(
         volumetric_efficiency=volumetric_efficiency,

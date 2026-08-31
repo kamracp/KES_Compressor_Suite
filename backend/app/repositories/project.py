@@ -68,9 +68,7 @@ class ProjectRepository:
             .order_by(Project.id)
         )
 
-        return list(
-            db.scalars(statement).all()
-        )
+        return list(db.scalars(statement).all())
 
     def update(
         self,

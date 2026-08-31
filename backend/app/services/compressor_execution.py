@@ -313,12 +313,8 @@ class CompressorExecutionService:
             rated_fad_m3_per_min=calculation.rated_fad_m3_per_min,
             package_input_power_kw=calculation.package_input_power_kw,
             rotor_geometry=rotor_geometry,
-            standard_reference_pressure_bar_a=(
-                calculation.standard_reference_pressure_bar_a
-            ),
-            standard_reference_temperature_k=(
-                calculation.standard_reference_temperature_k
-            ),
+            standard_reference_pressure_bar_a=(calculation.standard_reference_pressure_bar_a),
+            standard_reference_temperature_k=(calculation.standard_reference_temperature_k),
             annual_operating_hours=calculation.annual_operating_hours,
             electricity_tariff_per_kwh=calculation.electricity_tariff_per_kwh,
         )

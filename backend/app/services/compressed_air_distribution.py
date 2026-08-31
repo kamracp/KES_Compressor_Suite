@@ -133,14 +133,10 @@ class CompressedAirDistributionService:
             optimization = optimize_distribution_network(
                 network=network,
                 hydraulic_result=hydraulics,
-                candidate_internal_diameters_mm=tuple(
-                    payload.candidate_internal_diameters_mm
-                ),
+                candidate_internal_diameters_mm=tuple(payload.candidate_internal_diameters_mm),
                 air_density_kg_per_m3=payload.air_density_kg_per_m3,
                 darcy_friction_factor=payload.darcy_friction_factor,
-                maximum_preferred_velocity_m_per_s=(
-                    payload.maximum_preferred_velocity_m_per_s
-                ),
+                maximum_preferred_velocity_m_per_s=(payload.maximum_preferred_velocity_m_per_s),
                 minimum_pressure_drop_reduction_fraction=(
                     payload.minimum_pressure_drop_reduction_fraction
                 ),

@@ -67,10 +67,7 @@ def calculate_rotary_screw_case(
         )
 
     annual_energy_cost = None
-    if (
-        inputs.annual_operating_hours is not None
-        and inputs.electricity_tariff_per_kwh is not None
-    ):
+    if inputs.annual_operating_hours is not None and inputs.electricity_tariff_per_kwh is not None:
         annual_energy_cost = calculate_annual_energy_cost(
             package_input_power_kw=inputs.package_input_power_kw,
             annual_operating_hours=inputs.annual_operating_hours,

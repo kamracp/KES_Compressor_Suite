@@ -99,12 +99,8 @@ class CompressedAirBrownfieldService:
                 expected_leak_repair_fraction=(request.expected_leak_repair_fraction),
                 demand_saving_control_factor=(request.demand_saving_control_factor),
                 power_penalty_fraction_per_bar=(request.power_penalty_fraction_per_bar),
-                condensate_drain_air_loss_nm3_per_hr=(
-                    request.condensate_drain_air_loss_nm3_per_hr
-                ),
-                filter_excess_pressure_drop_bar=(
-                    request.filter_excess_pressure_drop_bar
-                ),
+                condensate_drain_air_loss_nm3_per_hr=(request.condensate_drain_air_loss_nm3_per_hr),
+                filter_excess_pressure_drop_bar=(request.filter_excess_pressure_drop_bar),
                 motor_measurement=motor_measurement,
                 pf_penalty_annual_cost=(request.pf_penalty_annual_cost),
             )
@@ -133,17 +129,11 @@ class CompressedAirBrownfieldService:
                 measured_power_factor=(result.motor_pfc.measured_power_factor),
                 target_power_factor=(result.motor_pfc.target_power_factor),
                 measured_active_power_kw=(result.motor_pfc.measured_active_power_kw),
-                measured_reactive_power_kvar=(
-                    result.motor_pfc.measured_reactive_power_kvar
-                ),
-                target_reactive_power_kvar=(
-                    result.motor_pfc.target_reactive_power_kvar
-                ),
+                measured_reactive_power_kvar=(result.motor_pfc.measured_reactive_power_kvar),
+                target_reactive_power_kvar=(result.motor_pfc.target_reactive_power_kvar),
                 required_capacitor_kvar=(result.motor_pfc.required_capacitor_kvar),
                 pfc_correction_beneficial=(result.motor_pfc.pfc_correction_beneficial),
-                power_deviation_from_nameplate=(
-                    result.motor_pfc.power_deviation_from_nameplate
-                ),
+                power_deviation_from_nameplate=(result.motor_pfc.power_deviation_from_nameplate),
             )
             if result.motor_pfc is not None
             else None

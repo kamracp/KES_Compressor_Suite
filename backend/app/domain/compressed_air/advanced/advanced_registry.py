@@ -108,44 +108,32 @@ def get_advanced_engineering_registry() -> tuple[AdvancedModuleDefinition, ...]:
             module=AdvancedEngineeringModule.PERFORMANCE_MAP,
             title="Performance Map",
             description=(
-                "Advanced compressor operating-map analysis and operating "
-                "envelope evaluation."
+                "Advanced compressor operating-map analysis and operating envelope evaluation."
             ),
             source_package="app.domain.centrifugal.performance_map",
-            applicable_to=(
-                AdvancedApplicationType.CENTRIFUGAL_PROCESS_COMPRESSOR,
-            ),
+            applicable_to=(AdvancedApplicationType.CENTRIFUGAL_PROCESS_COMPRESSOR,),
         ),
         AdvancedModuleDefinition(
             module=AdvancedEngineeringModule.SURGE_ANALYSIS,
             title="Surge Analysis",
-            description=(
-                "Centrifugal compressor surge margin and operating stability "
-                "assessment."
-            ),
+            description=("Centrifugal compressor surge margin and operating stability assessment."),
             source_package="app.domain.centrifugal.surge",
-            applicable_to=(
-                AdvancedApplicationType.CENTRIFUGAL_PROCESS_COMPRESSOR,
-            ),
+            applicable_to=(AdvancedApplicationType.CENTRIFUGAL_PROCESS_COMPRESSOR,),
         ),
         AdvancedModuleDefinition(
             module=AdvancedEngineeringModule.ROD_LOAD,
             title="Rod Load Analysis",
             description=(
-                "Reciprocating compressor rod-load assessment for mechanical "
-                "operating limits."
+                "Reciprocating compressor rod-load assessment for mechanical operating limits."
             ),
             source_package="app.domain.reciprocating.rod_load",
-            applicable_to=(
-                AdvancedApplicationType.RECIPROCATING_PROCESS_COMPRESSOR,
-            ),
+            applicable_to=(AdvancedApplicationType.RECIPROCATING_PROCESS_COMPRESSOR,),
         ),
         AdvancedModuleDefinition(
             module=AdvancedEngineeringModule.DRIVER_AND_POWER,
             title="Driver and Power Engineering",
             description=(
-                "Compressor power requirement, driver sizing, and operating "
-                "power assessment."
+                "Compressor power requirement, driver sizing, and operating power assessment."
             ),
             source_package="app.domain.compression.driver",
             applicable_to=(
@@ -159,10 +147,7 @@ def get_advanced_engineering_registry() -> tuple[AdvancedModuleDefinition, ...]:
         AdvancedModuleDefinition(
             module=AdvancedEngineeringModule.COOLING_AND_INTERCOOLING,
             title="Cooling and Intercooling",
-            description=(
-                "Interstage cooling and compression heat-management "
-                "engineering."
-            ),
+            description=("Interstage cooling and compression heat-management engineering."),
             source_package="app.domain.compression.cooling",
             applicable_to=(
                 AdvancedApplicationType.HIGH_PRESSURE_AIR,
@@ -174,9 +159,7 @@ def get_advanced_engineering_registry() -> tuple[AdvancedModuleDefinition, ...]:
         AdvancedModuleDefinition(
             module=AdvancedEngineeringModule.STANDARDS_COMPLIANCE,
             title="Standards and Compliance",
-            description=(
-                "Engineering standards registry and validation framework."
-            ),
+            description=("Engineering standards registry and validation framework."),
             source_package="app.domain.compliance",
             applicable_to=(
                 AdvancedApplicationType.FACTORY_COMPRESSED_AIR,

@@ -220,22 +220,22 @@ def identify_brownfield_opportunities(
                 ),
                 annual_operating_hours=analysis.annual_operating_hours,
                 electricity_tariff_per_kwh=analysis.electricity_tariff_per_kwh,
-                expected_repair_fraction=Decimal('1'),
+                expected_repair_fraction=Decimal("1"),
                 demand_saving_control_factor=demand_saving_control_factor,
             )
         )
         opportunities.append(
             BrownfieldOpportunity(
-                opportunity_code='CONDENSATE-DRAIN',
+                opportunity_code="CONDENSATE-DRAIN",
                 category=OpportunityCategory.CONDENSATE_DRAIN,
                 priority=OpportunityPriority.MEDIUM,
-                title='Replace timed condensate drains with zero-loss drains',
+                title="Replace timed condensate drains with zero-loss drains",
                 rationale=(
-                    'Timed solenoid drains expel compressed air with every '
-                    'cycle regardless of condensate level. Zero-loss '
-                    '(float or electronic) drains eliminate this waste '
-                    'entirely. Ref: DOE / Compressed Air Challenge '
-                    'Sourcebook for Industry.'
+                    "Timed solenoid drains expel compressed air with every "
+                    "cycle regardless of condensate level. Zero-loss "
+                    "(float or electronic) drains eliminate this waste "
+                    "entirely. Ref: DOE / Compressed Air Challenge "
+                    "Sourcebook for Industry."
                 ),
                 estimated_power_saving_kw=drain_energy.recoverable_power_kw,
                 estimated_annual_energy_saving_kwh=drain_energy.annual_energy_saving_kwh,
@@ -244,19 +244,13 @@ def identify_brownfield_opportunities(
         )
 
     # ── Filter pressure-drop penalty opportunity ──────────────────────
-    if (
-        filter_excess_pressure_drop_bar is not None
-        and filter_excess_pressure_drop_bar > 0
-    ):
+    if filter_excess_pressure_drop_bar is not None and filter_excess_pressure_drop_bar > 0:
         filter_pressure_result = calculate_pressure_energy_saving(
             PressureEnergyInput(
                 current_discharge_pressure_bar_g=(
-                    analysis.average_header_pressure_bar_g
-                    + filter_excess_pressure_drop_bar
+                    analysis.average_header_pressure_bar_g + filter_excess_pressure_drop_bar
                 ),
-                optimized_discharge_pressure_bar_g=(
-                    analysis.average_header_pressure_bar_g
-                ),
+                optimized_discharge_pressure_bar_g=(analysis.average_header_pressure_bar_g),
                 current_average_power_kw=analysis.average_system_power_kw,
                 annual_operating_hours=analysis.annual_operating_hours,
                 electricity_tariff_per_kwh=analysis.electricity_tariff_per_kwh,
@@ -266,27 +260,23 @@ def identify_brownfield_opportunities(
         if filter_pressure_result.pressure_reduction_is_beneficial:
             opportunities.append(
                 BrownfieldOpportunity(
-                    opportunity_code='FILTER-PENALTY',
+                    opportunity_code="FILTER-PENALTY",
                     category=OpportunityCategory.FILTER_EFFICIENCY,
                     priority=OpportunityPriority.MEDIUM,
-                    title='Restore or upgrade filter elements to reduce pressure drop',
+                    title="Restore or upgrade filter elements to reduce pressure drop",
                     rationale=(
-                        'Blocked or undersized filter elements force the '
-                        'compressor to generate extra pressure to compensate, '
-                        'incurring avoidable power. Replacing or upgrading '
-                        'filter elements to their clean design delta-p recovers '
-                        'this energy. Ref: DOE / Compressed Air Challenge '
-                        'Sourcebook for Industry; manufacturer filter curves.'
+                        "Blocked or undersized filter elements force the "
+                        "compressor to generate extra pressure to compensate, "
+                        "incurring avoidable power. Replacing or upgrading "
+                        "filter elements to their clean design delta-p recovers "
+                        "this energy. Ref: DOE / Compressed Air Challenge "
+                        "Sourcebook for Industry; manufacturer filter curves."
                     ),
-                    estimated_power_saving_kw=(
-                        filter_pressure_result.estimated_power_saving_kw
-                    ),
+                    estimated_power_saving_kw=(filter_pressure_result.estimated_power_saving_kw),
                     estimated_annual_energy_saving_kwh=(
                         filter_pressure_result.annual_energy_saving_kwh
                     ),
-                    estimated_annual_cost_saving=(
-                        filter_pressure_result.annual_cost_saving
-                    ),
+                    estimated_annual_cost_saving=(filter_pressure_result.annual_cost_saving),
                 )
             )
 
@@ -308,9 +298,7 @@ def identify_brownfield_opportunities(
 
         if pfc.pfc_correction_beneficial:
             avoided_penalty = (
-                pf_penalty_annual_cost
-                if pf_penalty_annual_cost is not None
-                else Decimal("0")
+                pf_penalty_annual_cost if pf_penalty_annual_cost is not None else Decimal("0")
             )
 
             opportunities.append(

@@ -113,9 +113,7 @@ def test_oil_free_air_requirement_affects_air_quality_ratings() -> None:
         required_turndown_fraction=lubricated_criteria.required_turndown_fraction,
         continuous_operation=lubricated_criteria.continuous_operation,
         gas_molecular_weight=lubricated_criteria.gas_molecular_weight,
-        estimated_operating_hours_per_year=(
-            lubricated_criteria.estimated_operating_hours_per_year
-        ),
+        estimated_operating_hours_per_year=(lubricated_criteria.estimated_operating_hours_per_year),
         oil_free_air_required=True,
     )
 

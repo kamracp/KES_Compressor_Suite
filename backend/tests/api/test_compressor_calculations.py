@@ -212,12 +212,8 @@ def test_rotary_screw_endpoint_full_payload() -> None:
 
     data = response.json()
 
-    assert Decimal(data["displacement"]["theoretical_displacement_m3_per_min"]) == Decimal(
-        "18.000"
-    )
-    assert Decimal(
-        data["standard_air_correction"]["corrected_fad_m3_per_min"]
-    ) == Decimal("10.0")
+    assert Decimal(data["displacement"]["theoretical_displacement_m3_per_min"]) == Decimal("18.000")
+    assert Decimal(data["standard_air_correction"]["corrected_fad_m3_per_min"]) == Decimal("10.0")
     assert Decimal(data["annual_energy_cost"]["annual_energy_kwh"]) == Decimal("480000")
     assert Decimal(data["annual_energy_cost"]["annual_energy_cost"]) == Decimal("2400000")
 

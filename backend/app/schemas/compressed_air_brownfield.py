@@ -149,10 +149,10 @@ class BrownfieldSystemAuditRequest(BaseModel):
         default=None,
         ge=0,
         description=(
-            'Total Nm3/hr of compressed air expelled by timed solenoid '
-            'condensate drains regardless of condensate level. Replacing '
-            'with zero-loss drains eliminates this waste entirely. '
-            'Ref: US DOE / Compressed Air Challenge Sourcebook.'
+            "Total Nm3/hr of compressed air expelled by timed solenoid "
+            "condensate drains regardless of condensate level. Replacing "
+            "with zero-loss drains eliminates this waste entirely. "
+            "Ref: US DOE / Compressed Air Challenge Sourcebook."
         ),
     )
 
@@ -160,9 +160,9 @@ class BrownfieldSystemAuditRequest(BaseModel):
         default=None,
         ge=0,
         description=(
-            'Extra pressure drop across dirty or undersized filter '
-            'elements beyond their clean design delta-p (bar). '
-            'Ref: US DOE / Compressed Air Challenge Sourcebook.'
+            "Extra pressure drop across dirty or undersized filter "
+            "elements beyond their clean design delta-p (bar). "
+            "Ref: US DOE / Compressed Air Challenge Sourcebook."
         ),
     )
 
@@ -183,8 +183,7 @@ class BrownfieldSystemAuditRequest(BaseModel):
         default=None,
         ge=0,
         description=(
-            "Measured line current at the compressor motor (A, "
-            "three-phase). Ref: IEEE Std 141."
+            "Measured line current at the compressor motor (A, three-phase). Ref: IEEE Std 141."
         ),
     )
 
@@ -193,8 +192,7 @@ class BrownfieldSystemAuditRequest(BaseModel):
         gt=0,
         le=1,
         description=(
-            "Measured displacement power factor at the compressor motor "
-            "(0-1). Ref: IEEE Std 141."
+            "Measured displacement power factor at the compressor motor (0-1). Ref: IEEE Std 141."
         ),
     )
 

@@ -12,6 +12,7 @@ Manual cross-check (three-phase, IEEE 141):
 
 Citation: IEEE Std 141-1993 (Red Book); IS 15167 Part 1.
 """
+
 from decimal import Decimal
 
 import pytest
@@ -25,6 +26,7 @@ from app.domain.compressed_air.energy.motor_pfc import (
 # ---------------------------------------------------------------------------
 # Happy-path: 415 V / 60 A / PF 0.78 → target 0.95
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def standard_input() -> MotorMeasurementInput:
@@ -86,6 +88,7 @@ def test_nameplate_deviation_sign(standard_input):
 # PF at or above target — no correction needed
 # ---------------------------------------------------------------------------
 
+
 def test_no_correction_when_pf_meets_target():
     """When measured PF equals target, no correction is needed."""
     inputs = MotorMeasurementInput(
@@ -116,6 +119,7 @@ def test_no_correction_when_pf_exceeds_target():
 # No nameplate — deviation is None
 # ---------------------------------------------------------------------------
 
+
 def test_no_nameplate_deviation_is_none():
     inputs = MotorMeasurementInput(
         measured_voltage_v=Decimal("415"),
@@ -129,6 +133,7 @@ def test_no_nameplate_deviation_is_none():
 # ---------------------------------------------------------------------------
 # Unity PF motor (pure resistive load)
 # ---------------------------------------------------------------------------
+
 
 def test_unity_pf_no_reactive_power():
     """At PF = 1, reactive power is zero and no correction is needed."""
@@ -147,47 +152,58 @@ def test_unity_pf_no_reactive_power():
 # Validation errors
 # ---------------------------------------------------------------------------
 
+
 def test_zero_voltage_rejected():
     with pytest.raises(InvalidMotorPfcInputError, match="voltage"):
-        calculate_motor_pfc(MotorMeasurementInput(
-            measured_voltage_v=Decimal("0"),
-            measured_current_a=Decimal("50"),
-            measured_power_factor=Decimal("0.85"),
-        ))
+        calculate_motor_pfc(
+            MotorMeasurementInput(
+                measured_voltage_v=Decimal("0"),
+                measured_current_a=Decimal("50"),
+                measured_power_factor=Decimal("0.85"),
+            )
+        )
 
 
 def test_negative_current_rejected():
     with pytest.raises(InvalidMotorPfcInputError, match="current"):
-        calculate_motor_pfc(MotorMeasurementInput(
-            measured_voltage_v=Decimal("415"),
-            measured_current_a=Decimal("-1"),
-            measured_power_factor=Decimal("0.85"),
-        ))
+        calculate_motor_pfc(
+            MotorMeasurementInput(
+                measured_voltage_v=Decimal("415"),
+                measured_current_a=Decimal("-1"),
+                measured_power_factor=Decimal("0.85"),
+            )
+        )
 
 
 def test_zero_power_factor_rejected():
     with pytest.raises(InvalidMotorPfcInputError, match="power factor"):
-        calculate_motor_pfc(MotorMeasurementInput(
-            measured_voltage_v=Decimal("415"),
-            measured_current_a=Decimal("50"),
-            measured_power_factor=Decimal("0"),
-        ))
+        calculate_motor_pfc(
+            MotorMeasurementInput(
+                measured_voltage_v=Decimal("415"),
+                measured_current_a=Decimal("50"),
+                measured_power_factor=Decimal("0"),
+            )
+        )
 
 
 def test_power_factor_above_one_rejected():
     with pytest.raises(InvalidMotorPfcInputError, match="power factor"):
-        calculate_motor_pfc(MotorMeasurementInput(
-            measured_voltage_v=Decimal("415"),
-            measured_current_a=Decimal("50"),
-            measured_power_factor=Decimal("1.01"),
-        ))
+        calculate_motor_pfc(
+            MotorMeasurementInput(
+                measured_voltage_v=Decimal("415"),
+                measured_current_a=Decimal("50"),
+                measured_power_factor=Decimal("1.01"),
+            )
+        )
 
 
 def test_negative_rated_power_rejected():
     with pytest.raises(InvalidMotorPfcInputError, match="Rated motor power"):
-        calculate_motor_pfc(MotorMeasurementInput(
-            measured_voltage_v=Decimal("415"),
-            measured_current_a=Decimal("50"),
-            measured_power_factor=Decimal("0.85"),
-            rated_motor_power_kw=Decimal("-5"),
-        ))
+        calculate_motor_pfc(
+            MotorMeasurementInput(
+                measured_voltage_v=Decimal("415"),
+                measured_current_a=Decimal("50"),
+                measured_power_factor=Decimal("0.85"),
+                rated_motor_power_kw=Decimal("-5"),
+            )
+        )
