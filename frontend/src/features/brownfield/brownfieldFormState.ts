@@ -20,6 +20,7 @@ export type BrownfieldFormState = {
 
   optimizedDischargePressureBarG: string;
   expectedLeakRepairFraction: string;
+  demandSavingControlFactor: string;
   powerPenaltyFractionPerBar: string;
 
   notes: string;
@@ -94,6 +95,7 @@ export function createInitialBrownfieldFormState(): BrownfieldFormState {
 
     optimizedDischargePressureBarG: "",
     expectedLeakRepairFraction: "0.80",
+    demandSavingControlFactor: "1",
     powerPenaltyFractionPerBar: "",
 
     notes: "",
@@ -374,6 +376,11 @@ export function validateBrownfieldFormState(
     "Expected leak repair fraction",
     errors,
   );
+  requireFraction(
+    state.demandSavingControlFactor,
+    "Demand-saving control factor",
+    errors,
+  );
 
   validateOptionalFraction(
     state.powerPenaltyFractionPerBar,
@@ -451,6 +458,8 @@ export function buildBrownfieldAuditRequest(
 
     expected_leak_repair_fraction:
       state.expectedLeakRepairFraction,
+    demand_saving_control_factor:
+      state.demandSavingControlFactor.trim(),
 
     power_penalty_fraction_per_bar:
       state.powerPenaltyFractionPerBar.trim() === ""

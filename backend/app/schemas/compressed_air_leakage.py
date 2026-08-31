@@ -63,6 +63,18 @@ class CompressedAirLeakageManagementRequest(BaseModel):
 
     specific_power_kw_per_nm3_per_min: Decimal = Field(gt=0)
 
+    # Fraction of avoided demand converted to electrical saving by the
+    # compressor controls (1 = fully effective turndown such as VSD or a
+    # well-sequenced station; ~0.5 for inlet modulation without unloading).
+    demand_saving_control_factor: Decimal = Field(
+        default=Decimal("1"),
+        ge=0,
+        le=1,
+        description=(
+            "Fraction of avoided air demand that the compressor controls convert into electrical savings. 1 = fully effective turndown (VSD, on/off, or a well-sequenced station); load/unload typically 0.3-0.6; inlet modulation without unloading roughly 0.3. Ref: US DOE / Compressed Air Challenge, 'Improving Compressed Air System Performance: A Sourcebook for Industry'."
+        ),
+    )
+
     annual_operating_hours: Decimal = Field(gt=0)
 
     electricity_tariff_per_kwh: Decimal = Field(ge=0)
@@ -87,6 +99,7 @@ class LeakageEnergyResponse(BaseModel):
     annual_wasted_energy_cost: Decimal
 
     expected_repair_fraction: Decimal
+    demand_saving_control_factor: Decimal
 
     recoverable_leakage_flow_nm3_per_hr: Decimal
     recoverable_power_kw: Decimal

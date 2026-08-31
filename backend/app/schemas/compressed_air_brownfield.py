@@ -119,6 +119,18 @@ class BrownfieldSystemAuditRequest(BaseModel):
         le=1,
     )
 
+    # Fraction of avoided demand converted to electrical saving by the
+    # compressor controls (1 = fully effective turndown such as VSD or a
+    # well-sequenced station; ~0.5 for inlet modulation without unloading).
+    demand_saving_control_factor: Decimal = Field(
+        default=Decimal("1"),
+        ge=0,
+        le=1,
+        description=(
+            "Fraction of avoided air demand that the compressor controls convert into electrical savings. 1 = fully effective turndown (VSD, on/off, or a well-sequenced station); load/unload typically 0.3-0.6; inlet modulation without unloading roughly 0.3. Ref: US DOE / Compressed Air Challenge, 'Improving Compressed Air System Performance: A Sourcebook for Industry'."
+        ),
+    )
+
     # None (default) selects the adiabatic isentropic-work saving method;
     # a value selects the legacy linear per-bar override.
     power_penalty_fraction_per_bar: Decimal | None = Field(

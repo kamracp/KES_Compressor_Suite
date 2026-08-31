@@ -285,6 +285,9 @@ export function BrownfieldPlantAssessmentPage() {
         expectedLeakRepairFraction={
           formState.expectedLeakRepairFraction
         }
+        demandSavingControlFactor={
+          formState.demandSavingControlFactor
+        }
         powerPenaltyFractionPerBar={
           formState.powerPenaltyFractionPerBar
         }
@@ -319,6 +322,14 @@ export function BrownfieldPlantAssessmentPage() {
           changeState((current) => ({
             ...current,
             expectedLeakRepairFraction,
+          }))
+        }
+        onDemandSavingControlFactorChange={(
+          demandSavingControlFactor,
+        ) =>
+          changeState((current) => ({
+            ...current,
+            demandSavingControlFactor,
           }))
         }
         onPowerPenaltyFractionPerBarChange={(

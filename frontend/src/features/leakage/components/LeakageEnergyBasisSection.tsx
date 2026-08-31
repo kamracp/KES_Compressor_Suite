@@ -42,7 +42,7 @@ export function LeakageEnergyBasisSection({
       </CardHeader>
 
       <CardContent>
-        <div className="grid gap-5 md:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-2">
             <Label htmlFor="leakage-specific-power">
               Specific Power
@@ -116,6 +116,33 @@ export function LeakageEnergyBasisSection({
               Currency/kWh
             </p>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="leakage-control-factor">
+              Control Factor
+            </Label>
+
+            <Input
+              id="leakage-control-factor"
+              type="number"
+              min="0"
+              max="1"
+              step="0.05"
+              value={state.demandSavingControlFactor}
+              placeholder="Example: 0.5"
+              onChange={(event) =>
+                onChange({
+                  demandSavingControlFactor:
+                    event.target.value,
+                })
+              }
+            />
+
+            <p className="text-xs leading-5 text-slate-500">
+              0 – 1 &nbsp;·&nbsp; VSD/on-off ≈ 1.0, load/unload 0.3 – 0.6,
+              inlet modulation ≈ 0.3
+            </p>
+          </div>
         </div>
 
         <div className="mt-6 rounded-lg border border-dashed border-slate-300 p-4">
@@ -125,9 +152,20 @@ export function LeakageEnergyBasisSection({
 
           <p className="mt-1 text-xs leading-5 text-slate-500">
             The leakage engine converts registered leakage flow to
-            equivalent compressor power using the entered specific
-            power, then annualizes energy and cost using operating
-            hours and electricity tariff.
+            equivalent compressor power using specific power, then
+            annualizes energy and cost using operating hours and
+            electricity tariff. Recoverable electrical savings are
+            scaled by the control factor — the fraction of reduced
+            air demand that the compressor controls actually convert
+            into reduced power draw. Air flow quantities remain
+            physical regardless of the factor.
+          </p>
+
+          <p className="mt-2 text-xs leading-5 text-slate-400">
+            Guidance: US DOE / Compressed Air Challenge, &ldquo;Improving
+            Compressed Air System Performance: A Sourcebook for
+            Industry.&rdquo; VSD or on/off ≈ 1.0 · load/unload 0.3 – 0.6
+            · inlet modulation without unloading ≈ 0.3.
           </p>
         </div>
       </CardContent>

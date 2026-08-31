@@ -98,6 +98,8 @@ export type BrownfieldSystemAuditRequest = {
 
   optimized_discharge_pressure_bar_g: DecimalString | null;
   expected_leak_repair_fraction: DecimalString;
+  // System-level control conversion factor for demand-side savings (0-1).
+  demand_saving_control_factor?: DecimalString;
   power_penalty_fraction_per_bar: DecimalString | null;
 
   notes?: string | null;

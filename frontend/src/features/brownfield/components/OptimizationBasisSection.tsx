@@ -19,6 +19,7 @@ type OptimizationBasisSectionProps = {
   electricityTariffPerKwh: string;
   optimizedDischargePressureBarG: string;
   expectedLeakRepairFraction: string;
+  demandSavingControlFactor: string;
   powerPenaltyFractionPerBar: string;
   notes: string;
 
@@ -27,6 +28,7 @@ type OptimizationBasisSectionProps = {
   onElectricityTariffChange: (value: string) => void;
   onOptimizedPressureChange: (value: string) => void;
   onExpectedLeakRepairFractionChange: (value: string) => void;
+  onDemandSavingControlFactorChange: (value: string) => void;
   onPowerPenaltyFractionPerBarChange: (value: string) => void;
   onNotesChange: (value: string) => void;
 };
@@ -37,6 +39,7 @@ export function OptimizationBasisSection({
   electricityTariffPerKwh,
   optimizedDischargePressureBarG,
   expectedLeakRepairFraction,
+  demandSavingControlFactor,
   powerPenaltyFractionPerBar,
   notes,
   onAuditCodeChange,
@@ -44,6 +47,7 @@ export function OptimizationBasisSection({
   onElectricityTariffChange,
   onOptimizedPressureChange,
   onExpectedLeakRepairFractionChange,
+  onDemandSavingControlFactorChange,
   onPowerPenaltyFractionPerBarChange,
   onNotesChange,
 }: OptimizationBasisSectionProps) {
@@ -222,6 +226,33 @@ export function OptimizationBasisSection({
 
               <p className="text-xs leading-5 text-slate-500">
                 Fraction of identified leakage expected to be recoverable.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brownfield-control-factor">
+                Control Factor
+              </Label>
+
+              <Input
+                id="brownfield-control-factor"
+                type="number"
+                min="0"
+                max="1"
+                step="0.05"
+                value={demandSavingControlFactor}
+                onChange={(event) =>
+                  onDemandSavingControlFactorChange(
+                    event.target.value,
+                  )
+                }
+              />
+
+              <p className="text-xs leading-5 text-slate-500">
+                0–1 · VSD/on-off ≈ 1.0,
+                load/unload 0.3–0.6,
+                inlet modulation ≈ 0.3
+                (DOE / Compressed Air Challenge)
               </p>
             </div>
 

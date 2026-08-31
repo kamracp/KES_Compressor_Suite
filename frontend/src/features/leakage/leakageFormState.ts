@@ -11,6 +11,7 @@ export type LeakageFormState = {
   specificPowerKwPerNm3PerMin: string;
   annualOperatingHours: string;
   electricityTariffPerKwh: string;
+  demandSavingControlFactor: string;
 
   averageSystemDemandNm3PerHr: string;
 
@@ -55,6 +56,7 @@ export function createInitialLeakageFormState(): LeakageFormState {
     specificPowerKwPerNm3PerMin: "",
     annualOperatingHours: "",
     electricityTariffPerKwh: "0",
+    demandSavingControlFactor: "1",
     averageSystemDemandNm3PerHr: "",
     notes: "",
   };
@@ -237,6 +239,11 @@ export function validateLeakageFormState(
     "Electricity tariff",
     errors,
   );
+  requireFraction(
+    state.demandSavingControlFactor,
+    "Demand-saving control factor",
+    errors,
+  );
 
   validateOptionalPositive(
     state.averageSystemDemandNm3PerHr,
@@ -316,6 +323,8 @@ export function buildLeakageManagementRequest(
 
     electricity_tariff_per_kwh:
       state.electricityTariffPerKwh.trim(),
+    demand_saving_control_factor:
+      state.demandSavingControlFactor.trim(),
 
     average_system_demand_nm3_per_hr: optionalDecimal(
       state.averageSystemDemandNm3PerHr,

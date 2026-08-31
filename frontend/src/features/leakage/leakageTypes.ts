@@ -74,6 +74,10 @@ export type CompressedAirLeakageManagementRequest = {
   annual_operating_hours: DecimalString;
   electricity_tariff_per_kwh: DecimalString;
 
+  // System-level control conversion factor for demand-side savings
+  // (0-1). Optional on the wire: the backend defaults to 1.
+  demand_saving_control_factor?: DecimalString;
+
   average_system_demand_nm3_per_hr?:
     | DecimalString
     | null;
@@ -91,6 +95,7 @@ export type LeakageEnergyResponse = {
   annual_wasted_energy_cost: DecimalString;
 
   expected_repair_fraction: DecimalString;
+  demand_saving_control_factor: DecimalString;
 
   recoverable_leakage_flow_nm3_per_hr: DecimalString;
   recoverable_power_kw: DecimalString;
