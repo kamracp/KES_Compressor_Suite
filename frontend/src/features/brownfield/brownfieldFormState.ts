@@ -23,6 +23,9 @@ export type BrownfieldFormState = {
   demandSavingControlFactor: string;
   powerPenaltyFractionPerBar: string;
 
+  condensateDrainAirLossNm3PerHr: string;
+  filterExcessPressureDropBar: string;
+
   motorMeasuredVoltageV: string;
   motorMeasuredCurrentA: string;
   motorMeasuredPowerFactor: string;
@@ -104,6 +107,9 @@ export function createInitialBrownfieldFormState(): BrownfieldFormState {
     expectedLeakRepairFraction: "0.80",
     demandSavingControlFactor: "1",
     powerPenaltyFractionPerBar: "",
+
+    condensateDrainAirLossNm3PerHr: "",
+    filterExcessPressureDropBar: "",
 
     motorMeasuredVoltageV: "",
     motorMeasuredCurrentA: "",
@@ -402,6 +408,23 @@ export function validateBrownfieldFormState(
     errors,
   );
 
+  // Air treatment (C-5): both optional, both non-negative when given.
+  if (state.condensateDrainAirLossNm3PerHr.trim()) {
+    requireNonNegative(
+      state.condensateDrainAirLossNm3PerHr,
+      "Condensate drain air loss",
+      errors,
+    );
+  }
+
+  if (state.filterExcessPressureDropBar.trim()) {
+    requireNonNegative(
+      state.filterExcessPressureDropBar,
+      "Filter excess pressure drop",
+      errors,
+    );
+  }
+
   // Motor measurement (C-6): each field optional, but a supplied power
   // factor must be a valid fraction and voltage/current non-negative.
   validateOptionalFraction(
@@ -529,6 +552,14 @@ export function buildBrownfieldAuditRequest(
       state.powerPenaltyFractionPerBar.trim() === ""
         ? null
         : state.powerPenaltyFractionPerBar,
+
+    // Air-treatment measurements: blank means not measured, not zero.
+    condensate_drain_air_loss_nm3_per_hr: nullableDecimal(
+      state.condensateDrainAirLossNm3PerHr,
+    ),
+    filter_excess_pressure_drop_bar: nullableDecimal(
+      state.filterExcessPressureDropBar,
+    ),
 
     // Blank motor fields are sent as null: an unmeasured quantity must
     // never reach the engine as a guessed number.

@@ -105,6 +105,13 @@ export type BrownfieldSystemAuditRequest = {
   demand_saving_control_factor?: DecimalString;
   power_penalty_fraction_per_bar: DecimalString | null;
 
+  // Air-treatment measurements (C-5). Timed condensate drains vent
+  // compressed air on every cycle; dirty filters force the compressor
+  // to generate extra pressure. Both are measured plant data, not
+  // assumptions. Ref: US DOE / Compressed Air Challenge Sourcebook.
+  condensate_drain_air_loss_nm3_per_hr?: DecimalString | null;
+  filter_excess_pressure_drop_bar?: DecimalString | null;
+
   // Motor electrical measurement (C-6). All three of voltage, current
   // and power factor must be present for the PF-CORRECTION opportunity
   // to be raised. Ref: IEEE Std 141, IS 15167 Part 1.

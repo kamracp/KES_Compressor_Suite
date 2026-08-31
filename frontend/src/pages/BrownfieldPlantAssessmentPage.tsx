@@ -24,6 +24,7 @@ import { BrownfieldEngineeringReviewSection } from "../features/brownfield/compo
 import { CompressorMeasurementsSection } from "../features/brownfield/components/CompressorMeasurementsSection";
 import { ExistingCompressorSection } from "../features/brownfield/components/ExistingCompressorSection";
 import { LeakageSurveySection } from "../features/brownfield/components/LeakageSurveySection";
+import { AirTreatmentSection } from "../features/brownfield/components/AirTreatmentSection";
 import { MotorPfcSection } from "../features/brownfield/components/MotorPfcSection";
 import { OptimizationBasisSection } from "../features/brownfield/components/OptimizationBasisSection";
 import { SystemMeasurementsSection } from "../features/brownfield/components/SystemMeasurementsSection";
@@ -386,6 +387,21 @@ export function BrownfieldPlantAssessmentPage() {
           changeState((current) => ({
             ...current,
             leakageSummary,
+          }))
+        }
+      />
+
+      <AirTreatmentSection
+        condensateDrainAirLossNm3PerHr={
+          formState.condensateDrainAirLossNm3PerHr
+        }
+        filterExcessPressureDropBar={
+          formState.filterExcessPressureDropBar
+        }
+        onChange={(field, value) =>
+          changeState((current) => ({
+            ...current,
+            [field]: value,
           }))
         }
       />
