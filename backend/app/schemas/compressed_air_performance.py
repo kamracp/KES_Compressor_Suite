@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from app.domain.compressed_air.performance.performance_models import (
     PerformanceOperatingState,
 )
+from app.schemas._bounds import MAX_PLANT_AIR_PRESSURE_BAR_G
 
 
 class PerformanceMeasurementInputSchema(BaseModel):
@@ -13,7 +14,7 @@ class PerformanceMeasurementInputSchema(BaseModel):
     timestamp_label: str
 
     flow_nm3_per_hr: Decimal = Field(ge=0)
-    pressure_bar_g: Decimal = Field(ge=0)
+    pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
     power_kw: Decimal = Field(ge=0)
 
     operating_state: PerformanceOperatingState | None = None

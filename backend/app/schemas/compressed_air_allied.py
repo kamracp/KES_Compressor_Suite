@@ -23,6 +23,7 @@ from app.domain.compressed_air.treatment.air_treatment import (
     AirTreatmentInput,
     DryerType,
 )
+from app.schemas._bounds import MAX_PLANT_AIR_PRESSURE_BAR_G
 
 
 class ReceiverSizingInputRequest(BaseModel):
@@ -32,7 +33,7 @@ class ReceiverSizingInputRequest(BaseModel):
     event_duration_seconds: Decimal = Field(gt=0)
 
     receiver_high_pressure_bar_g: Decimal = Field(gt=0)
-    receiver_low_pressure_bar_g: Decimal = Field(ge=0)
+    receiver_low_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
 
     reserve_fraction: Decimal = Field(
         default=Decimal("0"),

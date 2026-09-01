@@ -15,6 +15,7 @@ from app.domain.compressed_air.station.station_models import (
     RedundancyPhilosophy,
 )
 from app.domain.compressed_air.treatment.air_treatment import DryerType
+from app.schemas._bounds import MAX_PLANT_AIR_PRESSURE_BAR_G
 
 
 class AirConsumerInputSchema(BaseModel):
@@ -24,7 +25,7 @@ class AirConsumerInputSchema(BaseModel):
 
     quantity: int = Field(gt=0)
 
-    required_pressure_bar_g: Decimal = Field(ge=0)
+    required_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
     air_quality_class: AirQualityClass
 
     consumption_basis: AirConsumptionBasis
@@ -80,7 +81,7 @@ class DemandProfilePointInputSchema(BaseModel):
     label: str
 
     demand_nm3_per_hr: Decimal = Field(ge=0)
-    required_pressure_bar_g: Decimal = Field(ge=0)
+    required_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
 
     duration_hours: Decimal = Field(gt=0)
 
@@ -149,7 +150,7 @@ class CompressorUnitInputSchema(BaseModel):
         le=1,
     )
 
-    rated_discharge_pressure_bar_g: Decimal = Field(ge=0)
+    rated_discharge_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
 
     rated_motor_power_kw: Decimal | None = Field(
         default=None,
@@ -174,7 +175,7 @@ class CompressorStationInputSchema(BaseModel):
 
     redundancy_philosophy: RedundancyPhilosophy
 
-    minimum_required_pressure_bar_g: Decimal = Field(ge=0)
+    minimum_required_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
     design_flow_nm3_per_hr: Decimal = Field(gt=0)
 
     master_control_enabled: bool = False
@@ -187,8 +188,8 @@ class ReceiverSizingInputSchema(BaseModel):
 
     event_duration_seconds: Decimal = Field(gt=0)
 
-    receiver_high_pressure_bar_g: Decimal = Field(ge=0)
-    receiver_low_pressure_bar_g: Decimal = Field(ge=0)
+    receiver_high_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
+    receiver_low_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
 
     reserve_fraction: Decimal = Field(
         default=Decimal("0"),

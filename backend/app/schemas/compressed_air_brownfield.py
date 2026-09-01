@@ -9,6 +9,7 @@ from app.domain.compressed_air.station.station_models import (
     CompressorControlMode,
     CompressorTechnology,
 )
+from app.schemas._bounds import MAX_PLANT_AIR_PRESSURE_BAR_G
 
 
 class ExistingCompressorInputSchema(BaseModel):
@@ -33,7 +34,7 @@ class ExistingCompressorInputSchema(BaseModel):
     control_mode: CompressorControlMode
 
     rated_fad_nm3_per_hr: Decimal = Field(gt=0)
-    rated_discharge_pressure_bar_g: Decimal = Field(ge=0)
+    rated_discharge_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
     rated_motor_power_kw: Decimal = Field(gt=0)
 
     installation_year: int | None = None
@@ -50,7 +51,7 @@ class CompressorMeasurementInputSchema(BaseModel):
     operating_state: AuditOperatingState
 
     measured_flow_nm3_per_hr: Decimal = Field(ge=0)
-    measured_discharge_pressure_bar_g: Decimal = Field(ge=0)
+    measured_discharge_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
     measured_power_kw: Decimal = Field(ge=0)
 
     load_fraction: Decimal | None = Field(
@@ -64,7 +65,7 @@ class SystemMeasurementInputSchema(BaseModel):
     timestamp_label: str
 
     total_flow_nm3_per_hr: Decimal = Field(ge=0)
-    header_pressure_bar_g: Decimal = Field(ge=0)
+    header_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
     total_power_kw: Decimal = Field(ge=0)
 
     production_state: str | None = None

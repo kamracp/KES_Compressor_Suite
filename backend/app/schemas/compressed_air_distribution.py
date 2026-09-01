@@ -7,6 +7,7 @@ from app.domain.compressed_air.distribution.network_models import (
     NetworkTopology,
     PipeSegmentRole,
 )
+from app.schemas._bounds import MAX_PLANT_AIR_PRESSURE_BAR_G
 from app.schemas.calculation_execution import CalculationExecutionMetadata
 
 
@@ -20,7 +21,9 @@ class NetworkNodePayload(BaseModel):
     elevation_m: Decimal = Decimal("0")
 
     demand_nm3_per_hr: Decimal = Field(default=Decimal("0"), ge=0)
-    minimum_pressure_bar_g: Decimal | None = Field(default=None, ge=0)
+    minimum_pressure_bar_g: Decimal | None = Field(
+        default=None, ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G
+    )
 
     area: str | None = Field(default=None, max_length=200)
     notes: str | None = Field(default=None, max_length=1000)
@@ -45,7 +48,7 @@ class PipeSegmentPayload(BaseModel):
 
     design_flow_nm3_per_hr: Decimal = Field(gt=0)
 
-    operating_pressure_bar_g: Decimal = Field(ge=0)
+    operating_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
     operating_temperature_k: Decimal = Field(gt=0)
 
     material: str | None = Field(default=None, max_length=100)
@@ -75,7 +78,7 @@ class DistributionNetworkCalculationRequest(BaseModel):
     segments: list[PipeSegmentPayload] = Field(min_length=1)
     paths: list[NetworkPathPayload] = Field(min_length=1)
 
-    design_source_pressure_bar_g: Decimal = Field(ge=0)
+    design_source_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
 
     air_density_kg_per_m3: Decimal = Field(gt=0)
     darcy_friction_factor: Decimal = Field(gt=0, lt=1)
