@@ -72,6 +72,24 @@ describe("brownfield air-treatment inputs", () => {
     ).toBe(true);
   });
 
+  it("rejects an implausible filter excess pressure drop", () => {
+    // Regression: a dropped decimal point ("035" for "0.35") reached the
+    // backend as 35 bar and produced a 39 percent energy saving claim
+    // from a filter element change. A clean element runs near 0.14 bar
+    // and replacement is advised by roughly 0.35 bar, so anything above
+    // 1 bar is a data-entry error.
+    // Ref: US DOE / Compressed Air Challenge Sourcebook.
+    const errors = validateBrownfieldFormState({
+      ...baseState(),
+      filterExcessPressureDropBar: "035",
+    });
+    expect(
+      errors.some((error) =>
+        error.includes("Filter excess pressure drop"),
+      ),
+    ).toBe(true);
+  });
+
   it("accepts a form with no air-treatment measurement at all", () => {
     const airTreatmentLabels = [
       "Condensate drain air loss",

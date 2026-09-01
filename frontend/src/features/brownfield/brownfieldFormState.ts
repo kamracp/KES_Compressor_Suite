@@ -423,6 +423,18 @@ export function validateBrownfieldFormState(
       "Filter excess pressure drop",
       errors,
     );
+    // Upper bound mirrors the backend schema (le=1). A clean filter
+    // element runs near 0.14 bar (2 psi) and replacement is advised by
+    // roughly 0.35 bar (5 psi), so a larger figure is a data-entry
+    // error rather than a filter condition -- most often a dropped
+    // decimal point. Ref: US DOE / Compressed Air Challenge Sourcebook.
+    const filterDrop = Number(state.filterExcessPressureDropBar);
+    if (Number.isFinite(filterDrop) && filterDrop > 1) {
+      errors.push(
+        "Filter excess pressure drop cannot exceed 1 bar. Check for a " +
+          "missing decimal point.",
+      );
+    }
   }
 
   // Motor measurement (C-6): each field optional, but a supplied power
