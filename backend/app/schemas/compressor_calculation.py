@@ -7,6 +7,10 @@ from app.domain.rotary_screw.models import (
     RotaryScrewOilType,
     RotaryScrewStageCount,
 )
+from app.schemas._bounds import (
+    MAX_ELECTRICITY_TARIFF_INR_PER_KWH,
+    MIN_ELECTRICITY_TARIFF_INR_PER_KWH,
+)
 
 
 class GasConditionInput(BaseModel):
@@ -144,4 +148,8 @@ class RotaryScrewCalculationRequest(BaseModel):
     standard_reference_pressure_bar_a: Decimal | None = Field(default=None, gt=0)
     standard_reference_temperature_k: Decimal | None = Field(default=None, gt=0)
     annual_operating_hours: Decimal | None = Field(default=None, ge=0, le=8760)
-    electricity_tariff_per_kwh: Decimal | None = Field(default=None, ge=0)
+    electricity_tariff_per_kwh: Decimal | None = Field(
+        default=None,
+        ge=MIN_ELECTRICITY_TARIFF_INR_PER_KWH,
+        le=MAX_ELECTRICITY_TARIFF_INR_PER_KWH,
+    )

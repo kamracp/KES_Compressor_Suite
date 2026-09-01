@@ -5,7 +5,11 @@ from pydantic import BaseModel, Field
 from app.domain.compressed_air.performance.performance_models import (
     PerformanceOperatingState,
 )
-from app.schemas._bounds import MAX_PLANT_AIR_PRESSURE_BAR_G
+from app.schemas._bounds import (
+    MAX_ELECTRICITY_TARIFF_INR_PER_KWH,
+    MAX_PLANT_AIR_PRESSURE_BAR_G,
+    MIN_ELECTRICITY_TARIFF_INR_PER_KWH,
+)
 
 
 class PerformanceMeasurementInputSchema(BaseModel):
@@ -41,8 +45,8 @@ class CompressedAirPerformanceAnalysisRequest(BaseModel):
     annual_operating_hours: Decimal = Field(gt=0)
 
     electricity_tariff_per_kwh: Decimal = Field(
-        default=Decimal("0"),
-        ge=0,
+        ge=MIN_ELECTRICITY_TARIFF_INR_PER_KWH,
+        le=MAX_ELECTRICITY_TARIFF_INR_PER_KWH,
     )
 
     rated_capacity_nm3_per_hr: Decimal | None = Field(

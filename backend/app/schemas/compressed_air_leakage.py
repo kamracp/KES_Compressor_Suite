@@ -8,6 +8,10 @@ from app.domain.compressed_air.leakage.leakage_models import (
     LeakRepairStatus,
     LeakSourceCategory,
 )
+from app.schemas._bounds import (
+    MAX_ELECTRICITY_TARIFF_INR_PER_KWH,
+    MIN_ELECTRICITY_TARIFF_INR_PER_KWH,
+)
 
 
 class LeakRegisterItemInputSchema(BaseModel):
@@ -83,7 +87,10 @@ class CompressedAirLeakageManagementRequest(BaseModel):
 
     annual_operating_hours: Decimal = Field(gt=0)
 
-    electricity_tariff_per_kwh: Decimal = Field(ge=0)
+    electricity_tariff_per_kwh: Decimal = Field(
+        ge=MIN_ELECTRICITY_TARIFF_INR_PER_KWH,
+        le=MAX_ELECTRICITY_TARIFF_INR_PER_KWH,
+    )
 
     average_system_demand_nm3_per_hr: Decimal | None = Field(
         default=None,
