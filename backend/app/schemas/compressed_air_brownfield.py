@@ -159,9 +159,14 @@ class BrownfieldSystemAuditRequest(BaseModel):
     filter_excess_pressure_drop_bar: Decimal | None = Field(
         default=None,
         ge=0,
+        le=1,
         description=(
             "Extra pressure drop across dirty or undersized filter "
             "elements beyond their clean design delta-p (bar). "
+            "Bounded at 1 bar: a clean element runs near 0.14 bar "
+            "(2 psi) and replacement is advised by roughly 0.35 bar "
+            "(5 psi), so a larger figure is a data-entry error rather "
+            "than a filter condition. "
             "Ref: US DOE / Compressed Air Challenge Sourcebook."
         ),
     )
