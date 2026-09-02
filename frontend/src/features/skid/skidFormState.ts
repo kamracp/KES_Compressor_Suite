@@ -6,6 +6,11 @@ import type {
   SkidComponentType,
 } from "./skidTypes";
 
+import {
+  MAX_PLANT_AIR_PRESSURE_BAR_G,
+  pushIfAbove,
+} from "../reference/inputBounds";
+
 export type SkidFormState = {
   skidCode: string;
   arrangement: SkidArrangement;
@@ -205,6 +210,14 @@ export function validateSkidFormState(
       errors,
     );
   });
+
+  // C-7b submit-time mirror of the backend bound (see reference/inputBounds).
+  pushIfAbove(
+    state.designPressureBarG,
+    MAX_PLANT_AIR_PRESSURE_BAR_G,
+    `Design pressure cannot exceed ${MAX_PLANT_AIR_PRESSURE_BAR_G} bar g (plant-air ceiling).`,
+    errors,
+  );
 
   return errors;
 }

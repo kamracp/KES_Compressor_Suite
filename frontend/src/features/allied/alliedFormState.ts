@@ -8,6 +8,11 @@ import type {
   TreatmentConfigurationInput,
 } from "./alliedTypes";
 
+import {
+  MAX_PLANT_AIR_PRESSURE_BAR_G,
+  pushIfAbove,
+} from "../reference/inputBounds";
+
 export type AlliedFormState = {
   analysisCode: string;
 
@@ -544,6 +549,23 @@ export function validateAlliedFormState(
       errors,
     );
   });
+
+  // C-7b submit-time mirrors of the backend bounds (see reference/inputBounds).
+  if (state.receiver) {
+    const plantAir = `cannot exceed ${MAX_PLANT_AIR_PRESSURE_BAR_G} bar g (plant-air ceiling).`;
+    pushIfAbove(
+      state.receiver.sizing_input.receiver_high_pressure_bar_g,
+      MAX_PLANT_AIR_PRESSURE_BAR_G,
+      `Receiver high pressure ${plantAir}`,
+      errors,
+    );
+    pushIfAbove(
+      state.receiver.sizing_input.receiver_low_pressure_bar_g,
+      MAX_PLANT_AIR_PRESSURE_BAR_G,
+      `Receiver low pressure ${plantAir}`,
+      errors,
+    );
+  }
 
   return errors;
 }
