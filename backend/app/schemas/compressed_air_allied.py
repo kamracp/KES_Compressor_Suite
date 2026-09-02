@@ -39,11 +39,13 @@ class ReceiverSizingInputRequest(BaseModel):
     )
     receiver_high_pressure_bar_g: Decimal = Field(
         gt=0,
-        le=Decimal("45"),
+        le=MAX_PLANT_AIR_PRESSURE_BAR_G,
         description=(
-            "Packaged industrial high-pressure air (PET blowing, boosters) reaches 45 "
-            "bar g (MFR-ATLASCOPCO-AIR-RANGE-2026-09 DX/DN); reciprocating HX/HN to "
-            "150 bar g are process machines outside this input."
+            "Plant-air receiver ceiling. Packaged high-pressure air (PET blowing, "
+            "boosters) reaches 45 bar g (MFR-ATLASCOPCO-AIR-RANGE-2026-09 DX/DN) but "
+            "is reserved behind a future high-pressure-circuit flag "
+            "(MAX_HIGH_PRESSURE_CIRCUIT_BAR_G); reciprocating HX/HN to 150 bar g are "
+            "process machines outside this input."
         ),
     )
     receiver_low_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)

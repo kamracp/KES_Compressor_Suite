@@ -10,6 +10,7 @@ from app.domain.compressed_air.skid.skid_models import (
     SkidComponentType,
 )
 from app.domain.compressed_air.treatment.air_treatment import DryerType
+from app.schemas._bounds import MAX_PLANT_AIR_PRESSURE_BAR_G
 
 
 class SkidComponentRequest(BaseModel):
@@ -81,11 +82,13 @@ class AirSkidAssessmentRequest(BaseModel):
     design_flow_nm3_per_hr: Decimal = Field(gt=0)
     design_pressure_bar_g: Decimal = Field(
         gt=0,
-        le=Decimal("45"),
+        le=MAX_PLANT_AIR_PRESSURE_BAR_G,
         description=(
-            "Packaged industrial high-pressure air (PET blowing, boosters) reaches 45 "
-            "bar g (MFR-ATLASCOPCO-AIR-RANGE-2026-09 DX/DN); reciprocating HX/HN to "
-            "150 bar g are process machines outside this input."
+            "Plant-air skid design ceiling. Packaged high-pressure air (PET blowing, "
+            "boosters) reaches 45 bar g (MFR-ATLASCOPCO-AIR-RANGE-2026-09 DX/DN) but "
+            "is reserved behind a future high-pressure-circuit flag "
+            "(MAX_HIGH_PRESSURE_CIRCUIT_BAR_G); reciprocating HX/HN to 150 bar g are "
+            "process machines outside this input."
         ),
     )
     dryer_type: DryerType
