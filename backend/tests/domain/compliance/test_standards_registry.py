@@ -10,6 +10,8 @@ from app.domain.compliance.standards_registry import (
     ISO_1217,
     ISO_6358,
     ISO_11011,
+    MFR_COMPAIR_OILFREE_SCREW_2026_09,
+    MFR_KAESER_OILFREE_SCREW_2026_09,
     ZAIM_2025,
     EngineeringStandard,
     StandardApplicability,
@@ -32,6 +34,8 @@ def test_registry_contains_expected_standards() -> None:
         BCAS_BPG_101,
         IPMVP_CORE,
         ZAIM_2025,
+        MFR_COMPAIR_OILFREE_SCREW_2026_09,
+        MFR_KAESER_OILFREE_SCREW_2026_09,
     )
 
 
@@ -186,3 +190,20 @@ def test_zaim_2025_metadata() -> None:
     assert standard.authority == StandardAuthority.ACADEMIC
     assert standard.applicability == (StandardApplicability.ENERGY_AUDIT,)
     assert standard.verification_status == StandardVerificationStatus.OFFICIAL_SOURCE_VERIFIED
+
+
+def test_manufacturer_evidence_entries_are_registered() -> None:
+    for standard_id, expected in (
+        ("MFR-COMPAIR-OILFREE-SCREW-2026-09", MFR_COMPAIR_OILFREE_SCREW_2026_09),
+        ("MFR-KAESER-OILFREE-SCREW-2026-09", MFR_KAESER_OILFREE_SCREW_2026_09),
+    ):
+        found = get_standard(standard_id)
+        assert found is expected
+        assert found.authority is StandardAuthority.MANUFACTURER
+        assert StandardApplicability.ROTARY_SCREW in found.applicability
+        assert (
+            found.verification_status
+            is StandardVerificationStatus.OFFICIAL_SOURCE_VERIFIED
+        )
+        # Every manufacturer entry must point at its JSON data file.
+        assert "app/data/evidence/manufacturer/" in found.notes

@@ -1,0 +1,158 @@
+{
+  "evidence_set_id": "MFR-COMPAIR-OILFREE-SCREW-2026-09",
+  "kind": "manufacturer_evidence",
+  "vendor": "CompAir (Ingersoll Rand group)",
+  "scope": "Oil-free rotary screw compressors 15-355 kW, air- and water-cooled, fixed and regulated speed (RS)",
+  "retrieved_on": "2026-09-02",
+  "usage_rule": "Reference evidence for physical input bounds (C-7b) and part-load/heat-recovery data points. Never use as calculation constants or defaults; vendor marketing claims are flagged as such.",
+  "test_basis": {
+    "fad": "ISO 1217 Ed.4 Annex C and E; intake 1 bar a, 20 degC, 0 % RH (dry)",
+    "noise": "ISO 2151 free-field, tolerance +/- 3 dB(A)",
+    "air_quality": "ISO 8573-1:2010 Class 0 oil, TUV certified, silicone-free"
+  },
+  "sources": [
+    {"id": "SRC-DH", "series": "DH", "document": "CompAir DH Brochure, EN 09/23", "url": "https://azure-na-assets.contentstack.com/v3/assets/blta76611689adb5848/blt2e952ee33299e2e4/67ef95ac3c6595e01ee569fa/50940_5_10_23_23670_COMPAIR_DH_BROCHURE_UPDATES_EN_WORK.pdf"},
+    {"id": "SRC-D3775", "series": "D37-D75s", "document": "CompAir D-Series 37-75 kW Brochure, EN 08/22", "url": "https://azure-na-assets.contentstack.com/v3/assets/blta76611689adb5848/blte7fea97cc5d50fc3/67ef980e3c659585a8e56a5b/D_SERIES_37_75_12PP_EN.pdf"},
+    {"id": "SRC-ULTIMA", "series": "Ultima U75-U160", "document": "CompAir Ultima Brochure, 753GB 03/19", "url": "https://azure-na-assets.contentstack.com/v3/assets/blta76611689adb5848/blt2601336b47a90aa1/67ef98502b1defdde9689bc9/ULTIMA_BROCHURE_8PP_GB_03_V2_WORK.pdf"},
+    {"id": "SRC-DX90160", "series": "DX90-DX160", "document": "CompAir DX-Series 90-160 kW Brochure, EN 11/24", "url": "https://azure-na-assets.contentstack.com/v3/assets/blta76611689adb5848/blt1a5f7f6e226706dc/67ef95d1e79e24eb628a8f5b/61728_6_11_24_24161_D_SERIES_DX_12PP_EN_WORK.pdf"},
+    {"id": "SRC-DX200355", "series": "DX200-DX355e", "document": "CompAir DX-Series 200-355 kW Brochure, EN 01/23", "url": "https://azure-na-assets.contentstack.com/v3/assets/blta76611689adb5848/bltd0d1abc682326d7e/67ef95f22b1def5a86689b6f/50780_13_1_23_22880_D_SERIES_DX_12PP_EN_WORK.pdf"},
+    {"id": "SRC-WEB-IN", "series": "all", "document": "CompAir India oil-free landing page", "url": "https://www.compair.com/en-in/oil-free-compressors/"}
+  ],
+  "series": [
+    {
+      "series_id": "DH",
+      "source": "SRC-DH",
+      "technology": "single-stage water-injected oil-free screw, direct drive, no gearbox",
+      "pressure_range_bar_g": [5, 10],
+      "fad_range_m3_min": [0.32, 6.87],
+      "motor_kw_range": [15, 37],
+      "compression_temperature_c_max": 60,
+      "rotor_speed_rpm_max": 3500,
+      "fixed_speed_models": [
+        {"model": "D15H", "kw": 15, "working_pressure_bar_g": [8, 10], "fad_m3_min": {"8": 2.30, "10": 1.80}, "noise_db_a": {"air": 68, "water": 65}, "weight_kg": {"air": 672, "water": 624}, "dimensions_mm": [1309, 848, 1612]},
+        {"model": "D22H", "kw": 22, "working_pressure_bar_g": [8, 10], "fad_m3_min": {"8": 3.50, "10": 2.89}, "noise_db_a": {"air": 68, "water": 65}, "weight_kg": {"air": 691, "water": 643}, "dimensions_mm": [1309, 848, 1612]},
+        {"model": "D37H", "kw": 37, "working_pressure_bar_g": [8, 10], "fad_m3_min": {"8": 5.86, "10": 5.04}, "noise_db_a": {"air": 71, "water": 61}, "weight_kg": {"air": 960, "water": 860}, "dimensions_mm": [1686, 886, 1657]}
+      ],
+      "regulated_speed_models": [
+        {"model": "D15H RS", "kw": 15, "working_pressure_bar_g": [5, 10], "fad_m3_min_min_max": [0.32, 2.34], "noise_db_a_at_70pct_load": {"air": 67, "water": 64}, "weight_kg": {"air": 687, "water": 639}, "dimensions_mm": [1309, 848, 1612]},
+        {"model": "D22H RS", "kw": 22, "working_pressure_bar_g": [5, 10], "fad_m3_min_min_max": [0.68, 3.45], "noise_db_a_at_70pct_load": {"air": 67, "water": 64}, "weight_kg": {"air": 687, "water": 658}, "dimensions_mm": [1309, 848, 1612]},
+        {"model": "D37H RS", "kw": 37, "working_pressure_bar_g": [5, 10], "fad_m3_min_min_max": [1.09, 6.87], "noise_db_a_at_70pct_load": {"air": 71, "water": 60}, "weight_kg": {"air": 995, "water": 895}, "dimensions_mm": [1722, 920, 1659]}
+      ]
+    },
+    {
+      "series_id": "D37-75",
+      "source": "SRC-D3775",
+      "technology": "two-stage dry oil-free screw, geared, intercooled; RS models with hybrid permanent-magnet (HPM) motor",
+      "pressure_range_bar_g": [7, 10],
+      "fad_range_m3_min": [5.1, 12.7],
+      "motor_kw_range": [37, 75],
+      "coolant_change_interval_h": 8000,
+      "fixed_speed_models": [
+        {"model": "D37", "kw": 37, "nominal_pressure_bar_g": [7, 8.5], "fad_m3_min_air": {"7": 6.0, "8.5": 5.1}, "fad_m3_min_water": {"7": 6.0, "8.5": 5.2}, "noise_db_a": 76, "weight_kg": {"air": 2387, "water": 2410}, "dimensions_mm": [2248, 1372, 1917]},
+        {"model": "D45", "kw": 45, "nominal_pressure_bar_g": [7, 8.5], "fad_m3_min_air": {"7": 7.7, "8.5": 6.5}, "fad_m3_min_water": {"7": 7.7, "8.5": 6.5}, "noise_db_a": 76, "weight_kg": {"air": 2497, "water": 2520}, "dimensions_mm": [2248, 1372, 1917]},
+        {"model": "D55", "kw": 55, "nominal_pressure_bar_g": [7, 8.5, 10], "fad_m3_min_air": {"7": 9.6, "8.5": 8.8, "10": 7.7}, "fad_m3_min_water": {"7": 9.6, "8.5": 8.8, "10": 7.8}, "noise_db_a": 76, "weight_kg": {"air": 2577, "water": 2600}, "dimensions_mm": [2248, 1372, 1917]},
+        {"model": "D75s", "kw": 75, "nominal_pressure_bar_g": [7, 8.5, 10], "fad_m3_min_air": {"7": 12.7, "8.5": 11.6, "10": 10.7}, "fad_m3_min_water": {"7": 12.7, "8.5": 11.7, "10": 10.8}, "noise_db_a": 76, "weight_kg": {"air": 2682, "water": 2705}, "dimensions_mm": [2248, 1372, 1917]}
+      ],
+      "regulated_speed_models": [
+        {"model": "D37RS", "kw": 37, "nominal_pressure_bar_g": 8.5, "fad_m3_min_at_nominal": 5.1, "noise_db_a_range": {"air": [65, 74], "water": [63, 69]}, "weight_kg": {"air": 1579, "water": 1624}, "dimensions_mm": [2080, 1115, 2070]},
+        {"model": "D45RS", "kw": 45, "nominal_pressure_bar_g": 8.5, "fad_m3_min_at_nominal": 6.3, "noise_db_a_range": {"air": [65, 74], "water": [63, 69]}, "weight_kg": {"air": 1579, "water": 1624}, "dimensions_mm": [2080, 1115, 2070]},
+        {"model": "D55RS", "kw": 55, "nominal_pressure_bar_g": 10, "fad_m3_min_at_nominal": 7.8, "noise_db_a_range": {"air": [76, 80], "water": [76, 80]}, "weight_kg": {"air": 2042, "water": 2042}, "dimensions_mm": [2078, 1321, 1947]},
+        {"model": "D75sRS", "kw": 75, "nominal_pressure_bar_g": 10, "fad_m3_min_at_nominal": 10.6, "noise_db_a_range": {"air": [76, 80], "water": [76, 80]}, "weight_kg": {"air": 2042, "water": 2042}, "dimensions_mm": [2078, 1321, 1947]}
+      ]
+    },
+    {
+      "series_id": "ULTIMA",
+      "source": "SRC-ULTIMA",
+      "technology": "two-stage dry oil-free screw, gearless; LP and HP airends each driven by its own VSD permanent-magnet synchronous motor",
+      "pressure_range_bar_g": [4, 10],
+      "fad_range_m3_min": [6.7, 23.9],
+      "motor_kw_range": [75, 160],
+      "note": "Web listing says 'Ultima 55-160 kW'; the 03/19 brochure tabulates U75-U160 only. U55 not evidenced here.",
+      "idle_power_kw_at_160kw": 8,
+      "idle_power_note": "Brochure: 160 kW unit uses less than 8 kW in idle run, i.e. under 5 % of rated (vendor claim)",
+      "heat_recovery": {"recoverable_fraction_max": 0.98, "hot_water_temp_c_max": 85, "note": "vendor claim; closed-loop package cooling, air-cooled unit usable for process heat"},
+      "regulated_speed_models": [
+        {"model": "U75", "kw": 75, "working_pressure_bar_g": [4, 10], "fad_m3_min_at_8bar": [6.7, 11.9], "fad_m3_min_at_10bar": [7.7, 9.9], "noise_db_a": {"air": 64, "water": 63}, "weight_kg": {"air": 3360, "water": 2750}, "dimensions_mm": {"air": [3244, 1394, 1992], "water": [2044, 1394, 1992]}},
+        {"model": "U90", "kw": 90, "working_pressure_bar_g": [4, 10], "fad_m3_min_at_8bar": [6.7, 14.9], "fad_m3_min_at_10bar": [7.7, 12.7], "noise_db_a": {"air": 65, "water": 64}, "weight_kg": {"air": 3360, "water": 2750}, "dimensions_mm": {"air": [3244, 1394, 1992], "water": [2044, 1394, 1992]}},
+        {"model": "U110", "kw": 110, "working_pressure_bar_g": [4, 10], "fad_m3_min_at_8bar": [6.7, 18.5], "fad_m3_min_at_10bar": [7.7, 16.3], "noise_db_a": {"air": 65, "water": 64}, "weight_kg": {"air": 3360, "water": 2750}, "dimensions_mm": {"air": [3244, 1394, 1992], "water": [2044, 1394, 1992]}},
+        {"model": "U132", "kw": 132, "working_pressure_bar_g": [4, 10], "fad_m3_min_at_8bar": [6.7, 22.2], "fad_m3_min_at_10bar": [7.7, 19.9], "noise_db_a": {"air": 67, "water": 66}, "weight_kg": {"air": 3360, "water": 2750}, "dimensions_mm": {"air": [3244, 1394, 1992], "water": [2044, 1394, 1992]}},
+        {"model": "U160", "kw": 160, "working_pressure_bar_g": [4, 10], "fad_m3_min_at_8bar": [6.7, 23.9], "fad_m3_min_at_10bar": [7.7, 23.6], "noise_db_a": {"air": 70, "water": 69}, "weight_kg": {"air": 3360, "water": 2750}, "dimensions_mm": {"air": [3244, 1394, 1992], "water": [2044, 1394, 1992]}}
+      ]
+    },
+    {
+      "series_id": "DX90-160",
+      "source": "SRC-DX90160",
+      "technology": "two-stage dry oil-free screw, water-jacketed airend; fixed speed IE4 motor, RS with IE5 hybrid reluctance motor",
+      "pressure_range_bar_g": [4, 10.7],
+      "fad_range_m3_min": [6.7, 28.3],
+      "motor_kw_range": [90, 160],
+      "ambient_design_temp_c_max": 46,
+      "vsd_turndown_max_pct": 71,
+      "table_note": "Brochure headers list dedicated 7.5 / 8.5 / 10.5 bar variants but tabulate FAD at 7 / 8 / 10 bar g; recorded as printed.",
+      "fixed_speed_models": [
+        {"model": "DX90", "kw": 90, "fad_m3_min_air": {"7": 17.4, "8": 16.7, "10": 14.6}, "fad_m3_min_water": {"7": 17.6, "8": 16.7, "10": 14.9}, "noise_db_a": {"air": 78, "water": 75}, "weight_kg": {"air": 3441, "water": 3309}, "dimensions_mm": [2712, 1825, 2200]},
+        {"model": "DX110", "kw": 110, "fad_m3_min_air": {"7": 21.0, "8": 20.1, "10": 18.2}, "fad_m3_min_water": {"7": 21.2, "8": 20.3, "10": 18.4}, "noise_db_a": {"air": 78, "water": 75}, "weight_kg": {"air": 3678, "water": 3546}, "dimensions_mm": [2712, 1825, 2200]},
+        {"model": "DX132", "kw": 132, "fad_m3_min_air": {"7": 24.7, "8": 23.7, "10": 21.8}, "fad_m3_min_water": {"7": 24.9, "8": 23.9, "10": 22.0}, "noise_db_a": {"air": 78, "water": 75}, "weight_kg": {"air": 3932, "water": 3800}, "dimensions_mm": [2712, 1825, 2200]},
+        {"model": "DX160", "kw": 160, "fad_m3_min_air": {"7": 28.1, "8": 28.0, "10": 25.9}, "fad_m3_min_water": {"7": 28.3, "8": 28.0, "10": 26.1}, "noise_db_a": {"air": 78, "water": 75}, "weight_kg": {"air": 3934, "water": 3802}, "dimensions_mm": [2712, 1825, 2200]}
+      ],
+      "regulated_speed_models": [
+        {"model": "DX90RS", "kw": 90, "max_pressure_bar_g": 10.7, "fad_m3_min_at_7bar_air": [7.0, 17.2], "fad_m3_min_at_7bar_water": [7.3, 17.4], "noise_db_a_range": {"air": [64, 78], "water": [62, 75]}, "weight_kg": {"air": 3297, "water": 3165}, "dimensions_mm": [2712, 1825, 2200]},
+        {"model": "DX110RS", "kw": 110, "max_pressure_bar_g": 10.7, "fad_m3_min_at_7bar_air": [7.0, 19.7], "fad_m3_min_at_7bar_water": [7.3, 19.9], "noise_db_a_range": {"air": [64, 78], "water": [62, 75]}, "weight_kg": {"air": 3297, "water": 3165}, "dimensions_mm": [2712, 1825, 2200]},
+        {"model": "DX132RS", "kw": 132, "max_pressure_bar_g": 10.7, "fad_m3_min_at_7bar_air": [6.7, 24.2], "fad_m3_min_at_7bar_water": [6.9, 24.4], "noise_db_a_range": {"air": [64, 78], "water": [62, 75]}, "weight_kg": {"air": 3297, "water": 3165}, "dimensions_mm": [2712, 1825, 2200]},
+        {"model": "DX160RS", "kw": 160, "max_pressure_bar_g": 10.7, "fad_m3_min_at_7bar_air": [6.7, 26.7], "fad_m3_min_at_7bar_water": [6.9, 26.9], "noise_db_a_range": {"air": [64, 78], "water": [62, 75]}, "weight_kg": {"air": 3297, "water": 3165}, "dimensions_mm": [2712, 1825, 2200]}
+      ]
+    },
+    {
+      "series_id": "DX200-355",
+      "source": "SRC-DX200355",
+      "technology": "two-stage dry oil-free screw; 'e' variants have water-cooled airend jackets",
+      "pressure_range_bar_g": [4, 10],
+      "fad_range_m3_min": [11.4, 53.4],
+      "motor_kw_range": [200, 355],
+      "ambient_design_temp_c_max": 46,
+      "vsd_turndown_max_pct": 71,
+      "fixed_speed_models": [
+        {"model": "DX200", "kw": 200, "nominal_pressure_bar_g": [7, 8, 10], "fad_m3_min_air": {"7": 37.6, "8": 35.0, "10": 31.8}, "fad_m3_min_water": {"7": 37.7, "8": 35.1, "10": 31.8}, "noise_db_a": {"air": 80, "water": 76}, "weight_kg": {"air": 6426, "water": 5734}, "dimensions_mm": [3457, 2152, 2446]},
+        {"model": "DX200e", "kw": 200, "cooling": "water", "nominal_pressure_bar_g": [7, 8, 10], "fad_m3_min_water": {"7": 38.1, "8": 35.5, "10": 32.3}, "noise_db_a": {"water": 76}, "weight_kg": {"water": 5734}, "dimensions_mm": [3457, 2152, 2446]},
+        {"model": "DX250", "kw": 250, "nominal_pressure_bar_g": [7, 8, 10], "fad_m3_min_air": {"7": 45.2, "8": 43.6, "10": 40.6}, "fad_m3_min_water": null, "noise_db_a": {"air": 80, "water": 76}, "weight_kg": {"air": 6446, "water": 5754}, "dimensions_mm": [3457, 2152, 2446], "note": "water-cooled FAD row blank in source"},
+        {"model": "DX250e", "kw": 250, "cooling": "water", "nominal_pressure_bar_g": [7, 8, 10], "fad_m3_min_water": {"7": 45.6, "8": 44.1, "10": 41.1}, "noise_db_a": {"water": 76}, "weight_kg": {"water": 5754}, "dimensions_mm": [3457, 2152, 2446]},
+        {"model": "DX315", "kw": 315, "nominal_pressure_bar_g": [7, 8, 10], "fad_m3_min_air": {"7": 52.9, "8": 51.3, "10": 49.1}, "fad_m3_min_water": {"7": 52.9, "8": 51.4, "10": 49.1}, "noise_db_a": {"air": 80, "water": 76}, "weight_kg": {"air": 6446, "water": 5754}, "dimensions_mm": [3457, 2152, 2446]},
+        {"model": "DX315e", "kw": 315, "cooling": "water", "nominal_pressure_bar_g": [7, 8, 10], "fad_m3_min_water": {"7": 53.3, "8": 51.8, "10": 49.5}, "noise_db_a": {"water": 76}, "weight_kg": {"water": 5754}, "dimensions_mm": [3457, 2152, 2446]},
+        {"model": "DX355", "kw": 355, "cooling": "water", "nominal_pressure_bar_g": [10], "fad_m3_min_water": {"10": 52.8}, "noise_db_a": {"water": 76}, "weight_kg": {"water": 5754}, "dimensions_mm": [3457, 2152, 2446]},
+        {"model": "DX355e", "kw": 355, "cooling": "water", "nominal_pressure_bar_g": [10], "fad_m3_min_water": {"10": 53.3}, "noise_db_a": {"water": 76}, "weight_kg": {"water": 5754}, "dimensions_mm": [3457, 2152, 2446]}
+      ],
+      "regulated_speed_models": [
+        {"model": "DX200RS", "kw": 200, "max_pressure_bar_g": 10, "fad_m3_min_at_7bar": [11.6, 34.7], "noise_db_a": {"air": 80, "water": 76}, "weight_kg": {"air": 6556, "water": 5864}, "dimensions_mm": [3457, 2152, 2446]},
+        {"model": "DX200eRS", "kw": 200, "cooling": "water", "max_pressure_bar_g": 10, "fad_m3_min_at_7bar": [12.1, 35.5], "noise_db_a": {"water": 76}, "weight_kg": {"water": 5864}, "dimensions_mm": [3457, 2152, 2446]},
+        {"model": "DX250RS", "kw": 250, "max_pressure_bar_g": 10, "fad_m3_min_at_7bar": [12.4, 42.1], "noise_db_a": {"air": 80, "water": 76}, "weight_kg": {"air": 6556, "water": 5864}, "dimensions_mm": [3457, 2152, 2446]},
+        {"model": "DX250eRS", "kw": 250, "cooling": "water", "max_pressure_bar_g": 10, "fad_m3_min_at_7bar": [12.9, 43.2], "noise_db_a": {"water": 76}, "weight_kg": {"water": 5864}, "dimensions_mm": [3457, 2152, 2446]},
+        {"model": "DX315RS", "kw": 315, "max_pressure_bar_g": 10, "fad_m3_min_at_7bar": [14.7, 50.2], "noise_db_a": {"air": 80, "water": 76}, "weight_kg": {"air": 6586, "water": 5894}, "dimensions_mm": [3457, 2152, 2446]},
+        {"model": "DX315eRS", "kw": 315, "cooling": "water", "max_pressure_bar_g": 10, "fad_m3_min_at_7bar": [15.2, 51.2], "noise_db_a": {"water": 76}, "weight_kg": {"water": 5894}, "dimensions_mm": [3457, 2152, 2446]},
+        {"model": "DX355RS", "kw": 355, "cooling": "water", "max_pressure_bar_g": 10, "fad_m3_min_at_7bar": [14.7, 50.8], "noise_db_a": {"water": 76}, "weight_kg": {"water": 5894}, "dimensions_mm": [3457, 2152, 2446]},
+        {"model": "DX355eRS", "kw": 355, "cooling": "water", "max_pressure_bar_g": 10, "fad_m3_min_at_7bar": [15.2, 51.2], "noise_db_a": {"water": 76}, "weight_kg": {"water": 5894}, "dimensions_mm": [3457, 2152, 2446]}
+      ]
+    }
+  ],
+  "vendor_claims_not_for_calculation": [
+    {"claim": "Every 1 bar above required pressure costs about 7 % extra power", "sources": ["SRC-D3775", "SRC-DX90160", "SRC-DX200355"], "status": "linear rule of thumb; Compressor OS default is adiabatic (C-1). Keep only as evidence for the explicit linear-override option."},
+    {"claim": "About 94 % of compressor input energy becomes recoverable heat", "sources": ["SRC-D3775", "SRC-DX90160", "SRC-DX200355"]},
+    {"claim": "Up to 98 % heat recovery, hot water up to 85 degC (Ultima closed-loop package)", "sources": ["SRC-ULTIMA"]},
+    {"claim": "Regulated-speed saves up to 35 % versus fixed speed; energy is about 80 % of 5-year total cost", "sources": ["SRC-D3775", "SRC-DX90160", "SRC-DX200355", "SRC-DH"]},
+    {"claim": "Compressed air systems account for about 10 % of industrial electricity", "sources": ["SRC-DX90160", "SRC-DX200355"]},
+    {"claim": "Traditional two-stage oil-free: 6000-25000 rpm, discharge up to 200 degC, 5-7 gears, >15 bearings; DH water-injected: <=3500 rpm, ~60 degC, 0 gears, 7 bearings", "sources": ["SRC-DH"]},
+    {"claim": "SmartAir Master sequencer harmonises up to 12 compressors; base-load module controls up to 4", "sources": ["SRC-D3775", "SRC-DX90160", "SRC-DX200355"]}
+  ],
+  "derived_bounds_for_c7b": [
+    {"parameter": "rated_motor_power_kw", "applies_to": "single oil-free rotary screw unit", "min": 15, "max": 355, "basis": "DH D15H to DX355e", "note": "Below 15 kW oil-free is scroll/piston; above 355 kW single unit is centrifugal territory."},
+    {"parameter": "working_pressure_bar_g", "applies_to": "oil-free rotary screw", "min": 4, "max": 10.7, "basis": "Ultima/DX200-355 min 4 bar; DX90-160RS max 10.7 bar"},
+    {"parameter": "fad_m3_min", "applies_to": "single oil-free rotary screw unit", "min": 0.32, "max": 53.4, "basis": "D15H RS min; DX315e/DX355e max"},
+    {"parameter": "package_noise_db_a", "applies_to": "oil-free rotary screw, ISO 2151 free field", "min": 60, "max": 80, "basis": "D37H RS water 60; DX air-cooled 80; D55RS/D75sRS up to 80"},
+    {"parameter": "ambient_temperature_c_design", "applies_to": "package cooling design", "max": 46, "basis": "DX series 'operation at ambient up to 46 degC'", "note": "India summer plant rooms may exceed this; treat as a warning threshold, not a hard cap."},
+    {"parameter": "vsd_turndown_pct", "applies_to": "regulated-speed oil-free screw", "max": 86, "basis": "DX stated up to 71 %; Ultima U160 6.7/23.9 gives 72 %; D15H RS 0.32/2.34 gives 86 %"},
+    {"parameter": "idle_unload_power_fraction", "applies_to": "gearless dual-VSD two-stage", "max": 0.05, "basis": "Ultima 160 kW under 8 kW idle", "note": "vendor claim, one design; do not generalise to geared or fixed-speed machines."},
+    {"parameter": "heat_recovery_fraction", "applies_to": "compressor waste-heat module upper bound", "max": 0.98, "basis": "Ultima 98 %; D/DX 94 %", "note": "upper bound only; never a default."},
+    {"parameter": "recovered_hot_water_temp_c", "applies_to": "waste-heat module", "max": 85, "basis": "Ultima"},
+    {"parameter": "discharge_air_temperature_c", "applies_to": "two-stage dry screw airend", "max": 200, "basis": "SRC-DH comparison table", "note": "airend discharge before intercooler/aftercooler; water-injected around 60 degC"},
+    {"parameter": "package_weight_kg", "applies_to": "single oil-free screw unit", "min": 624, "max": 6586, "basis": "D15H water to DX315RS air"}
+  ]
+}

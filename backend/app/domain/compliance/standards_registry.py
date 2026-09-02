@@ -11,6 +11,7 @@ class StandardAuthority(StrEnum):
     ISO = "ISO"
     EVO = "EVO"
     ACADEMIC = "ACADEMIC"
+    MANUFACTURER = "MANUFACTURER"
 
 
 class StandardApplicability(StrEnum):
@@ -43,6 +44,52 @@ class EngineeringStandard:
     verification_status: StandardVerificationStatus
     notes: str
 
+
+MFR_COMPAIR_OILFREE_SCREW_2026_09 = EngineeringStandard(
+    standard_id="MFR-COMPAIR-OILFREE-SCREW-2026-09",
+    authority=StandardAuthority.MANUFACTURER,
+    title=(
+        "CompAir oil-free rotary screw compressor technical data, "
+        "15-355 kW (DH, D37-75, Ultima, DX90-160, DX200-355)"
+    ),
+    edition="Brochures EN 09/23, 08/22, 03/19, 11/24, 01/23",
+    publication_date="2019-2024",
+    applicability=(
+        StandardApplicability.ROTARY_SCREW,
+        StandardApplicability.ENERGY_AUDIT,
+    ),
+    verification_status=(StandardVerificationStatus.OFFICIAL_SOURCE_VERIFIED),
+    notes=(
+        "Manufacturer evidence set, not a standard. FAD per ISO 1217 Ed.4 "
+        "Annex C/E, noise per ISO 2151. Used only as documented basis for "
+        "physical input bounds (C-7b) and part-load / heat-recovery data "
+        "points; never as calculation constants. Data file: "
+        "app/data/evidence/manufacturer/compair_oil_free_screw.json."
+    ),
+)
+
+MFR_KAESER_OILFREE_SCREW_2026_09 = EngineeringStandard(
+    standard_id="MFR-KAESER-OILFREE-SCREW-2026-09",
+    authority=StandardAuthority.MANUFACTURER,
+    title=(
+        "KAESER oil-free compression rotary screw compressor technical data, "
+        "CSG-2 / DSG-2 / FSG-2, 37-355 kW"
+    ),
+    edition="Brochure P-651/25ED",
+    publication_date="2021-07",
+    applicability=(
+        StandardApplicability.ROTARY_SCREW,
+        StandardApplicability.ENERGY_AUDIT,
+    ),
+    verification_status=(StandardVerificationStatus.OFFICIAL_SOURCE_VERIFIED),
+    notes=(
+        "Manufacturer evidence set, not a standard. FAD per ISO 1217:2009 "
+        "Annex C/E, noise per ISO 2151 / ISO 9614-2. Includes the CSG 130-2 "
+        "heat-recovery worked example (87 % recoverable at 20->80 degC) as "
+        "an independent check case for the waste-heat module. Data file: "
+        "app/data/evidence/manufacturer/kaeser_oil_free_screw.json."
+    ),
+)
 
 API_617 = EngineeringStandard(
     standard_id="API-617",
@@ -283,6 +330,8 @@ ENGINEERING_STANDARDS: tuple[EngineeringStandard, ...] = (
     BCAS_BPG_101,
     IPMVP_CORE,
     ZAIM_2025,
+    MFR_COMPAIR_OILFREE_SCREW_2026_09,
+    MFR_KAESER_OILFREE_SCREW_2026_09,
 )
 
 

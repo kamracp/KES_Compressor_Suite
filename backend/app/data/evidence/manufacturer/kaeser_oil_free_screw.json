@@ -1,0 +1,112 @@
+{
+  "evidence_set_id": "MFR-KAESER-OILFREE-SCREW-2026-09",
+  "kind": "manufacturer_evidence",
+  "vendor": "KAESER KOMPRESSOREN SE, Coburg, Germany",
+  "scope": "Two-stage oil-free compression rotary screw compressors CSG-2 / DSG-2 / FSG-2, 37-355 kW, air- and water-cooled, fixed speed (standard) and variable speed (SFC)",
+  "retrieved_on": "2026-09-02",
+  "usage_rule": "Reference evidence for physical input bounds (C-7b), heat-recovery upper limits, dryer dew-point classes and a heat-recovery golden-case data point. Never use as calculation constants or defaults; vendor marketing claims flagged separately.",
+  "test_basis": {
+    "fad": "ISO 1217:2009 Annex C/E, complete system; inlet 1 bar a, cooling and inlet air 20 degC, 0 % RH",
+    "noise": "ISO 2151 with basic standard ISO 9614-2, tolerance +/- 3 dB(A)",
+    "air_quality": "oil-free compression (dry-running two-stage airend); brochure does not print an ISO 8573-1 class certificate"
+  },
+  "sources": [
+    {"id": "SRC-KAESER-CSG-DSG-FSG", "document": "KAESER Oil-free compression rotary screw compressors CSG-2, DSG-2, FSG-2 Series, brochure P-651/25ED, 7/21", "supplied_by": "user upload 2026-09-02", "url": "https://www.kaeser.com"}
+  ],
+  "package_variants": {
+    "suffix_T": "with integrated refrigeration dryer (CSG-2 only), dp <= 0.1 bar, PDP +3 degC",
+    "suffix_i.HOC": "with integrated heat-of-compression rotation dryer, PDP down to -30 degC, no electric regeneration heating, rated to +45 degC ambient",
+    "suffix_SFC": "variable speed (Sigma Frequency Control); CSG SFC uses synchronous reluctance motor, drive system class IES2 per EN 61800-9",
+    "cooling": "A = air-cooled, W = water-cooled",
+    "mass_columns": "CSG: standard / T / i.HOC; DSG and FSG: standard / i.HOC"
+  },
+  "common_equipment": {
+    "airend": "two-stage dry screw with integrated gearing (AGMA Q13 / DIN class 5 helical spur gears), jacket-cooled both stages, HP stage chromium steel rotors, coated rotors",
+    "drive_motor": "IE4 premium efficiency, IP55, Pt100 winding sensors",
+    "starter": "automatic star-delta, IP54 ventilated cabinet",
+    "inlet_valve": "hydraulically actuated",
+    "controller": "SIGMA CONTROL 2; control modes Dual / Quadro / Dynamic; Ethernet standard; Profibus DP, Modbus, Profinet, Devicenet optional",
+    "master_controller": "SIGMA AIR MANAGER 4.0, up to 16 compressed-air supply units",
+    "ambient_design_temp_c_max_air_cooled": 45,
+    "water_cooled_exchangers": "two shell-and-tube air/water coolers, CuNi10Fe tubes with internal star fins; parallel exchangers for LP and HP stages"
+  },
+  "dimensions_mm_WxDxH": {
+    "air_cooled": {"CSG-2": [2490, 1660, 2145], "CSG-2 T": [2840, 1660, 2145], "CSG-2 i.HOC": [3140, 1660, 2145], "DSG-2": [3435, 1750, 2385], "DSG-2 i.HOC": [4270, 1750, 2385], "FSG-2": [3860, 2075, 2730], "FSG-2 i.HOC": [4630, 2075, 2730]},
+    "water_cooled": {"CSG-2": [2490, 1660, 1965], "CSG-2 T": [2840, 1660, 1965], "CSG-2 i.HOC": [3140, 1660, 1965], "DSG-2": [3435, 1750, 2060], "DSG-2 i.HOC": [4270, 1750, 2060], "FSG-2": [3650, 2075, 2730], "FSG-2 i.HOC": [4475, 2075, 2220]}
+  },
+  "series": [
+    {
+      "series_id": "CSG-2",
+      "motor_kw_range": [37, 90],
+      "pressure_variants_bar_g": [6, 8, 9, 10],
+      "note": "CSG 70-2 SFC is built with a 55 kW rated motor (footnote 3). 'Upon request' entries recorded as null.",
+      "models": [
+        {"model": "CSG 55-2", "kw": 37, "air": {"std_fad": {"6": null, "8": 5.4, "10": null}, "std_noise_db_a": 71, "sfc": null}, "water": {"std_fad": {"6": null, "8": 5.4, "10": null}, "std_noise_db_a": 64, "sfc": null}, "mass_kg_std_T_ihoc": [2270, 2520, 2985]},
+        {"model": "CSG 70-2", "kw": 45, "sfc_motor_kw": 55, "air": {"std_fad": {"6": 7.77, "8": 6.69, "9": null}, "std_noise_db_a": 71, "sfc": {"fad": {"6": [3.12, 7.71], "8": [3.47, 6.62], "9": [3.62, 6.05]}, "mass_kg_std_T_ihoc": [2360, 2610, 3080], "noise_db_a": 71}}, "water": {"std_fad": {"6": 7.92, "8": 6.82, "10": null}, "std_noise_db_a": 64, "sfc": {"fad": {"6": [3.03, 8.03], "8": [3.03, 6.98], "10": [3.71, 6.00]}, "mass_kg_std_T_ihoc": [2360, 2610, 3080], "noise_db_a": 64}}, "mass_kg_std_T_ihoc": [2310, 2560, 3025]},
+        {"model": "CSG 90-2", "kw": 55, "air": {"std_fad": {"6": 9.62, "8": 8.8, "9": 7.67}, "std_noise_db_a": 72, "sfc": {"fad": {"6": [3.23, 9.58], "8": [3.47, 8.32], "9": [3.62, 7.77]}, "mass_kg_std_T_ihoc": [2360, 2610, 3080], "noise_db_a": 72}}, "water": {"std_fad": {"6": 9.78, "8": 8.97, "10": 7.83}, "std_noise_db_a": 65, "sfc": {"fad": {"6": [3.62, 9.90], "8": [3.84, 8.70], "10": [3.96, 7.67]}, "mass_kg_std_T_ihoc": [2360, 2610, 3080], "noise_db_a": 65}}, "mass_kg_std_T_ihoc": [2375, 2625, 3090]},
+        {"model": "CSG 120-2", "kw": 75, "air": {"std_fad": {"6": 12.92, "8": 12.0, "10": 10.43}, "std_noise_db_a": 73, "sfc": {"fad": {"6": [4.51, 12.41], "8": [3.98, 11.30], "10": [4.81, 10.10]}, "mass_kg_std_T_ihoc": [2400, 2650, 3120], "noise_db_a": 73}}, "water": {"std_fad": {"6": 13.07, "8": 12.15, "10": 10.58}, "std_noise_db_a": 66, "sfc": {"fad": {"6": [4.18, 12.74], "8": [4.21, 11.69], "10": [4.23, 10.63]}, "mass_kg_std_T_ihoc": [2400, 2650, 3120], "noise_db_a": 66}}, "mass_kg_std_T_ihoc": [2515, 2765, 3230]},
+        {"model": "CSG 130-2", "kw": 90, "air": {"std_fad": {"6": 12.92, "8": 12.88, "10": 12.85}, "std_noise_db_a": 74, "sfc": {"fad": {"6": [4.64, 13.41], "8": [5.05, 13.30], "10": [5.47, 12.70]}, "mass_kg_std_T_ihoc": [2480, 2730, 3200], "noise_db_a": 74}}, "water": {"std_fad": {"6": null, "8": 13.03, "10": 13.00}, "std_noise_db_a": 68, "sfc": {"fad": {"6": [4.33, 13.51], "8": [4.26, 13.54], "10": [4.20, 13.08]}, "mass_kg_std_T_ihoc": [2480, 2730, 3200], "noise_db_a": 68}}, "mass_kg_std_T_ihoc": [2640, 2890, 3355]}
+      ]
+    },
+    {
+      "series_id": "DSG-2",
+      "motor_kw_range": [90, 200],
+      "pressure_variants_bar_g": [6, 8, 10],
+      "note": "FAD identical for air- and water-cooled; only mass and noise differ. Source prints DSG 260-2 air-cooled i.HOC mass as '495' (typo) - recorded as 4950 by series pattern; verify with vendor.",
+      "models": [
+        {"model": "DSG 140-2", "kw": 90, "std_fad": {"8": 13.18, "10": 13.12}, "air": {"mass_kg_std_ihoc": [3400, 4500], "std_noise_db_a": 77}, "water": {"mass_kg_std_ihoc": [3100, 4200], "std_noise_db_a": 69}, "sfc": null},
+        {"model": "DSG 180-2", "kw": 110, "std_fad": {"6": 19.2, "8": 18.4, "10": 16.1}, "air": {"mass_kg_std_ihoc": [3550, 4650], "std_noise_db_a": 78, "sfc_mass_kg_std_ihoc": [4150, 5250], "sfc_noise_db_a": 79}, "water": {"mass_kg_std_ihoc": [3250, 4350], "std_noise_db_a": 70, "sfc_mass_kg_std_ihoc": [3850, 4950], "sfc_noise_db_a": 71}, "sfc_fad": {"6": [9.46, 20.79], "8": [8.51, 18.56], "10": [9.54, 16.43]}},
+        {"model": "DSG 220-2", "kw": 132, "std_fad": {"6": 23.0, "8": 21.6, "10": 19.1}, "air": {"mass_kg_std_ihoc": [3700, 4800], "std_noise_db_a": 78, "sfc_mass_kg_std_ihoc": [4300, 5400], "sfc_noise_db_a": 79}, "water": {"mass_kg_std_ihoc": [3400, 4500], "std_noise_db_a": 71, "sfc_mass_kg_std_ihoc": [4000, 5100], "sfc_noise_db_a": 72}, "sfc_fad": {"6": [8.68, 22.45], "8": [9.51, 21.8], "10": [9.95, 19.5]}},
+        {"model": "DSG 260-2", "kw": 160, "std_fad": {"6": 26.1, "8": 26.0, "10": 22.9}, "air": {"mass_kg_std_ihoc": [3850, 4950], "std_noise_db_a": 79, "sfc_mass_kg_std_ihoc": [4450, 5550], "sfc_noise_db_a": 80}, "water": {"mass_kg_std_ihoc": [3550, 4650], "std_noise_db_a": 74, "sfc_mass_kg_std_ihoc": [4150, 5250], "sfc_noise_db_a": 75}, "sfc_fad": {"6": [9.36, 27.66], "8": [9.62, 25.44], "10": [10.3, 23.3]}},
+        {"model": "DSG 290-2", "kw": 200, "std_fad": {"6": 28.55, "8": 28.5, "10": 26.0}, "air": {"mass_kg_std_ihoc": [4000, 5100], "std_noise_db_a": 81, "sfc_mass_kg_std_ihoc": [4600, 5700], "sfc_noise_db_a": 82}, "water": {"mass_kg_std_ihoc": [3700, 4800], "std_noise_db_a": 75, "sfc_mass_kg_std_ihoc": [4300, 5400], "sfc_noise_db_a": 76}, "sfc_fad": {"6": [10.27, 30.05], "8": [11.47, 30.0], "10": [12.33, 28.0]}}
+      ]
+    },
+    {
+      "series_id": "FSG-2",
+      "motor_kw_range": [160, 355],
+      "pressure_variants_bar_g": [6, 8, 10],
+      "note": "FAD identical for air- and water-cooled. FSG 520-2 has no fixed-speed air-cooled variant; water-cooled fixed speed exists at 10 bar only.",
+      "models": [
+        {"model": "FSG 300-2", "kw": 160, "std_fad": {"6": 29.4, "8": 29.3}, "air": {"mass_kg_std_ihoc": [5550, 6750], "std_noise_db_a": 78}, "water": {"mass_kg_std_ihoc": [5250, 6400], "std_noise_db_a": 74}, "sfc": null},
+        {"model": "FSG 350-2", "kw": 200, "std_fad": {"6": 37.3, "8": 34.9, "10": 29.2}, "air": {"mass_kg_std_ihoc": [5750, 6950], "std_noise_db_a": 79}, "water": {"mass_kg_std_ihoc": [5450, 6600], "std_noise_db_a": 75}, "sfc": null},
+        {"model": "FSG 420-2", "kw": 250, "std_fad": {"6": 45.7, "8": 42.0, "10": 37.1}, "air": {"mass_kg_std_ihoc": [5950, 7150], "std_noise_db_a": 80, "sfc_mass_kg_std_ihoc": [6550, 7750], "sfc_noise_db_a": 81}, "water": {"mass_kg_std_ihoc": [5650, 6800], "std_noise_db_a": 75, "sfc_mass_kg_std_ihoc": [6250, 7400], "sfc_noise_db_a": 76}, "sfc_fad": {"6": [14.79, 44.56], "8": [16.63, 40.57], "10": [18.48, 36.54]}},
+        {"model": "FSG 450-2", "kw": 315, "std_fad": {"6": 45.6, "8": 41.9}, "air": {"mass_kg_std_ihoc": [6250, 7450], "std_noise_db_a": 81}, "water": {"mass_kg_std_ihoc": [5950, 7100], "std_noise_db_a": 75}, "sfc": null},
+        {"model": "FSG 500-2", "kw": 315, "std_fad": {"6": null, "8": 50.0, "10": 45.6}, "air": {"mass_kg_std_ihoc": [6250, 7450], "std_noise_db_a": 82, "sfc_mass_kg_std_ihoc": [6550, 7750], "sfc_noise_db_a": 83}, "water": {"mass_kg_std_ihoc": [5950, 7100], "std_noise_db_a": 76, "sfc_mass_kg_std_ihoc": [6700, 7850], "sfc_noise_db_a": 77}, "sfc_fad": {"6": [16.94, 50.7], "8": [18.41, 47.53], "10": [19.88, 43.57]}},
+        {"model": "FSG 520-2", "kw": 355, "std_fad_air": null, "std_fad_water": {"6": null, "8": null, "10": 50.0}, "air": {"mass_kg_std_ihoc": null, "std_noise_db_a": null, "sfc_mass_kg_std_ihoc": [7600, 8800], "sfc_noise_db_a": 84}, "water": {"mass_kg_std_ihoc": [6550, 7700], "std_noise_db_a": 77, "sfc_mass_kg_std_ihoc": [7300, 8450], "sfc_noise_db_a": 78}, "sfc_fad_air": {"6": [16.94, 50.7], "8": [18.41, 50.63], "10": [19.88, 48.59]}, "sfc_fad_water": {"6": [16.94, 50.7], "8": [18.41, 50.64], "10": [19.88, 50.57]}}
+      ]
+    }
+  ],
+  "heat_recovery": {
+    "hot_water_temp_c_max": 90,
+    "usable_heat_split": {"air_coolers_stage1_stage2": 0.90, "gear_oil_cooler_and_stage_jackets": 0.10},
+    "worked_example_brochure_p18": {
+      "model": "CSG 130-2, 10 bar g, water-cooled with integrated heat recovery",
+      "inlet_temp_c": 20, "relative_humidity_pct": 30, "cooling_water_in_c": 20, "cooling_water_out_c": 80,
+      "package_power_kw": 96.8, "rated_motor_kw": 90, "package_power_to_nameplate_ratio": 1.076,
+      "recoverable_fraction_of_input": 0.87, "recoverable_heat_kw": 84.2,
+      "annual_hours": 6000, "annual_recovered_kwh": 505296, "fuel_price_eur_per_kwh": 0.02, "annual_saving_eur": 10105,
+      "note": "Vendor example; usable as an independent check case for the waste-heat module (87 % at 20->80 degC water). Fuel price and payback claim are vendor assumptions, not to be reused."
+    }
+  },
+  "drying_pressure_dew_point_classes_c": {"refrigeration": 3, "i.HOC_rotation": -30, "HYBRITEC_combination": -40, "heatless_desiccant": -70, "integrated_refrigeration_dryer_pressure_drop_bar_max": 0.1},
+  "vendor_claims_not_for_calculation": [
+    {"claim": "Energy can be up to 70 % of compressor life-cycle cost", "source": "SRC-KAESER-CSG-DSG-FSG"},
+    {"claim": "Heat recovery module amortisation typically under 1 year", "source": "SRC-KAESER-CSG-DSG-FSG"},
+    {"claim": "i.HOC uses up to 100 % of stage-2 heat of compression for regeneration; PDP stable to +45 degC ambient/coolant", "source": "SRC-KAESER-CSG-DSG-FSG"},
+    {"claim": "Dynamic Control computes run-on time from motor winding temperature to cut idling", "source": "SRC-KAESER-CSG-DSG-FSG"}
+  ],
+  "derived_bounds_for_c7b": [
+    {"parameter": "rated_motor_power_kw", "applies_to": "two-stage dry oil-free screw, single unit", "min": 37, "max": 355, "basis": "CSG 55-2 to FSG 520-2"},
+    {"parameter": "working_pressure_bar_g", "applies_to": "two-stage dry oil-free screw", "min": 4, "max": 10, "basis": "cover: pressure 4 to 10 bar; tabulated variants 6/8/9/10"},
+    {"parameter": "fad_m3_min", "applies_to": "two-stage dry oil-free screw, single unit", "min": 3.03, "max": 50.7, "basis": "CSG 70-2 SFC W min; FSG 500-2/520-2 SFC max"},
+    {"parameter": "package_noise_db_a", "applies_to": "ISO 2151 / ISO 9614-2", "min": 64, "max": 84, "basis": "CSG 55-2 W 64; FSG 520-2 SFC A 84"},
+    {"parameter": "ambient_temperature_c_design", "applies_to": "air-cooled package", "max": 45, "basis": "brochure p14, standard rating"},
+    {"parameter": "vsd_turndown_pct", "applies_to": "SFC two-stage oil-free screw", "max": 67, "basis": "CSG 130-2 SFC W 4.20/13.08 = 32 % min flow -> 68 % turndown; FSG 420-2 SFC 14.79/44.56 -> 67 %"},
+    {"parameter": "package_power_to_nameplate_ratio", "applies_to": "measured package kW vs rated motor kW, full load 10 bar", "max": 1.08, "basis": "CSG 130-2 example 96.8/90", "note": "Confirms field-measured kW may exceed nameplate; a Brownfield bound of measured_kw <= 1.15 x rated_kw is supportable, tighter is not."},
+    {"parameter": "heat_recovery_fraction", "applies_to": "waste-heat module upper bound", "max": 0.87, "basis": "CSG 130-2 example at 20->80 degC water", "note": "Kaeser 87 % vs CompAir 94-98 %: keep the parameter user-entered with 0.98 hard cap and 0.87 as a 'documented typical' reference."},
+    {"parameter": "recovered_hot_water_temp_c", "applies_to": "waste-heat module", "max": 90, "basis": "brochure p19"},
+    {"parameter": "dryer_pressure_dew_point_c", "applies_to": "dryer selection engine", "min": -70, "max": 3, "basis": "desiccant -70 to refrigeration +3; i.HOC -30, HYBRITEC -40"},
+    {"parameter": "integrated_dryer_pressure_drop_bar", "applies_to": "refrigeration dryer inside package", "max": 0.1, "basis": "brochure p24"},
+    {"parameter": "package_weight_kg", "applies_to": "two-stage oil-free screw incl. options", "min": 2270, "max": 8800, "basis": "CSG 55-2 std to FSG 520-2 SFC i.HOC A"}
+  ]
+}
