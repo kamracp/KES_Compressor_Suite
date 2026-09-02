@@ -13,6 +13,7 @@ from app.domain.compliance.standards_registry import (
     MFR_COMPAIR_OILFREE_SCREW_2026_09,
     MFR_KAESER_OILFREE_SCREW_2026_09,
     MFR_KAESER_OILINJ_SCREW_2026_09,
+    MFR_RECIP_FRAME_LIMITS_2026_09,
     ZAIM_2025,
     EngineeringStandard,
     StandardApplicability,
@@ -38,6 +39,7 @@ def test_registry_contains_expected_standards() -> None:
         MFR_COMPAIR_OILFREE_SCREW_2026_09,
         MFR_KAESER_OILFREE_SCREW_2026_09,
         MFR_KAESER_OILINJ_SCREW_2026_09,
+        MFR_RECIP_FRAME_LIMITS_2026_09,
     )
 
 
@@ -199,11 +201,18 @@ def test_manufacturer_evidence_entries_are_registered() -> None:
         ("MFR-COMPAIR-OILFREE-SCREW-2026-09", MFR_COMPAIR_OILFREE_SCREW_2026_09),
         ("MFR-KAESER-OILFREE-SCREW-2026-09", MFR_KAESER_OILFREE_SCREW_2026_09),
         ("MFR-KAESER-OILINJ-SCREW-2026-09", MFR_KAESER_OILINJ_SCREW_2026_09),
+        ("MFR-RECIP-FRAME-LIMITS-2026-09", MFR_RECIP_FRAME_LIMITS_2026_09),
     ):
         found = get_standard(standard_id)
         assert found is expected
         assert found.authority is StandardAuthority.MANUFACTURER
-        assert StandardApplicability.ROTARY_SCREW in found.applicability
+        assert found.applicability
+        assert set(found.applicability) <= {
+            StandardApplicability.ROTARY_SCREW,
+            StandardApplicability.RECIPROCATING,
+            StandardApplicability.CENTRIFUGAL,
+            StandardApplicability.ENERGY_AUDIT,
+        }
         assert found.verification_status is StandardVerificationStatus.OFFICIAL_SOURCE_VERIFIED
         # Every manufacturer entry must point at its JSON data file.
         assert "app/data/evidence/manufacturer/" in found.notes

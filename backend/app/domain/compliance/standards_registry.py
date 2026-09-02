@@ -113,6 +113,26 @@ MFR_KAESER_OILINJ_SCREW_2026_09 = EngineeringStandard(
     ),
 )
 
+MFR_RECIP_FRAME_LIMITS_2026_09 = EngineeringStandard(
+    standard_id="MFR-RECIP-FRAME-LIMITS-2026-09",
+    authority=StandardAuthority.MANUFACTURER,
+    title=(
+        "Reciprocating compressor frame envelope limits published by "
+        "Baker Hughes (API 618) and Siemens Energy (API 11P / ISO 13631)"
+    ),
+    edition="Product pages as retrieved 2026-09-02",
+    publication_date="2026-09",
+    applicability=(StandardApplicability.RECIPROCATING,),
+    verification_status=(StandardVerificationStatus.OFFICIAL_SOURCE_VERIFIED),
+    notes=(
+        "Manufacturer evidence set, not a standard. API 618 sets no numeric "
+        "speed limit, so bore (<=1250 mm), rod load (<=2000 kN), speed "
+        "(<=1800 rpm) and pressure (<=800 bar) upper bounds come from "
+        "published frame envelopes. Data file: "
+        "app/data/evidence/manufacturer/recip_frame_limits.json."
+    ),
+)
+
 API_617 = EngineeringStandard(
     standard_id="API-617",
     authority=StandardAuthority.API,
@@ -355,6 +375,7 @@ ENGINEERING_STANDARDS: tuple[EngineeringStandard, ...] = (
     MFR_COMPAIR_OILFREE_SCREW_2026_09,
     MFR_KAESER_OILFREE_SCREW_2026_09,
     MFR_KAESER_OILINJ_SCREW_2026_09,
+    MFR_RECIP_FRAME_LIMITS_2026_09,
 )
 
 

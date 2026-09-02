@@ -16,6 +16,7 @@ from app.domain.compliance.standards_registry import (
 COMPAIR = "MFR-COMPAIR-OILFREE-SCREW-2026-09"
 KAESER = "MFR-KAESER-OILFREE-SCREW-2026-09"
 KAESER_OI = "MFR-KAESER-OILINJ-SCREW-2026-09"
+RECIP = "MFR-RECIP-FRAME-LIMITS-2026-09"
 
 
 def test_bundled_files_are_discovered() -> None:
@@ -23,12 +24,13 @@ def test_bundled_files_are_discovered() -> None:
         "compair_oil_free_screw.json",
         "kaeser_oil_free_screw.json",
         "kaeser_oil_injected_screw.json",
+        "recip_frame_limits.json",
     )
 
 
 def test_every_evidence_set_is_registered_as_manufacturer() -> None:
     loaded = load_all_evidence()
-    assert set(loaded) == {COMPAIR, KAESER, KAESER_OI}
+    assert set(loaded) == {COMPAIR, KAESER, KAESER_OI, RECIP}
     for evidence_id in loaded:
         entry = get_standard(evidence_id)
         assert entry is not None
@@ -72,7 +74,7 @@ def test_kaeser_heat_recovery_example_is_self_consistent() -> None:
 
 def test_every_derived_bound_has_a_limit_and_a_basis() -> None:
     bounds = derived_bounds()
-    assert len(bounds) == 11 + 12 + 4
+    assert len(bounds) == 11 + 12 + 4 + 4
     for bound in bounds:
         assert isinstance(bound, DerivedBound)
         assert bound.minimum is not None or bound.maximum is not None

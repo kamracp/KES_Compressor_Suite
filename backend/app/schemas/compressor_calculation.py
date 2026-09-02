@@ -16,18 +16,47 @@ from app.schemas._bounds import (
 class GasConditionInput(BaseModel):
     """Gas operating-condition input for compressor calculations."""
 
-    suction_pressure_bar: Decimal = Field(gt=0)
-    discharge_pressure_bar: Decimal = Field(gt=0)
-    suction_temperature_k: Decimal = Field(gt=0)
-
+    suction_pressure_bar: Decimal = Field(
+        gt=0,
+        le=Decimal("800"),
+        description=(
+            "Reciprocating / process compressor frames are published to 800 bar "
+            "(MFR-RECIP-FRAME-LIMITS-2026-09)."
+        ),
+    )
+    discharge_pressure_bar: Decimal = Field(
+        gt=0,
+        le=Decimal("800"),
+        description=(
+            "Reciprocating / process compressor frames are published to 800 bar "
+            "(MFR-RECIP-FRAME-LIMITS-2026-09)."
+        ),
+    )
+    suction_temperature_k: Decimal = Field(
+        ge=Decimal("173"),
+        le=Decimal("423"),
+        description=(
+            "-100 to +150 degC; API 618 practice limits lubricated discharge to about 150 degC."
+        ),
+    )
     mass_flow_kg_per_s: Decimal = Field(gt=0)
     actual_flow_m3_per_s: Decimal = Field(gt=0)
 
-    molecular_weight_kg_per_kmol: Decimal = Field(gt=0)
-
-    suction_z_factor: Decimal = Field(gt=0)
-    discharge_z_factor: Decimal = Field(gt=0)
-
+    molecular_weight_kg_per_kmol: Decimal = Field(
+        ge=Decimal("2"),
+        le=Decimal("150"),
+        description="GPSA Section 23 physical constants: hydrogen 2.016 to n-decane 142.3 kg/kmol.",
+    )
+    suction_z_factor: Decimal = Field(
+        ge=Decimal("0.2"),
+        le=Decimal("2.0"),
+        description="GPSA Section 23 generalized (Standing-Katz) compressibility chart range.",
+    )
+    discharge_z_factor: Decimal = Field(
+        ge=Decimal("0.2"),
+        le=Decimal("2.0"),
+        description="GPSA Section 23 generalized (Standing-Katz) compressibility chart range.",
+    )
     isentropic_exponent: Decimal = Field(gt=1)
 
 
@@ -38,12 +67,19 @@ class CompressionCalculationRequest(BaseModel):
 
     number_of_stages: int = Field(ge=1)
 
-    specific_heat_cp_kj_per_kg_k: Decimal = Field(gt=0)
+    specific_heat_cp_kj_per_kg_k: Decimal = Field(
+        ge=Decimal("0.5"),
+        le=Decimal("15"),
+        description="GPSA Section 23: hydrogen 14.3 kJ/kg.K is the upper physical case.",
+    )
     isentropic_efficiency: Decimal = Field(gt=0, le=1)
     mechanical_efficiency: Decimal = Field(gt=0, le=1)
 
-    intercooler_outlet_temperature_k: Decimal = Field(gt=0)
-
+    intercooler_outlet_temperature_k: Decimal = Field(
+        ge=Decimal("273"),
+        le=Decimal("423"),
+        description="0 to +150 degC; API 618 practice discharge ceiling.",
+    )
     cooling_water_inlet_temperature_k: Decimal = Field(
         ge=Decimal("273"),
         le=Decimal("373"),
@@ -65,21 +101,59 @@ class ReciprocatingCalculationRequest(BaseModel):
 
     required_flow_m3_per_hr: Decimal = Field(gt=0)
 
-    bore_mm: Decimal = Field(gt=0)
+    bore_mm: Decimal = Field(
+        gt=0,
+        le=Decimal("1250"),
+        description=(
+            "Largest published API 618 cylinder bore 1250 mm (MFR-RECIP-FRAME-LIMITS-2026-09)."
+        ),
+    )
     stroke_mm: Decimal = Field(gt=0)
     rod_diameter_mm: Decimal = Field(ge=0)
-    speed_rpm: Decimal = Field(gt=0)
+    speed_rpm: Decimal = Field(
+        gt=0,
+        le=Decimal("1800"),
+        description=(
+            "High-speed API 11P frames run to 1800 rpm "
+            "(MFR-RECIP-FRAME-LIMITS-2026-09); API 618 sets no numeric limit."
+        ),
+    )
     clearance_fraction: Decimal = Field(ge=0, lt=1)
 
     stage_compression_ratio: Decimal = Field(gt=1)
-    suction_z_factor: Decimal = Field(gt=0)
-    discharge_z_factor: Decimal = Field(gt=0)
+    suction_z_factor: Decimal = Field(
+        ge=Decimal("0.2"),
+        le=Decimal("2.0"),
+        description="GPSA Section 23 generalized (Standing-Katz) compressibility chart range.",
+    )
+    discharge_z_factor: Decimal = Field(
+        ge=Decimal("0.2"),
+        le=Decimal("2.0"),
+        description="GPSA Section 23 generalized (Standing-Katz) compressibility chart range.",
+    )
     isentropic_exponent: Decimal = Field(gt=1)
 
-    suction_pressure_bar: Decimal = Field(gt=0)
-    discharge_pressure_bar: Decimal = Field(gt=0)
-
-    allowable_rod_load_kn: Decimal = Field(gt=0)
+    suction_pressure_bar: Decimal = Field(
+        gt=0,
+        le=Decimal("800"),
+        description=(
+            "Reciprocating / process compressor frames are published to 800 bar "
+            "(MFR-RECIP-FRAME-LIMITS-2026-09)."
+        ),
+    )
+    discharge_pressure_bar: Decimal = Field(
+        gt=0,
+        le=Decimal("800"),
+        description=(
+            "Reciprocating / process compressor frames are published to 800 bar "
+            "(MFR-RECIP-FRAME-LIMITS-2026-09)."
+        ),
+    )
+    allowable_rod_load_kn: Decimal = Field(
+        gt=0,
+        le=Decimal("2000"),
+        description="Largest published frame rod load 1980 kN (MFR-RECIP-FRAME-LIMITS-2026-09).",
+    )
 
 
 class CentrifugalCalculationRequest(BaseModel):
@@ -90,17 +164,35 @@ class CentrifugalCalculationRequest(BaseModel):
     polytropic_efficiency: Decimal = Field(gt=0, le=1)
 
     number_of_impeller_stages: int = Field(ge=1)
-    head_coefficient: Decimal = Field(gt=0)
+    head_coefficient: Decimal = Field(
+        gt=0,
+        le=Decimal("1.0"),
+        description=(
+            "Euler work limit: psi = H/U_tip^2 reaches 1.0 only for radial blades with zero slip."
+        ),
+    )
     rotational_speed_rpm: Decimal = Field(gt=0)
 
-    mechanical_loss_fraction: Decimal = Field(ge=0)
-    driver_margin_fraction: Decimal = Field(ge=0)
-
+    mechanical_loss_fraction: Decimal = Field(
+        ge=0,
+        le=Decimal("0.2"),
+        description="API 617 driver-to-shaft losses (gear + coupling) are typically 5-8 %.",
+    )
+    driver_margin_fraction: Decimal = Field(
+        ge=0,
+        le=Decimal("0.5"),
+        description="API 617 para 2.2.2 requires at least 10 % margin over maximum absorbed power.",
+    )
     selected_driver_power_kw: Decimal = Field(gt=0)
     motor_efficiency: Decimal | None = Field(default=None, gt=0, le=1)
 
     surge_flow_fraction: Decimal = Field(default=Decimal("0.70"), gt=0, lt=1)
-    anti_surge_margin_fraction: Decimal = Field(default=Decimal("0.10"), ge=0)
+    anti_surge_margin_fraction: Decimal = Field(
+        default=Decimal("0.10"),
+        ge=Decimal("0.10"),
+        le=Decimal("0.5"),
+        description="API 617: continuous operation at least 10 % above predicted surge capacity.",
+    )
     stonewall_flow_fraction: Decimal = Field(default=Decimal("1.25"), gt=1)
 
 
@@ -108,14 +200,31 @@ class CompressorSelectionRequest(BaseModel):
     """Request payload for reciprocating/centrifugal/rotary-screw selection."""
 
     required_flow_m3_per_hr: Decimal = Field(gt=0)
-    suction_pressure_bar: Decimal = Field(gt=0)
-    discharge_pressure_bar: Decimal = Field(gt=0)
-
+    suction_pressure_bar: Decimal = Field(
+        gt=0,
+        le=Decimal("800"),
+        description=(
+            "Reciprocating / process compressor frames are published to 800 bar "
+            "(MFR-RECIP-FRAME-LIMITS-2026-09)."
+        ),
+    )
+    discharge_pressure_bar: Decimal = Field(
+        gt=0,
+        le=Decimal("800"),
+        description=(
+            "Reciprocating / process compressor frames are published to 800 bar "
+            "(MFR-RECIP-FRAME-LIMITS-2026-09)."
+        ),
+    )
     required_turndown_fraction: Decimal = Field(gt=0, le=1)
 
     continuous_operation: bool
 
-    gas_molecular_weight: Decimal = Field(gt=0)
+    gas_molecular_weight: Decimal = Field(
+        ge=Decimal("2"),
+        le=Decimal("150"),
+        description="GPSA Section 23 physical constants: hydrogen 2.016 to n-decane 142.3 kg/kmol.",
+    )
     estimated_operating_hours_per_year: Decimal = Field(
         ge=0, le=Decimal("8784"), description="Calendar limit: 366 days x 24 h."
     )

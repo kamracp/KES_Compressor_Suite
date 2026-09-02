@@ -1,0 +1,24 @@
+{
+  "evidence_set_id": "MFR-RECIP-FRAME-LIMITS-2026-09",
+  "kind": "manufacturer_evidence",
+  "vendor": "Baker Hughes (Nuovo Pignone) and Siemens Energy (Dresser-Rand) reciprocating compressor product pages",
+  "scope": "Published frame envelope limits for API 618 and API 11P / ISO 13631 reciprocating process compressors, used as physical upper bounds for reciprocating engineering inputs",
+  "retrieved_on": "2026-09-02",
+  "usage_rule": "Upper-bound evidence only. API 618 itself sets no numeric speed or piston-speed limit (Kopscick, Turbomachinery Symposium; API 618 para 2.2 'Allowable Speeds'), so frame envelopes come from manufacturers.",
+  "sources": [
+    {"id": "SRC-BH-API618", "document": "Baker Hughes API 618 reciprocating compressors product page", "url": "https://www.bakerhughes.com/reciprocating-compressors/api-618"},
+    {"id": "SRC-SIEMENS-RECIP", "document": "Siemens Energy reciprocating compressors product page (ISO 13631 / API 11P)", "url": "https://www.siemens-energy.com/global/en/home/products-services/product/reciprocating-compressors.html"},
+    {"id": "SRC-TAMU-API618", "document": "Kopscick, API 618 moderate-speed compressors, Turbomachinery Symposium (TAMU OakTrust)", "url": "https://oaktrust.library.tamu.edu/bitstream/handle/1969.1/163262/t33-13.pdf?sequence=1&isAllowed=y"}
+  ],
+  "published_limits": {
+    "baker_hughes_api618": {"cylinders_per_frame_max": 10, "cylinder_bore_mm_max": 1250, "power_kw_range": [100, 20000], "pressure_bar_max": 800, "rod_load_kn_max": 1980},
+    "siemens_api11p": {"power_kw_max": 5816, "rod_load_kn_max": 333, "rated_speed_rpm_max": 1500, "pressure_psig_max": 10000}
+  },
+  "vendor_claims_not_for_calculation": [],
+  "derived_bounds_for_c7b": [
+    {"parameter": "recip_bore_mm", "applies_to": "reciprocating cylinder", "max": 1250, "basis": "Baker Hughes API 618 cylinder size up to 1250 mm"},
+    {"parameter": "recip_rod_load_kn", "applies_to": "reciprocating frame", "max": 2000, "basis": "Baker Hughes 1980 kN double-acting piston load"},
+    {"parameter": "recip_speed_rpm", "applies_to": "reciprocating crankshaft", "max": 1800, "basis": "Siemens API 11P rated to 1500 rpm; high-speed gathering compressors run 1200-1800 rpm (USPTO 11781664 background)"},
+    {"parameter": "process_pressure_bar", "applies_to": "reciprocating / general compression", "max": 800, "basis": "Baker Hughes API 618 up to 800 bar; Siemens up to 10000 psig (690 bar)"}
+  ]
+}
