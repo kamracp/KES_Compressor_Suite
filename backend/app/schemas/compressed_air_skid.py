@@ -10,7 +10,7 @@ from app.domain.compressed_air.skid.skid_models import (
     SkidComponentType,
 )
 from app.domain.compressed_air.treatment.air_treatment import DryerType
-from app.schemas._bounds import MAX_PLANT_AIR_PRESSURE_BAR_G
+from app.schemas._bounds import MAX_LINE_ITEM_QUANTITY, MAX_PLANT_AIR_PRESSURE_BAR_G
 
 
 class SkidComponentRequest(BaseModel):
@@ -38,6 +38,7 @@ class SkidComponentRequest(BaseModel):
     )
 
     quantity: int = Field(
+        le=MAX_LINE_ITEM_QUANTITY,
         default=1,
         ge=1,
     )

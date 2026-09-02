@@ -6,10 +6,11 @@ from app.models.compressed_air_assessment import (
     CompressedAirAssessmentStatus,
     CompressedAirAssessmentType,
 )
+from app.schemas._bounds import MAX_DB_INTEGER_ID
 
 
 class CompressedAirAssessmentCreateRequest(BaseModel):
-    project_id: int = Field(gt=0)
+    project_id: int = Field(gt=0, le=MAX_DB_INTEGER_ID)
 
     assessment_code: str = Field(
         min_length=1,

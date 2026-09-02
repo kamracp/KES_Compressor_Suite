@@ -10,6 +10,7 @@ from app.domain.compressed_air.station.station_models import (
     CompressorTechnology,
 )
 from app.schemas._bounds import (
+    MAX_DB_INTEGER_ID,
     MAX_ELECTRICITY_TARIFF_INR_PER_KWH,
     MAX_PLANT_AIR_PRESSURE_BAR_G,
     MIN_ELECTRICITY_TARIFF_INR_PER_KWH,
@@ -119,7 +120,7 @@ class LeakageSurveyInputSchema(BaseModel):
 
 class BrownfieldSystemAuditRequest(BaseModel):
     audit_code: str
-    project_id: int = Field(gt=0)
+    project_id: int = Field(gt=0, le=MAX_DB_INTEGER_ID)
 
     compressors: list[ExistingCompressorInputSchema] = Field(
         min_length=1,

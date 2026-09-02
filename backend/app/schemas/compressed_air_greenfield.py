@@ -17,6 +17,7 @@ from app.domain.compressed_air.station.station_models import (
 from app.domain.compressed_air.treatment.air_treatment import DryerType
 from app.schemas._bounds import (
     MAX_ELECTRICITY_TARIFF_INR_PER_KWH,
+    MAX_LINE_ITEM_QUANTITY,
     MAX_PLANT_AIR_PRESSURE_BAR_G,
     MIN_ELECTRICITY_TARIFF_INR_PER_KWH,
 )
@@ -27,7 +28,7 @@ class AirConsumerInputSchema(BaseModel):
     name: str
     category: AirConsumerCategory
 
-    quantity: int = Field(gt=0)
+    quantity: int = Field(gt=0, le=MAX_LINE_ITEM_QUANTITY)
 
     required_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
     air_quality_class: AirQualityClass

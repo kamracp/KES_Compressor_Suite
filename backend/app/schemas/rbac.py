@@ -2,9 +2,11 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.schemas._bounds import MAX_DB_INTEGER_ID
+
 
 class RoleCreate(BaseModel):
-    organization_id: int = Field(gt=0)
+    organization_id: int = Field(gt=0, le=MAX_DB_INTEGER_ID)
 
     role_code: str = Field(
         min_length=2,
@@ -76,13 +78,13 @@ class PermissionResponse(BaseModel):
 
 
 class RolePermissionAssignment(BaseModel):
-    role_id: int = Field(gt=0)
-    permission_id: int = Field(gt=0)
+    role_id: int = Field(gt=0, le=MAX_DB_INTEGER_ID)
+    permission_id: int = Field(gt=0, le=MAX_DB_INTEGER_ID)
 
 
 class UserRoleAssignment(BaseModel):
-    user_id: int = Field(gt=0)
-    role_id: int = Field(gt=0)
+    user_id: int = Field(gt=0, le=MAX_DB_INTEGER_ID)
+    role_id: int = Field(gt=0, le=MAX_DB_INTEGER_ID)
 
 
 class UserRoleResponse(BaseModel):

@@ -2,9 +2,11 @@ from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, Field
 
+from app.schemas._bounds import MAX_DB_INTEGER_ID
+
 
 class LoginRequest(BaseModel):
-    organization_id: int = Field(gt=0)
+    organization_id: int = Field(gt=0, le=MAX_DB_INTEGER_ID)
     email: EmailStr
     password: str = Field(
         min_length=1,

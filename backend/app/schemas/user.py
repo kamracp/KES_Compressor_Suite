@@ -2,9 +2,11 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
+from app.schemas._bounds import MAX_DB_INTEGER_ID
+
 
 class UserCreate(BaseModel):
-    organization_id: int = Field(gt=0)
+    organization_id: int = Field(gt=0, le=MAX_DB_INTEGER_ID)
 
     email: EmailStr
 

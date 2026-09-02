@@ -42,3 +42,11 @@ SELECTABLE_ELECTRICITY_TARIFFS_INR_PER_KWH = tuple(
         + 1
     )
 )
+
+# Structural integer caps (C-7b item 4). Not engineering bounds - no
+# evidence set applies. They turn impossible inputs into a 422 instead of a
+# database error or an absurd calculation.
+MAX_DB_INTEGER_ID = 2_147_483_647  # PostgreSQL integer primary keys
+MAX_CASE_REVISION = 10_000
+MAX_LINE_ITEM_QUANTITY = 1_000  # identical machines on one consumer/component line
+MAX_TREATMENT_UNIT_COUNT = 100  # units in one treatment train

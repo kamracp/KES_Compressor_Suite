@@ -23,7 +23,11 @@ from app.domain.compressed_air.treatment.air_treatment import (
     AirTreatmentInput,
     DryerType,
 )
-from app.schemas._bounds import MAX_PLANT_AIR_PRESSURE_BAR_G
+from app.schemas._bounds import (
+    MAX_LINE_ITEM_QUANTITY,
+    MAX_PLANT_AIR_PRESSURE_BAR_G,
+    MAX_TREATMENT_UNIT_COUNT,
+)
 
 
 class ReceiverSizingInputRequest(BaseModel):
@@ -124,6 +128,7 @@ class ReceiverConfigurationRequest(BaseModel):
         gt=0,
     )
     receiver_quantity: int = Field(
+        le=MAX_LINE_ITEM_QUANTITY,
         default=1,
         ge=1,
     )
@@ -164,10 +169,12 @@ class TreatmentConfigurationRequest(BaseModel):
         gt=0,
     )
     installed_unit_count: int = Field(
+        le=MAX_TREATMENT_UNIT_COUNT,
         default=1,
         ge=1,
     )
     duty_unit_count: int = Field(
+        le=MAX_TREATMENT_UNIT_COUNT,
         default=1,
         ge=1,
     )
