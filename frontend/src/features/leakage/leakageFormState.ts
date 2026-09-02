@@ -4,6 +4,8 @@ import type {
 } from "./leakageTypes";
 import type { SupplyPhase } from "../reference/referenceTypes";
 
+import { pushIfTariffOutOfRange } from "../reference/inputBounds";
+
 export type LeakageFormState = {
   analysisCode: string;
 
@@ -246,6 +248,8 @@ export function validateLeakageFormState(
     "Electricity tariff",
     errors,
   );
+  // C-7b submit-time mirror of the backend 5-25 INR/kWh tariff bound.
+  pushIfTariffOutOfRange(state.electricityTariffPerKwh, errors);
   requireFraction(
     state.demandSavingControlFactor,
     "Demand-saving control factor",
