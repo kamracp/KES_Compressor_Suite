@@ -24,8 +24,18 @@ class GasPropertiesRequest(BaseModel):
         max_length=20,
     )
 
-    pressure_bar: Decimal = Field(gt=0)
-    temperature_k: Decimal = Field(gt=0)
+    pressure_bar: Decimal = Field(
+        gt=0,
+        le=Decimal("800"),
+        description=(
+            "Process compressor frames are published to 800 bar (MFR-RECIP-FRAME-LIMITS-2026-09)."
+        ),
+    )
+    temperature_k: Decimal = Field(
+        ge=Decimal("173"),
+        le=Decimal("423"),
+        description="-100 to +150 degC; API 618 practice discharge ceiling.",
+    )
 
     @model_validator(mode="after")
     def validate_unique_components(

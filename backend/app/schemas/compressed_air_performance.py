@@ -42,8 +42,9 @@ class CompressedAirPerformanceAnalysisRequest(BaseModel):
         min_length=1,
     )
 
-    annual_operating_hours: Decimal = Field(gt=0)
-
+    annual_operating_hours: Decimal = Field(
+        gt=0, le=Decimal("8784"), description="Calendar limit: 366 days x 24 h."
+    )
     electricity_tariff_per_kwh: Decimal = Field(
         ge=MIN_ELECTRICITY_TARIFF_INR_PER_KWH,
         le=MAX_ELECTRICITY_TARIFF_INR_PER_KWH,

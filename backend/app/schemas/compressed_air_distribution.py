@@ -44,13 +44,24 @@ class PipeSegmentPayload(BaseModel):
 
     internal_diameter_mm: Decimal = Field(gt=0)
 
-    roughness_mm: Decimal = Field(ge=0)
-
+    roughness_mm: Decimal = Field(
+        ge=0,
+        le=Decimal("10"),
+        description=(
+            "Moody (1944) absolute roughness table: drawn tubing 0.0015 mm to riveted "
+            "steel about 9 mm."
+        ),
+    )
     design_flow_nm3_per_hr: Decimal = Field(gt=0)
 
     operating_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
-    operating_temperature_k: Decimal = Field(gt=0)
-
+    operating_temperature_k: Decimal = Field(
+        ge=Decimal("233"),
+        le=Decimal("423"),
+        description=(
+            "-40 degC intake floor to 150 degC uncooled discharge ceiling (API 618 practice)."
+        ),
+    )
     material: str | None = Field(default=None, max_length=100)
     notes: str | None = Field(default=None, max_length=1000)
 
@@ -80,7 +91,13 @@ class DistributionNetworkCalculationRequest(BaseModel):
 
     design_source_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
 
-    air_density_kg_per_m3: Decimal = Field(gt=0)
+    air_density_kg_per_m3: Decimal = Field(
+        ge=Decimal("0.5"),
+        le=Decimal("25"),
+        description=(
+            "Ideal gas: 1 bar a at 60 degC gives 1.05 kg/m3; 16 bar a at 0 degC gives 20.4 kg/m3."
+        ),
+    )
     darcy_friction_factor: Decimal = Field(gt=0, lt=1)
 
     candidate_internal_diameters_mm: list[Decimal] | None = Field(

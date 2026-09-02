@@ -30,8 +30,13 @@ class ReceiverSizingInputRequest(BaseModel):
     peak_demand_nm3_per_hr: Decimal = Field(ge=0)
     available_compressor_flow_nm3_per_hr: Decimal = Field(ge=0)
 
-    event_duration_seconds: Decimal = Field(gt=0)
-
+    event_duration_seconds: Decimal = Field(
+        gt=0,
+        le=Decimal("86400"),
+        description=(
+            "A receiver demand event longer than one day is a base-load change, not an event."
+        ),
+    )
     receiver_high_pressure_bar_g: Decimal = Field(gt=0)
     receiver_low_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
 

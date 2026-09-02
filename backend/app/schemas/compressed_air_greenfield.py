@@ -81,21 +81,29 @@ class AirConsumerInputSchema(BaseModel):
 
 
 class DemandProfilePointInputSchema(BaseModel):
-    period_index: int = Field(ge=0)
+    period_index: int = Field(ge=0, le=8783, description="Hour index within a year (0-8783).")
     label: str
 
     demand_nm3_per_hr: Decimal = Field(ge=0)
     required_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
 
-    duration_hours: Decimal = Field(gt=0)
+    duration_hours: Decimal = Field(
+        gt=0, le=Decimal("8784"), description="Calendar limit: 366 days x 24 h."
+    )
 
 
 class PressureLossComponentInputSchema(BaseModel):
     component_code: str
     name: str
 
-    pressure_drop_bar: Decimal = Field(ge=0)
-
+    pressure_drop_bar: Decimal = Field(
+        ge=0,
+        le=Decimal("15"),
+        description=(
+            "A single component drop cannot exceed the 15 bar g package maximum "
+            "(MFR-KAESER-OILINJ-SCREW-2026-09)."
+        ),
+    )
     category: str
 
     notes: str | None = None
@@ -190,8 +198,13 @@ class ReceiverSizingInputSchema(BaseModel):
 
     available_compressor_flow_nm3_per_hr: Decimal = Field(ge=0)
 
-    event_duration_seconds: Decimal = Field(gt=0)
-
+    event_duration_seconds: Decimal = Field(
+        gt=0,
+        le=Decimal("86400"),
+        description=(
+            "A receiver demand event longer than one day is a base-load change, not an event."
+        ),
+    )
     receiver_high_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
     receiver_low_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
 

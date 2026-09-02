@@ -42,8 +42,9 @@ class ExistingCompressorInputSchema(BaseModel):
     rated_motor_power_kw: Decimal = Field(gt=0)
 
     installation_year: int | None = None
-    operating_hours: Decimal | None = Field(default=None, ge=0)
-
+    operating_hours: Decimal | None = Field(
+        default=None, ge=0, le=Decimal("8784"), description="Calendar limit: 366 days x 24 h."
+    )
     available: bool = True
     notes: str | None = None
 
@@ -111,8 +112,9 @@ class BrownfieldSystemAuditRequest(BaseModel):
         le=MAX_ELECTRICITY_TARIFF_INR_PER_KWH,
     )
 
-    annual_operating_hours: Decimal = Field(gt=0)
-
+    annual_operating_hours: Decimal = Field(
+        gt=0, le=Decimal("8784"), description="Calendar limit: 366 days x 24 h."
+    )
     optimized_discharge_pressure_bar_g: Decimal | None = Field(
         default=None,
         ge=0,
