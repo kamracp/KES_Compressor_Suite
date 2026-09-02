@@ -5,6 +5,14 @@ import type {
   LeakageSurveyInput,
   SystemMeasurementInput,
 } from "./brownfieldTypes";
+import {
+  MAX_ASSET_FAD_NM3_PER_HR,
+  MAX_ASSET_MOTOR_KW,
+  MAX_MEASURED_POWER_KW,
+  MAX_PLANT_AIR_PRESSURE_BAR_G,
+  pushIfAbove,
+  pushIfTariffOutOfRange,
+} from "../reference/inputBounds";
 
 export type BrownfieldFormState = {
   auditCode: string;
@@ -207,30 +215,6 @@ function validateOptionalFraction(
   }
 
   requireFraction(value, label, errors);
-}
-
-// --- C-7b submit-time mirrors of backend input bounds ---------------------
-// Each ceiling repeats a bound in backend app/schemas (evidence set
-// MFR-ATLASCOPCO-AIR-RANGE-2026-09 unless noted) so the user sees the
-// message before a 422. Upper bounds only: lower bounds are already covered
-// by the require* helpers above.
-const MAX_PLANT_AIR_PRESSURE_BAR_G = 25; // schemas/_bounds.py
-const MAX_ASSET_FAD_NM3_PER_HR = 36000; // largest centrifugal plant-air package
-const MAX_ASSET_MOTOR_KW = 3150; // ZH+ centrifugal, largest single motor
-const MAX_MEASURED_POWER_KW = 3400; // 3150 kW x 1.08 measured/nameplate ratio
-const MIN_ELECTRICITY_TARIFF_INR_PER_KWH = 5;
-const MAX_ELECTRICITY_TARIFF_INR_PER_KWH = 25;
-
-function pushIfAbove(
-  raw: string,
-  bound: number,
-  message: string,
-  errors: string[],
-): void {
-  const value = Number(raw);
-  if (Number.isFinite(value) && value > bound) {
-    errors.push(message);
-  }
 }
 
 export function validateBrownfieldFormState(
@@ -513,16 +497,7 @@ export function validateBrownfieldFormState(
     `Optimized discharge pressure cannot exceed ${MAX_PLANT_AIR_PRESSURE_BAR_G} bar g (plant-air ceiling).`,
     errors,
   );
-  const tariff = Number(state.electricityTariffPerKwh);
-  if (
-    Number.isFinite(tariff) &&
-    (tariff < MIN_ELECTRICITY_TARIFF_INR_PER_KWH ||
-      tariff > MAX_ELECTRICITY_TARIFF_INR_PER_KWH)
-  ) {
-    errors.push(
-      `Electricity tariff must be between ${MIN_ELECTRICITY_TARIFF_INR_PER_KWH} and ${MAX_ELECTRICITY_TARIFF_INR_PER_KWH} INR/kWh.`,
-    );
-  }
+  pushIfTariffOutOfRange(state.electricityTariffPerKwh, errors);
   state.compressors.forEach((compressor, index) => {
     const label = `Compressor ${index + 1}`;
     pushIfAbove(

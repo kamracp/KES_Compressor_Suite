@@ -8,6 +8,13 @@ import type {
   ReceiverSizingInput,
 } from "./greenfieldTypes";
 
+import {
+  MAX_ASSET_FAD_NM3_PER_HR,
+  MAX_PLANT_AIR_PRESSURE_BAR_G,
+  pushIfAbove,
+  pushIfTariffOutOfRange,
+} from "../reference/inputBounds";
+
 export type GreenfieldDesignBasisState = {
   minimumPointOfUsePressureBarG: string;
   leakageFraction: string;
@@ -406,6 +413,61 @@ export function validateGreenfieldFormState(
     requirePositive(
       state.designBasis.annualOperatingDays,
       "Annual operating days",
+      errors,
+    );
+  }
+
+  // C-7b submit-time mirrors of the backend bounds (see reference/inputBounds).
+  const plantAir = `cannot exceed ${MAX_PLANT_AIR_PRESSURE_BAR_G} bar g (plant-air ceiling).`;
+  pushIfAbove(
+    state.designBasis.minimumPointOfUsePressureBarG,
+    MAX_PLANT_AIR_PRESSURE_BAR_G,
+    `Minimum point-of-use pressure ${plantAir}`,
+    errors,
+  );
+  pushIfTariffOutOfRange(state.designBasis.electricityTariffPerKwh, errors);
+  state.consumers.forEach((consumer, index) => {
+    pushIfAbove(
+      consumer.required_pressure_bar_g,
+      MAX_PLANT_AIR_PRESSURE_BAR_G,
+      `Consumer ${index + 1}: required pressure ${plantAir}`,
+      errors,
+    );
+  });
+  if (state.station) {
+    pushIfAbove(
+      state.station.minimum_required_pressure_bar_g,
+      MAX_PLANT_AIR_PRESSURE_BAR_G,
+      `Station minimum required pressure ${plantAir}`,
+      errors,
+    );
+    state.station.units.forEach((unit, index) => {
+      const label = `Compressor unit ${index + 1}`;
+      pushIfAbove(
+        unit.rated_fad_nm3_per_hr,
+        MAX_ASSET_FAD_NM3_PER_HR,
+        `${label}: rated FAD cannot exceed ${MAX_ASSET_FAD_NM3_PER_HR} Nm3/h. Check the unit (m3/min entered as Nm3/h?).`,
+        errors,
+      );
+      pushIfAbove(
+        unit.rated_discharge_pressure_bar_g,
+        MAX_PLANT_AIR_PRESSURE_BAR_G,
+        `${label}: rated discharge pressure ${plantAir}`,
+        errors,
+      );
+    });
+  }
+  if (state.receiver) {
+    pushIfAbove(
+      state.receiver.receiver_high_pressure_bar_g,
+      MAX_PLANT_AIR_PRESSURE_BAR_G,
+      `Receiver high pressure ${plantAir}`,
+      errors,
+    );
+    pushIfAbove(
+      state.receiver.receiver_low_pressure_bar_g,
+      MAX_PLANT_AIR_PRESSURE_BAR_G,
+      `Receiver low pressure ${plantAir}`,
       errors,
     );
   }
