@@ -44,8 +44,16 @@ class CompressionCalculationRequest(BaseModel):
 
     intercooler_outlet_temperature_k: Decimal = Field(gt=0)
 
-    cooling_water_inlet_temperature_k: Decimal = Field(gt=0)
-    cooling_water_outlet_temperature_k: Decimal = Field(gt=0)
+    cooling_water_inlet_temperature_k: Decimal = Field(
+        ge=Decimal("273"),
+        le=Decimal("373"),
+        description="Liquid water at near-atmospheric pressure: 0-100 degC.",
+    )
+    cooling_water_outlet_temperature_k: Decimal = Field(
+        ge=Decimal("273"),
+        le=Decimal("373"),
+        description="Liquid water at near-atmospheric pressure: 0-100 degC.",
+    )
 
     selected_driver_power_kw: Decimal = Field(gt=0)
     driver_service_factor: Decimal = Field(ge=0)
@@ -108,7 +116,9 @@ class CompressorSelectionRequest(BaseModel):
     continuous_operation: bool
 
     gas_molecular_weight: Decimal = Field(gt=0)
-    estimated_operating_hours_per_year: Decimal = Field(ge=0)
+    estimated_operating_hours_per_year: Decimal = Field(
+        ge=0, le=Decimal("8784"), description="Calendar limit: 366 days x 24 h."
+    )
 
     oil_free_air_required: bool = False
 
@@ -133,20 +143,73 @@ class RotaryScrewCalculationRequest(BaseModel):
     wanted.
     """
 
-    inlet_pressure_bar_a: Decimal = Field(gt=0)
-    inlet_temperature_k: Decimal = Field(gt=0)
-    discharge_pressure_bar_g: Decimal = Field(gt=0)
-    rotational_speed_rpm: Decimal = Field(gt=0)
+    inlet_pressure_bar_a: Decimal = Field(
+        ge=Decimal("0.5"),
+        le=Decimal("1.1"),
+        description=(
+            "Ambient intake, ISO 1217 reference 1 bar a; 0.5 bar a covers ~5000 m altitude."
+        ),
+    )
+    inlet_temperature_k: Decimal = Field(
+        ge=Decimal("233"),
+        le=Decimal("333"),
+        description=(
+            "-40 to +60 degC intake; MFR-COMPAIR-OILFREE-SCREW-2026-09 rates -10 degC "
+            "heater option and 46 degC ambient."
+        ),
+    )
+    discharge_pressure_bar_g: Decimal = Field(
+        gt=0,
+        le=Decimal("15"),
+        description=(
+            "Rotary screw package maximum working pressure 15 bar g "
+            "(MFR-KAESER-OILINJ-SCREW-2026-09); oil-free two-stage 10.7 bar g "
+            "(MFR-COMPAIR-OILFREE-SCREW-2026-09)."
+        ),
+    )
+    rotational_speed_rpm: Decimal = Field(
+        gt=0,
+        le=Decimal("25000"),
+        description=(
+            "Two-stage dry screw airends run 6000-25000 rpm "
+            "(MFR-COMPAIR-OILFREE-SCREW-2026-09, DH comparison table)."
+        ),
+    )
     oil_type: RotaryScrewOilType
     control_type: RotaryScrewControlType
     stage_count: RotaryScrewStageCount = RotaryScrewStageCount.SINGLE_STAGE
 
-    rated_fad_m3_per_min: Decimal = Field(gt=0)
-    package_input_power_kw: Decimal = Field(gt=0)
+    rated_fad_m3_per_min: Decimal = Field(
+        gt=0,
+        le=Decimal("60"),
+        description=(
+            "Largest single rotary screw package 53.4 m3/min "
+            "(MFR-COMPAIR-OILFREE-SCREW-2026-09 DX355e; "
+            "MFR-KAESER-OILFREE-SCREW-2026-09 FSG 520-2 50.7) plus headroom."
+        ),
+    )
+    package_input_power_kw: Decimal = Field(
+        gt=0,
+        le=Decimal("410"),
+        description=(
+            "355 kW largest screw motor x 1.15 nameplate ratio "
+            "(MFR-KAESER-OILFREE-SCREW-2026-09 CSG 130-2 measured 1.08)."
+        ),
+    )
 
     rotor_geometry: RotaryScrewGeometryInput | None = None
-    standard_reference_pressure_bar_a: Decimal | None = Field(default=None, gt=0)
-    standard_reference_temperature_k: Decimal | None = Field(default=None, gt=0)
+    standard_reference_pressure_bar_a: Decimal | None = Field(
+        default=None,
+        ge=Decimal("0.9"),
+        le=Decimal("1.05"),
+        description="ISO 1217 reference 1.0 bar a; CAGI 14.5 psia = 0.9997 bar a.",
+    )
+    standard_reference_temperature_k: Decimal | None = Field(
+        default=None,
+        ge=Decimal("273"),
+        le=Decimal("303"),
+        description="ISO 1217 reference 20 degC (293.15 K); CAGI 68 degF (293.15 K).",
+    )
     annual_operating_hours: Decimal | None = Field(default=None, ge=0, le=8760)
     electricity_tariff_per_kwh: Decimal | None = Field(
         default=None,

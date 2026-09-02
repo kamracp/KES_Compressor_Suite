@@ -1,0 +1,39 @@
+{
+  "evidence_set_id": "MFR-KAESER-OILINJ-SCREW-2026-09",
+  "kind": "manufacturer_evidence",
+  "vendor": "KAESER KOMPRESSOREN SE, Coburg, Germany",
+  "scope": "Oil-injected (fluid-cooled) single-stage rotary screw compressors ASD / CSD / CSDX / DSD / ESD, 22-250 kW, 1:1 direct drive, fixed speed and SFC",
+  "retrieved_on": "2026-09-02",
+  "usage_rule": "Reference evidence for oil-injected screw input bounds (C-7b), in particular the 15 bar maximum working pressure that oil-free evidence cannot supply. Never a calculation constant or default.",
+  "test_basis": {
+    "fad": "ISO 1217:2009 Annex C/E, complete system, at stated working pressure",
+    "noise": "ISO 2151 with basic standard ISO 9614-2, tolerance +/- 3 dB(A)"
+  },
+  "sources": [
+    {"id": "SRC-KAESER-CSDX-P651-28ED", "document": "KAESER CSD(X) Series brochure P-651/28ED, 7/24 (distributor copy)", "url": "https://www.kerrcompressors.co.uk/wp-content/uploads/2024/11/KERR-KAESER-CSDX-Series-P-651-28ED-7-24.pdf", "headline": "Flow rate 1.1 to 19.4 m3/min, pressure 5.5 to 15 bar"},
+    {"id": "SRC-KAESER-RANGE-IN", "document": "KAESER rotary screw compressor range catalogue (India distributor copy) - ASD to HSD technical tables", "url": "https://www.shanbhags.com/wp-content/themes/shanbhags/pdf/Kaeser-Compressors.pdf"}
+  ],
+  "pressure_variants_bar_g": {"working": [7.5, 10, 13], "maximum": [8.5, 12, 15]},
+  "models": [
+    {"model": "ASD 40", "kw": 22, "fad_m3_min_at_working": {"7.5": 3.92, "10": 3.13, "13": 2.58}, "noise_db_a": 66, "weight_kg": 655, "dimensions_mm": [1460, 900, 1530]},
+    {"model": "ASD 50", "kw": 25, "fad_m3_min_at_working": {"10": 3.85}, "noise_db_a": 66, "weight_kg": 695, "dimensions_mm": [1460, 900, 1530]},
+    {"model": "CSD 85", "kw": 45, "fad_m3_min_at_working": {"7.5": 8.26, "10": 6.89, "13": 5.50}, "noise_db_a": 70, "weight_kg": 1250, "dimensions_mm": [1760, 1110, 1900]},
+    {"model": "CSD 105", "kw": 55, "fad_m3_min_at_working": {"7.5": 10.14, "10": 8.18, "13": 6.74}, "noise_db_a": 71, "weight_kg": 1290, "dimensions_mm": [1760, 1110, 1900]},
+    {"model": "CSD 125", "kw": 75, "fad_m3_min_at_working": {"7.5": 12.02, "10": 10.04, "13": 8.06}, "noise_db_a": 72, "weight_kg": 1320, "dimensions_mm": [1760, 1110, 1900]},
+    {"model": "CSDX 140", "kw": 75, "fad_m3_min_at_working": {"7.5": 13.74, "10": 11.83, "13": 9.86}, "noise_db_a": 71, "weight_kg": 1830, "dimensions_mm": [2110, 1290, 1950]},
+    {"model": "CSDX 165", "kw": 90, "fad_m3_min_at_working": {"7.5": 16.16, "10": 13.53, "13": 11.49}, "noise_db_a": 72, "weight_kg": 1925, "dimensions_mm": [2110, 1290, 1950]},
+    {"model": "DSD 240", "kw": 132, "fad_m3_min_at_working": {"7.5": 25.15, "10": 20.40, "13": 16.15}, "noise_db_a": 74, "weight_kg": 3430, "dimensions_mm": [2450, 1730, 2150]},
+    {"model": "ESD 375", "kw": 200, "fad_m3_min_at_working": {"7.5": 37.85, "10": 30.13, "13": 24.34}, "noise_db_a": 75, "weight_kg": 5000, "dimensions_mm": [2960, 2030, 2140]},
+    {"model": "ESD 445", "kw": 250, "fad_m3_min_at_working": {"7.5": 42.20, "10": 37.32, "13": 29.67}, "noise_db_a": 76, "weight_kg": 5060, "dimensions_mm": [2960, 2030, 2140]},
+    {"model": "ESD 445 SFC", "kw": 250, "working_pressure_bar_g": 13, "fad_m3_min_min_max": [6.40, 27.48], "airend_speed_rpm_min_max": [550, 2037]}
+  ],
+  "vendor_claims_not_for_calculation": [
+    {"claim": "Up to 96 % of total power consumption available as recoverable heat (CSDX 175 example)", "source": "SRC-KAESER-CSDX-P651-28ED"}
+  ],
+  "derived_bounds_for_c7b": [
+    {"parameter": "working_pressure_bar_g", "applies_to": "oil-injected single-stage screw", "min": 5.5, "max": 15, "basis": "CSD(X) brochure headline 5.5-15 bar; 13 bar variants have 15 bar maximum working pressure"},
+    {"parameter": "rated_motor_power_kw", "applies_to": "oil-injected screw, single unit (range shown)", "min": 22, "max": 250, "basis": "ASD 40 to ESD 445; larger FSD/HSD to 500 kW exist but are not tabulated here"},
+    {"parameter": "fad_m3_min", "applies_to": "oil-injected screw, single unit (range shown)", "min": 1.1, "max": 42.2, "basis": "CSD(X) headline 1.1; ESD 445 at 7.5 bar 42.20"},
+    {"parameter": "vsd_turndown_pct", "applies_to": "SFC oil-injected screw", "max": 77, "basis": "ESD 445 SFC 6.40/27.48 = 23 % minimum flow"}
+  ]
+}

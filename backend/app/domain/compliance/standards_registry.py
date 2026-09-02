@@ -91,6 +91,28 @@ MFR_KAESER_OILFREE_SCREW_2026_09 = EngineeringStandard(
     ),
 )
 
+MFR_KAESER_OILINJ_SCREW_2026_09 = EngineeringStandard(
+    standard_id="MFR-KAESER-OILINJ-SCREW-2026-09",
+    authority=StandardAuthority.MANUFACTURER,
+    title=(
+        "KAESER oil-injected rotary screw compressor technical data, "
+        "ASD / CSD / CSDX / DSD / ESD, 22-250 kW"
+    ),
+    edition="Brochure P-651/28ED (7/24) and range catalogue",
+    publication_date="2024-07",
+    applicability=(
+        StandardApplicability.ROTARY_SCREW,
+        StandardApplicability.ENERGY_AUDIT,
+    ),
+    verification_status=(StandardVerificationStatus.OFFICIAL_SOURCE_VERIFIED),
+    notes=(
+        "Manufacturer evidence set, not a standard. Supplies the oil-injected "
+        "screw working-pressure bound (5.5-15 bar g) that oil-free evidence "
+        "cannot. FAD per ISO 1217:2009 Annex C/E. Data file: "
+        "app/data/evidence/manufacturer/kaeser_oil_injected_screw.json."
+    ),
+)
+
 API_617 = EngineeringStandard(
     standard_id="API-617",
     authority=StandardAuthority.API,
@@ -332,6 +354,7 @@ ENGINEERING_STANDARDS: tuple[EngineeringStandard, ...] = (
     ZAIM_2025,
     MFR_COMPAIR_OILFREE_SCREW_2026_09,
     MFR_KAESER_OILFREE_SCREW_2026_09,
+    MFR_KAESER_OILINJ_SCREW_2026_09,
 )
 
 
