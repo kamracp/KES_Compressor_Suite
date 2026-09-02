@@ -209,6 +209,30 @@ function validateOptionalFraction(
   requireFraction(value, label, errors);
 }
 
+// --- C-7b submit-time mirrors of backend input bounds ---------------------
+// Each ceiling repeats a bound in backend app/schemas (evidence set
+// MFR-ATLASCOPCO-AIR-RANGE-2026-09 unless noted) so the user sees the
+// message before a 422. Upper bounds only: lower bounds are already covered
+// by the require* helpers above.
+const MAX_PLANT_AIR_PRESSURE_BAR_G = 25; // schemas/_bounds.py
+const MAX_ASSET_FAD_NM3_PER_HR = 36000; // largest centrifugal plant-air package
+const MAX_ASSET_MOTOR_KW = 3150; // ZH+ centrifugal, largest single motor
+const MAX_MEASURED_POWER_KW = 3400; // 3150 kW x 1.08 measured/nameplate ratio
+const MIN_ELECTRICITY_TARIFF_INR_PER_KWH = 5;
+const MAX_ELECTRICITY_TARIFF_INR_PER_KWH = 25;
+
+function pushIfAbove(
+  raw: string,
+  bound: number,
+  message: string,
+  errors: string[],
+): void {
+  const value = Number(raw);
+  if (Number.isFinite(value) && value > bound) {
+    errors.push(message);
+  }
+}
+
 export function validateBrownfieldFormState(
   state: BrownfieldFormState,
 ): string[] {
@@ -482,6 +506,65 @@ export function validateBrownfieldFormState(
       errors,
     );
   }
+
+  pushIfAbove(
+    state.optimizedDischargePressureBarG,
+    MAX_PLANT_AIR_PRESSURE_BAR_G,
+    `Optimized discharge pressure cannot exceed ${MAX_PLANT_AIR_PRESSURE_BAR_G} bar g (plant-air ceiling).`,
+    errors,
+  );
+  const tariff = Number(state.electricityTariffPerKwh);
+  if (
+    Number.isFinite(tariff) &&
+    (tariff < MIN_ELECTRICITY_TARIFF_INR_PER_KWH ||
+      tariff > MAX_ELECTRICITY_TARIFF_INR_PER_KWH)
+  ) {
+    errors.push(
+      `Electricity tariff must be between ${MIN_ELECTRICITY_TARIFF_INR_PER_KWH} and ${MAX_ELECTRICITY_TARIFF_INR_PER_KWH} INR/kWh.`,
+    );
+  }
+  state.compressors.forEach((compressor, index) => {
+    const label = `Compressor ${index + 1}`;
+    pushIfAbove(
+      compressor.rated_fad_nm3_per_hr,
+      MAX_ASSET_FAD_NM3_PER_HR,
+      `${label}: rated FAD cannot exceed ${MAX_ASSET_FAD_NM3_PER_HR} Nm3/h. Check the unit (m3/min entered as Nm3/h?).`,
+      errors,
+    );
+    pushIfAbove(
+      compressor.rated_motor_power_kw,
+      MAX_ASSET_MOTOR_KW,
+      `${label}: rated motor power cannot exceed ${MAX_ASSET_MOTOR_KW} kW for a single plant-air compressor.`,
+      errors,
+    );
+    pushIfAbove(
+      compressor.rated_discharge_pressure_bar_g,
+      MAX_PLANT_AIR_PRESSURE_BAR_G,
+      `${label}: rated discharge pressure cannot exceed ${MAX_PLANT_AIR_PRESSURE_BAR_G} bar g (plant-air ceiling).`,
+      errors,
+    );
+  });
+  state.compressorMeasurements.forEach((measurement, index) => {
+    const label = `Measurement ${index + 1}`;
+    pushIfAbove(
+      measurement.measured_flow_nm3_per_hr,
+      MAX_ASSET_FAD_NM3_PER_HR,
+      `${label}: measured flow cannot exceed ${MAX_ASSET_FAD_NM3_PER_HR} Nm3/h. Check the unit.`,
+      errors,
+    );
+    pushIfAbove(
+      measurement.measured_power_kw,
+      MAX_MEASURED_POWER_KW,
+      `${label}: measured power cannot exceed ${MAX_MEASURED_POWER_KW} kW (largest plant-air motor x 1.08).`,
+      errors,
+    );
+    pushIfAbove(
+      measurement.measured_discharge_pressure_bar_g,
+      MAX_PLANT_AIR_PRESSURE_BAR_G,
+      `${label}: measured discharge pressure cannot exceed ${MAX_PLANT_AIR_PRESSURE_BAR_G} bar g (plant-air ceiling).`,
+      errors,
+    );
+  });
 
   return errors;
 }
