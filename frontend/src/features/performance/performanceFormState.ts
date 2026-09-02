@@ -3,6 +3,12 @@ import type {
   PerformanceMeasurementInput,
 } from "./performanceTypes";
 
+import {
+  MAX_PLANT_AIR_PRESSURE_BAR_G,
+  pushIfAbove,
+  pushIfTariffOutOfRange,
+} from "../reference/inputBounds";
+
 export type PerformanceFormState = {
   analysisCode: string;
 
@@ -240,6 +246,17 @@ export function validatePerformanceFormState(
     "Power penalty fraction per bar",
     errors,
   );
+
+  // C-7b submit-time mirrors of the backend bounds (see reference/inputBounds).
+  pushIfTariffOutOfRange(state.electricityTariffPerKwh, errors);
+  state.measurements.forEach((measurement, index) => {
+    pushIfAbove(
+      measurement.pressure_bar_g,
+      MAX_PLANT_AIR_PRESSURE_BAR_G,
+      `Measurement ${index + 1}: pressure cannot exceed ${MAX_PLANT_AIR_PRESSURE_BAR_G} bar g (plant-air ceiling).`,
+      errors,
+    );
+  });
 
   return errors;
 }
