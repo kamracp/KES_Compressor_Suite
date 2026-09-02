@@ -2,6 +2,7 @@ import type {
   CompressedAirLeakageManagementRequest,
   LeakRegisterItemInput,
 } from "./leakageTypes";
+import type { SupplyPhase } from "../reference/referenceTypes";
 
 export type LeakageFormState = {
   analysisCode: string;
@@ -11,6 +12,9 @@ export type LeakageFormState = {
   specificPowerKwPerNm3PerMin: string;
   annualOperatingHours: string;
   electricityTariffPerKwh: string;
+  supplyPhase: SupplyPhase;
+  nominalSupplyVoltageV: number;
+  supplyFrequencyHz: number;
   demandSavingControlFactor: string;
 
   averageSystemDemandNm3PerHr: string;
@@ -55,7 +59,10 @@ export function createInitialLeakageFormState(): LeakageFormState {
     leaks: [createLeakRegisterItem()],
     specificPowerKwPerNm3PerMin: "",
     annualOperatingHours: "",
-    electricityTariffPerKwh: "0",
+    electricityTariffPerKwh: "",
+    supplyPhase: "three",
+    nominalSupplyVoltageV: 415,
+    supplyFrequencyHz: 50,
     demandSavingControlFactor: "1",
     averageSystemDemandNm3PerHr: "",
     notes: "",

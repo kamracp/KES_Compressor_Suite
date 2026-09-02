@@ -11,16 +11,38 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import type { LeakageFormState } from "../leakageFormState";
+import type {
+  InputOptionsResponse,
+  SupplyPhase,
+} from "../../reference/referenceTypes";
 
 type LeakageEnergyBasisSectionProps = {
   state: LeakageFormState;
   onChange: (changes: Partial<LeakageFormState>) => void;
+  inputOptions?: InputOptionsResponse;
 };
+
+const SELECT_CLASS =
+  "h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50";
+
+// IS 12360 pairs 240 V with single-phase supply and every higher preferred
+// voltage with three-phase; the backend enforces the same rule.
+function voltagesForPhase(
+  voltages: number[],
+  phase: SupplyPhase,
+): number[] {
+  return voltages.filter((v) => (phase === "single" ? v === 240 : v !== 240));
+}
 
 export function LeakageEnergyBasisSection({
   state,
   onChange,
+  inputOptions,
 }: LeakageEnergyBasisSectionProps) {
+  const voltageOptions = voltagesForPhase(
+    inputOptions?.nominal_supply_voltage_v ?? [],
+    state.supplyPhase,
+  );
   return (
     <Card>
       <CardHeader>
@@ -97,24 +119,106 @@ export function LeakageEnergyBasisSection({
               Electricity Tariff
             </Label>
 
-            <Input
+            <select
               id="leakage-electricity-tariff"
-              type="number"
-              min="0"
-              step="any"
+              className={SELECT_CLASS}
               value={state.electricityTariffPerKwh}
-              placeholder="Example: 8"
+              disabled={!inputOptions}
               onChange={(event) =>
                 onChange({
-                  electricityTariffPerKwh:
-                    event.target.value,
+                  electricityTariffPerKwh: event.target.value,
                 })
               }
-            />
+            >
+              <option value="">
+                {inputOptions ? "Select tariff" : "Loading..."}
+              </option>
+              {inputOptions?.electricity_tariff_inr_per_kwh.map((tariff) => (
+                <option key={tariff} value={tariff}>
+                  {tariff}
+                </option>
+              ))}
+            </select>
 
             <p className="text-xs leading-5 text-slate-500">
-              Currency/kWh
+              INR/kWh
             </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="leakage-supply-phase">Supply Phase</Label>
+
+            <select
+              id="leakage-supply-phase"
+              className={SELECT_CLASS}
+              value={state.supplyPhase}
+              disabled={!inputOptions}
+              onChange={(event) => {
+                const supplyPhase = event.target.value as SupplyPhase;
+                onChange({
+                  supplyPhase,
+                  nominalSupplyVoltageV: supplyPhase === "single" ? 240 : 415,
+                });
+              }}
+            >
+              {inputOptions?.supply_phase.map((phase) => (
+                <option key={phase} value={phase}>
+                  {phase === "single" ? "Single-phase" : "Three-phase"}
+                </option>
+              ))}
+            </select>
+
+            <p className="text-xs leading-5 text-slate-500">IS 12360</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="leakage-supply-voltage">Nominal Voltage</Label>
+
+            <select
+              id="leakage-supply-voltage"
+              className={SELECT_CLASS}
+              value={String(state.nominalSupplyVoltageV)}
+              disabled={!inputOptions}
+              onChange={(event) =>
+                onChange({
+                  nominalSupplyVoltageV: Number(event.target.value),
+                })
+              }
+            >
+              {voltageOptions.map((voltage) => (
+                <option key={voltage} value={voltage}>
+                  {voltage >= 1000 ? `${voltage / 1000} kV` : `${voltage} V`}
+                </option>
+              ))}
+            </select>
+
+            <p className="text-xs leading-5 text-slate-500">
+              Line-to-line, IS 12360
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="leakage-supply-frequency">Frequency</Label>
+
+            <select
+              id="leakage-supply-frequency"
+              className={SELECT_CLASS}
+              value={String(state.supplyFrequencyHz)}
+              disabled={!inputOptions}
+              onChange={(event) =>
+                onChange({
+                  supplyFrequencyHz: Number(event.target.value),
+                })
+              }
+            >
+              {inputOptions?.supply_frequency_hz.map((hz) => (
+                <option key={hz} value={hz}>
+                  {hz} Hz
+                </option>
+              ))}
+            </select>
+
+            <p className="text-xs leading-5 text-slate-500">Hz</p>
           </div>
 
           <div className="space-y-2">

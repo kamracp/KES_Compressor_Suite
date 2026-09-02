@@ -33,6 +33,7 @@ import {
 } from "../features/leakage/leakageFormState";
 import { analyzeCompressedAirLeakage } from "../features/leakage/leakageService";
 import { useProjectContext } from "../features/projects/useProjectContext";
+import { useInputOptions } from "../features/reference/useInputOptions";
 import { ApiError } from "../services/apiClient";
 
 function extractErrorMessage(error: unknown): string {
@@ -63,6 +64,7 @@ function extractErrorMessage(error: unknown): string {
 
 export function LeakageManagementPage() {
   const { accessToken } = useAuth();
+  const inputOptionsQuery = useInputOptions(accessToken);
   const {
     projectId: projectIdNumber,
     hasValidProjectId,
@@ -306,6 +308,7 @@ export function LeakageManagementPage() {
       <LeakageEnergyBasisSection
         state={formState}
         onChange={applyChanges}
+        inputOptions={inputOptionsQuery.data}
       />
 
       <RepairVerificationSection
