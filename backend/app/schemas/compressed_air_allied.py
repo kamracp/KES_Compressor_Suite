@@ -37,7 +37,15 @@ class ReceiverSizingInputRequest(BaseModel):
             "A receiver demand event longer than one day is a base-load change, not an event."
         ),
     )
-    receiver_high_pressure_bar_g: Decimal = Field(gt=0)
+    receiver_high_pressure_bar_g: Decimal = Field(
+        gt=0,
+        le=Decimal("45"),
+        description=(
+            "Packaged industrial high-pressure air (PET blowing, boosters) reaches 45 "
+            "bar g (MFR-ATLASCOPCO-AIR-RANGE-2026-09 DX/DN); reciprocating HX/HN to "
+            "150 bar g are process machines outside this input."
+        ),
+    )
     receiver_low_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
 
     reserve_fraction: Decimal = Field(

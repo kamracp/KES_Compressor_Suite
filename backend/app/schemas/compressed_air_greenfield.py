@@ -155,8 +155,14 @@ class CompressorUnitInputSchema(BaseModel):
     control_mode: CompressorControlMode
     duty_role: CompressorDutyRole
 
-    rated_fad_nm3_per_hr: Decimal = Field(gt=0)
-
+    rated_fad_nm3_per_hr: Decimal = Field(
+        gt=0,
+        le=Decimal("36000"),
+        description=(
+            "Largest single plant-air package: ZH+ centrifugal 587 m3/min = 35244 "
+            "m3/h (MFR-ATLASCOPCO-AIR-RANGE-2026-09)."
+        ),
+    )
     minimum_stable_flow_fraction: Decimal = Field(
         ge=0,
         le=1,

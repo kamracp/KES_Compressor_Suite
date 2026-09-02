@@ -79,8 +79,15 @@ class AirSkidAssessmentRequest(BaseModel):
     arrangement: SkidArrangement
 
     design_flow_nm3_per_hr: Decimal = Field(gt=0)
-    design_pressure_bar_g: Decimal = Field(gt=0)
-
+    design_pressure_bar_g: Decimal = Field(
+        gt=0,
+        le=Decimal("45"),
+        description=(
+            "Packaged industrial high-pressure air (PET blowing, boosters) reaches 45 "
+            "bar g (MFR-ATLASCOPCO-AIR-RANGE-2026-09 DX/DN); reciprocating HX/HN to "
+            "150 bar g are process machines outside this input."
+        ),
+    )
     dryer_type: DryerType
 
     components: list[SkidComponentRequest] = Field(

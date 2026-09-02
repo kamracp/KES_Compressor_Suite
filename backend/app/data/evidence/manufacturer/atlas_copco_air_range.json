@@ -1,0 +1,27 @@
+{
+  "evidence_set_id": "MFR-ATLASCOPCO-AIR-RANGE-2026-09",
+  "kind": "manufacturer_evidence",
+  "vendor": "Atlas Copco Airpower NV / Atlas Copco (India) Pvt Ltd",
+  "scope": "Published range envelopes for industrial compressed-air machines: ZR/ZT oil-free screw (15-900 kW), ZH/ZH+ oil-free centrifugal (355-3150 kW), and high-pressure air boosters and piston compressors (ZD, P, DX/DN, HX/HN)",
+  "retrieved_on": "2026-09-02",
+  "usage_rule": "Range envelopes only (no model tables). Used to widen the single-unit screw bounds beyond CompAir/KAESER and to supply centrifugal and high-pressure air bounds. Never a calculation constant.",
+  "sources": [
+    {"id": "SRC-AC-ZRZT", "document": "Atlas Copco India product page: Oil-free screw air compressors ZR & ZT (VSD)", "url": "https://www.atlascopco.com/en-in/compressors/products/air-compressor/oil-free-air-compressors/rotary-screw-air-compressors-zr-zt", "figures": "1-150 m3/min, 3.5-13 bar g, 15-900 kW; up to 94 % of electrical energy recoverable as heat (vendor claim)"},
+    {"id": "SRC-AC-ZH", "document": "Atlas Copco India product page: Oil-free air centrifugal compressor ZH and ZH+", "url": "https://www.atlascopco.com/en-in/compressors/products/air-compressor/oil-free-air-compressors/centrifugal-compressor-zh-zhplus", "figures": "76-587 m3/min (4579-35244 m3/h), 2.5-13 bar g, 355-3150 kW, ISO 8573-1 Class 0"},
+    {"id": "SRC-AC-CT-CATALOGUE", "document": "Atlas Copco Compressor Technique full catalogue (PDF)", "url": "https://www.atlascopco.com/content/dam/atlas-copco/compressor-technique/industrial-air/documents/brochures/CT%20Catalogue_Full.pdf", "figures": "ZD oil-free screw+piston up to 40 bar g 143-712 kW; P oil-free piston up to 40 bar g 37-275 kW; DX/DN oil-free piston boosters up to 45 bar g 37-315 kW; HX/HN oil-free reciprocating up to 150 bar g up to 560 kW; DM trunk-piston up to 450 bar a 37 kW"}
+  ],
+  "vendor_claims_not_for_calculation": [
+    {"claim": "Up to 94 % of electrical energy converted to compression heat (ZR/ZH energy recovery)", "source": "SRC-AC-ZRZT"},
+    {"claim": "VSD saves up to 35 %; energy is over 80 % of lifecycle cost; compressed air can exceed 40 % of a plant electricity bill", "source": "SRC-AC-ZRZT"}
+  ],
+  "derived_bounds_for_c7b": [
+    {"parameter": "fad_m3_min", "applies_to": "single oil-free screw package (ZR/ZT range)", "min": 1, "max": 150, "basis": "SRC-AC-ZRZT 1-150 m3/min"},
+    {"parameter": "rated_motor_power_kw", "applies_to": "single oil-free screw package (ZR/ZT range)", "min": 15, "max": 900, "basis": "SRC-AC-ZRZT 15-900 kW"},
+    {"parameter": "working_pressure_bar_g", "applies_to": "oil-free screw (ZR/ZT range)", "min": 3.5, "max": 13, "basis": "SRC-AC-ZRZT 3.5-13 bar g"},
+    {"parameter": "centrifugal_fad_m3_min", "applies_to": "single oil-free centrifugal plant-air package", "min": 76, "max": 587, "basis": "SRC-AC-ZH 76-587 m3/min"},
+    {"parameter": "centrifugal_motor_power_kw", "applies_to": "single oil-free centrifugal plant-air package", "min": 355, "max": 3150, "basis": "SRC-AC-ZH 355-3150 kW"},
+    {"parameter": "centrifugal_working_pressure_bar_g", "applies_to": "oil-free centrifugal plant air", "min": 2.5, "max": 13, "basis": "SRC-AC-ZH 2.5-13 bar g"},
+    {"parameter": "high_pressure_air_bar_g", "applies_to": "packaged industrial high-pressure air (PET blowing, boosters)", "max": 45, "basis": "SRC-AC-CT-CATALOGUE: ZD and P to 40 bar g, DX/DN boosters to 45 bar g"},
+    {"parameter": "reciprocating_air_pressure_bar_g", "applies_to": "oil-free reciprocating air/gas compressors", "max": 150, "basis": "SRC-AC-CT-CATALOGUE: HX/HN up to 150 bar g"}
+  ]
+}

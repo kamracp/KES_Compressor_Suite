@@ -37,10 +37,23 @@ class ExistingCompressorInputSchema(BaseModel):
     technology: CompressorTechnology
     control_mode: CompressorControlMode
 
-    rated_fad_nm3_per_hr: Decimal = Field(gt=0)
+    rated_fad_nm3_per_hr: Decimal = Field(
+        gt=0,
+        le=Decimal("36000"),
+        description=(
+            "Largest single plant-air package: ZH+ centrifugal 587 m3/min = 35244 "
+            "m3/h (MFR-ATLASCOPCO-AIR-RANGE-2026-09)."
+        ),
+    )
     rated_discharge_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
-    rated_motor_power_kw: Decimal = Field(gt=0)
-
+    rated_motor_power_kw: Decimal = Field(
+        gt=0,
+        le=Decimal("3150"),
+        description=(
+            "Largest single plant-air motor: ZH+ centrifugal 3150 kW "
+            "(MFR-ATLASCOPCO-AIR-RANGE-2026-09)."
+        ),
+    )
     installation_year: int | None = None
     operating_hours: Decimal | None = Field(
         default=None, ge=0, le=Decimal("8784"), description="Calendar limit: 366 days x 24 h."
@@ -55,10 +68,23 @@ class CompressorMeasurementInputSchema(BaseModel):
 
     operating_state: AuditOperatingState
 
-    measured_flow_nm3_per_hr: Decimal = Field(ge=0)
+    measured_flow_nm3_per_hr: Decimal = Field(
+        ge=0,
+        le=Decimal("36000"),
+        description=(
+            "Largest single plant-air package: ZH+ centrifugal 587 m3/min = 35244 "
+            "m3/h (MFR-ATLASCOPCO-AIR-RANGE-2026-09)."
+        ),
+    )
     measured_discharge_pressure_bar_g: Decimal = Field(ge=0, le=MAX_PLANT_AIR_PRESSURE_BAR_G)
-    measured_power_kw: Decimal = Field(ge=0)
-
+    measured_power_kw: Decimal = Field(
+        ge=0,
+        le=Decimal("3400"),
+        description=(
+            "3150 kW largest plant-air motor x 1.08 measured/nameplate ratio "
+            "(MFR-ATLASCOPCO-AIR-RANGE-2026-09; MFR-KAESER-OILFREE-SCREW-2026-09)."
+        ),
+    )
     load_fraction: Decimal | None = Field(
         default=None,
         ge=0,

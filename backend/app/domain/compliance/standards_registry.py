@@ -133,6 +133,30 @@ MFR_RECIP_FRAME_LIMITS_2026_09 = EngineeringStandard(
     ),
 )
 
+MFR_ATLASCOPCO_AIR_RANGE_2026_09 = EngineeringStandard(
+    standard_id="MFR-ATLASCOPCO-AIR-RANGE-2026-09",
+    authority=StandardAuthority.MANUFACTURER,
+    title=(
+        "Atlas Copco industrial air range envelopes: ZR/ZT oil-free screw, "
+        "ZH/ZH+ oil-free centrifugal, high-pressure boosters and pistons"
+    ),
+    edition="Product pages and CT catalogue as retrieved 2026-09-02",
+    publication_date="2026-09",
+    applicability=(
+        StandardApplicability.ROTARY_SCREW,
+        StandardApplicability.CENTRIFUGAL,
+        StandardApplicability.RECIPROCATING,
+    ),
+    verification_status=(StandardVerificationStatus.OFFICIAL_SOURCE_VERIFIED),
+    notes=(
+        "Manufacturer evidence set, not a standard. Widens the single-unit "
+        "screw envelope to 900 kW / 150 m3/min, supplies centrifugal plant-air "
+        "bounds (355-3150 kW, 76-587 m3/min, 2.5-13 bar g) and high-pressure "
+        "air bounds (45 bar g packaged boosters; 150 bar g reciprocating). "
+        "Data file: app/data/evidence/manufacturer/atlas_copco_air_range.json."
+    ),
+)
+
 API_617 = EngineeringStandard(
     standard_id="API-617",
     authority=StandardAuthority.API,
@@ -376,6 +400,7 @@ ENGINEERING_STANDARDS: tuple[EngineeringStandard, ...] = (
     MFR_KAESER_OILFREE_SCREW_2026_09,
     MFR_KAESER_OILINJ_SCREW_2026_09,
     MFR_RECIP_FRAME_LIMITS_2026_09,
+    MFR_ATLASCOPCO_AIR_RANGE_2026_09,
 )
 
 

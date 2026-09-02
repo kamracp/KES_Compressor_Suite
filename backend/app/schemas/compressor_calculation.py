@@ -290,19 +290,20 @@ class RotaryScrewCalculationRequest(BaseModel):
 
     rated_fad_m3_per_min: Decimal = Field(
         gt=0,
-        le=Decimal("60"),
+        le=Decimal("160"),
         description=(
-            "Largest single rotary screw package 53.4 m3/min "
-            "(MFR-COMPAIR-OILFREE-SCREW-2026-09 DX355e; "
-            "MFR-KAESER-OILFREE-SCREW-2026-09 FSG 520-2 50.7) plus headroom."
+            "Largest single oil-free screw package 150 m3/min "
+            "(MFR-ATLASCOPCO-AIR-RANGE-2026-09 ZR/ZT; CompAir DX355e 53.4, "
+            "KAESER FSG 520-2 50.7) plus headroom."
         ),
     )
     package_input_power_kw: Decimal = Field(
         gt=0,
-        le=Decimal("410"),
+        le=Decimal("1050"),
         description=(
-            "355 kW largest screw motor x 1.15 nameplate ratio "
-            "(MFR-KAESER-OILFREE-SCREW-2026-09 CSG 130-2 measured 1.08)."
+            "900 kW largest screw motor (MFR-ATLASCOPCO-AIR-RANGE-2026-09) x 1.15 "
+            "nameplate ratio (MFR-KAESER-OILFREE-SCREW-2026-09 CSG 130-2 "
+            "measured 1.08)."
         ),
     )
 

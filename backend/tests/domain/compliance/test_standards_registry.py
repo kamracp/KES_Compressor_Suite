@@ -10,6 +10,7 @@ from app.domain.compliance.standards_registry import (
     ISO_1217,
     ISO_6358,
     ISO_11011,
+    MFR_ATLASCOPCO_AIR_RANGE_2026_09,
     MFR_COMPAIR_OILFREE_SCREW_2026_09,
     MFR_KAESER_OILFREE_SCREW_2026_09,
     MFR_KAESER_OILINJ_SCREW_2026_09,
@@ -40,6 +41,7 @@ def test_registry_contains_expected_standards() -> None:
         MFR_KAESER_OILFREE_SCREW_2026_09,
         MFR_KAESER_OILINJ_SCREW_2026_09,
         MFR_RECIP_FRAME_LIMITS_2026_09,
+        MFR_ATLASCOPCO_AIR_RANGE_2026_09,
     )
 
 
@@ -202,6 +204,7 @@ def test_manufacturer_evidence_entries_are_registered() -> None:
         ("MFR-KAESER-OILFREE-SCREW-2026-09", MFR_KAESER_OILFREE_SCREW_2026_09),
         ("MFR-KAESER-OILINJ-SCREW-2026-09", MFR_KAESER_OILINJ_SCREW_2026_09),
         ("MFR-RECIP-FRAME-LIMITS-2026-09", MFR_RECIP_FRAME_LIMITS_2026_09),
+        ("MFR-ATLASCOPCO-AIR-RANGE-2026-09", MFR_ATLASCOPCO_AIR_RANGE_2026_09),
     ):
         found = get_standard(standard_id)
         assert found is expected
