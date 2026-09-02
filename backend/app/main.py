@@ -25,6 +25,7 @@ from app.api.v1.project_history import router as project_history_router
 from app.api.v1.projects import router as projects_router
 from app.api.v1.rbac import router as rbac_router
 from app.api.v1.rbac_bootstrap import router as rbac_bootstrap_router
+from app.api.v1.reference_options import router as reference_options_router
 from app.api.v1.report_export import router as report_export_router
 from app.api.v1.reporting import router as reporting_router
 from app.api.v1.users import router as users_router
@@ -194,6 +195,10 @@ app.include_router(
 
 app.include_router(
     compressed_air_system_summary_router,
+    prefix=settings.api_v1_prefix,
+)
+app.include_router(
+    reference_options_router,
     prefix=settings.api_v1_prefix,
 )
 
