@@ -7,6 +7,7 @@ class StandardAuthority(StrEnum):
     ASME = "ASME"
     BCAS = "BCAS"
     CAGI = "CAGI"
+    DOE = "DOE"
     GPSA = "GPSA"
     ISO = "ISO"
     EVO = "EVO"
@@ -290,6 +291,35 @@ CAGI_HANDBOOK = EngineeringStandard(
 )
 
 
+DOE_CAC_SOURCEBOOK_2003 = EngineeringStandard(
+    standard_id="DOE-CAC-SOURCEBOOK-2003",
+    authority=StandardAuthority.DOE,
+    title=(
+        "Improving Compressed Air System Performance: A Sourcebook for Industry "
+        "(US DOE EERE with the Compressed Air Challenge)"
+    ),
+    edition="2003 sourcebook as hosted by compressedairchallenge.org and energy.gov",
+    publication_date="2003",
+    applicability=(
+        StandardApplicability.ROTARY_SCREW,
+        StandardApplicability.ENERGY_AUDIT,
+    ),
+    verification_status=(StandardVerificationStatus.OFFICIAL_SOURCE_VERIFIED),
+    notes=(
+        "Guideline, not a standard. Fact sheet 'Compressed Air System Controls': "
+        "an unloaded load/unload rotary screw consumes 15-35 percent of full-load "
+        "power; inlet modulation is limited to roughly 100-40 percent of rated "
+        "capacity and a fully modulated (zero flow) screw draws about 70 percent "
+        "of full-load power; every 2 psi of extra discharge pressure costs about "
+        "1 percent power at full flow, plus 0.6-1.0 percent from unregulated "
+        "usage (30-50 percent of demand). Corroborated by Natural Resources "
+        "Canada, Energy Efficiency Reference Guide: Compressed Air (15-35 percent "
+        "unloaded, load/unload power-capacity table). Basis for the C-7 "
+        "sequencing unload-power and modulation bounds in schemas/_bounds.py; "
+        "pressure-power effects use the thermodynamic method in "
+        "energy/pressure_energy.py, not the rule of thumb."
+    ),
+)
 BCAS_BPG_101 = EngineeringStandard(
     standard_id="BCAS-BPG-101",
     authority=StandardAuthority.BCAS,
@@ -413,6 +443,7 @@ ENGINEERING_STANDARDS: tuple[EngineeringStandard, ...] = (
     ISO_6358,
     ISO_11011,
     CAGI_HANDBOOK,
+    DOE_CAC_SOURCEBOOK_2003,
     BCAS_BPG_101,
     IPMVP_CORE,
     ZAIM_2025,

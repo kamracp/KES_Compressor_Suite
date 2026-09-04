@@ -66,3 +66,12 @@ MAX_CENTRIFUGAL_IMPELLER_STAGES = 10
 #   handover and processes that span a New Year without restart.
 MIN_INSTALLATION_YEAR = 1950
 MAX_INSTALLATION_YEAR = date.today().year + 1
+
+# Part-load power fractions (C-7 sequencing; DOE-CAC-SOURCEBOOK-2003).
+#   Load/unload rotary screw: unloaded draw is 15-35 % of full-load power,
+#   so the per-machine unload_power_fraction input is bounded to that band
+#   rather than assumed. A fully modulated screw at zero flow draws ~70 %
+#   (reserved for C-8 part-load modes; not applied to any field yet).
+MIN_FIXED_SPEED_UNLOAD_POWER_FRACTION = Decimal("0.15")
+MAX_FIXED_SPEED_UNLOAD_POWER_FRACTION = Decimal("0.35")
+MODULATION_ZERO_FLOW_POWER_FRACTION = Decimal("0.70")
