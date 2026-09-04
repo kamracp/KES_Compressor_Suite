@@ -10,18 +10,25 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export type GreenfieldDesignBasis = {
-  minimumPointOfUsePressureBarG: string;
-  leakageFraction: string;
-  futureExpansionFraction: string;
-  otherAllowanceFraction: string;
-  controlMarginBar: string;
-  annualOperatingDays: string;
-  electricityTariffPerKwh: string;
-};
+import type { GreenfieldDesignBasisState } from "../greenfieldFormState";
+import type {
+  InputOptionsResponse,
+  SupplyPhase,
+} from "../../reference/referenceTypes";
+import {
+  SELECT_CLASS,
+  defaultVoltageForPhase,
+  phaseLabel,
+  voltageLabel,
+  voltagesForPhase,
+} from "../../reference/supplyBasis";
+
+// Single source of truth is the form state; the alias keeps the export name.
+export type GreenfieldDesignBasis = GreenfieldDesignBasisState;
 
 type DesignBasisSectionProps = {
   value: GreenfieldDesignBasis;
+  inputOptions?: InputOptionsResponse;
   onChange: (
     field: keyof GreenfieldDesignBasis,
     value: string,
@@ -86,6 +93,7 @@ function DecimalField({
 
 export function DesignBasisSection({
   value,
+  inputOptions,
   onChange,
 }: DesignBasisSectionProps) {
   return (
@@ -227,20 +235,92 @@ export function DesignBasisSection({
               }
             />
 
-            <DecimalField
-              id="electricity-tariff"
-              label="Electricity Tariff"
-              value={value.electricityTariffPerKwh}
-              unit="/kWh"
-              min="0"
-              description="Electricity cost basis used for annual operating-cost evaluation."
-              onChange={(nextValue) =>
-                onChange(
-                  "electricityTariffPerKwh",
-                  nextValue,
-                )
-              }
-            />
+            <div className="space-y-2">
+              <Label htmlFor="electricity-tariff">Electricity Tariff</Label>
+              <select
+                id="electricity-tariff"
+                className={SELECT_CLASS}
+                value={value.electricityTariffPerKwh}
+                disabled={!inputOptions}
+                onChange={(event) =>
+                  onChange("electricityTariffPerKwh", event.target.value)
+                }
+              >
+                <option value="">
+                  {inputOptions ? "Select tariff" : "Loading..."}
+                </option>
+                {inputOptions?.electricity_tariff_inr_per_kwh.map((tariff) => (
+                  <option key={tariff} value={tariff}>
+                    {tariff}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-500">
+                INR/kWh - electricity cost basis for annual operating-cost evaluation.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="greenfield-supply-phase">Supply Phase</Label>
+              <select
+                id="greenfield-supply-phase"
+                className={SELECT_CLASS}
+                value={value.supplyPhase}
+                disabled={!inputOptions}
+                onChange={(event) => {
+                  const phase = event.target.value as SupplyPhase;
+                  onChange("supplyPhase", phase);
+                  onChange("nominalSupplyVoltageV", String(defaultVoltageForPhase(phase)));
+                }}
+              >
+                {inputOptions?.supply_phase.map((phase) => (
+                  <option key={phase} value={phase}>
+                    {phaseLabel(phase)}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-500">IS 12360</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="greenfield-supply-voltage">Nominal Voltage</Label>
+              <select
+                id="greenfield-supply-voltage"
+                className={SELECT_CLASS}
+                value={value.nominalSupplyVoltageV}
+                disabled={!inputOptions}
+                onChange={(event) =>
+                  onChange("nominalSupplyVoltageV", event.target.value)
+                }
+              >
+                {voltagesForPhase(
+                  inputOptions?.nominal_supply_voltage_v ?? [],
+                  value.supplyPhase as SupplyPhase,
+                ).map((voltage) => (
+                  <option key={voltage} value={voltage}>
+                    {voltageLabel(voltage)}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-500">Line-to-line, IS 12360</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="greenfield-supply-frequency">Frequency</Label>
+              <select
+                id="greenfield-supply-frequency"
+                className={SELECT_CLASS}
+                value={value.supplyFrequencyHz}
+                disabled={!inputOptions}
+                onChange={(event) =>
+                  onChange("supplyFrequencyHz", event.target.value)
+                }
+              >
+                {inputOptions?.supply_frequency_hz.map((hz) => (
+                  <option key={hz} value={hz}>
+                    {hz} Hz
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-500">Hz</p>
+            </div>
           </div>
         </section>
       </CardContent>

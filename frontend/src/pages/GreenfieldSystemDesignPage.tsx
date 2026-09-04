@@ -37,6 +37,7 @@ import {
 } from "../features/greenfield/greenfieldFormState";
 import { designGreenfieldSystem } from "../features/greenfield/greenfieldService";
 import { useProjectContext } from "../features/projects/useProjectContext";
+import { useInputOptions } from "../features/reference/useInputOptions";
 import { ApiError } from "../services/apiClient";
 
 function extractErrorMessage(error: unknown): string {
@@ -67,6 +68,7 @@ function extractErrorMessage(error: unknown): string {
 
 export function GreenfieldSystemDesignPage() {
   const { accessToken } = useAuth();
+  const inputOptionsQuery = useInputOptions(accessToken);
   const {
     projectId,
     hasValidProjectId,
@@ -262,6 +264,7 @@ export function GreenfieldSystemDesignPage() {
       )}
 
       <DesignBasisSection
+        inputOptions={inputOptionsQuery.data}
         value={formState.designBasis}
         onChange={(field, value) =>
           changeState((current) => ({

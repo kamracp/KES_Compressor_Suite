@@ -23,6 +23,9 @@ export type GreenfieldDesignBasisState = {
   controlMarginBar: string;
   annualOperatingDays: string;
   electricityTariffPerKwh: string;
+  supplyPhase: string;
+  nominalSupplyVoltageV: string;
+  supplyFrequencyHz: string;
 };
 
 export type GreenfieldFormState = {
@@ -78,7 +81,10 @@ export function createInitialGreenfieldFormState(): GreenfieldFormState {
       otherAllowanceFraction: "0",
       controlMarginBar: "0",
       annualOperatingDays: "",
-      electricityTariffPerKwh: "0",
+      electricityTariffPerKwh: "",
+      supplyPhase: "three",
+      nominalSupplyVoltageV: "415",
+      supplyFrequencyHz: "50",
     },
     consumers: [createInitialConsumer()],
     demandProfilePoints: [createInitialDemandPoint()],
