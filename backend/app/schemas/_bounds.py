@@ -1,3 +1,4 @@
+from datetime import date
 from decimal import Decimal
 
 # Physical input bounds for factory compressed-air systems (India scope).
@@ -50,3 +51,18 @@ MAX_DB_INTEGER_ID = 2_147_483_647  # PostgreSQL integer primary keys
 MAX_CASE_REVISION = 10_000
 MAX_LINE_ITEM_QUANTITY = 1_000  # identical machines on one consumer/component line
 MAX_TREATMENT_UNIT_COUNT = 100  # units in one treatment train
+
+# Stage counts (C-7b residue, 4 Sep 2026).
+#   MFR-RECIP-FRAME-LIMITS-2026-09 SRC-BH-API618: up to 10 cylinders per
+#   frame, and a stage needs at least one cylinder.
+#   MFR-CENTRIFUGAL-STAGE-LIMITS-2026-09: integrally geared up to 8
+#   impellers (Siemens Energy); beam-style single casing <= 10 stages.
+MAX_RECIP_STAGES = 10
+MAX_CENTRIFUGAL_IMPELLER_STAGES = 10
+
+# Installation year: structural date window, not an engineering bound.
+#   Industrial rotary-screw plant air post-dates 1950; one year of headroom
+#   above the import-time year covers commissioning entries made ahead of
+#   handover and processes that span a New Year without restart.
+MIN_INSTALLATION_YEAR = 1950
+MAX_INSTALLATION_YEAR = date.today().year + 1

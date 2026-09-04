@@ -133,6 +133,26 @@ MFR_RECIP_FRAME_LIMITS_2026_09 = EngineeringStandard(
     ),
 )
 
+MFR_CENTRIFUGAL_STAGE_LIMITS_2026_09 = EngineeringStandard(
+    standard_id="MFR-CENTRIFUGAL-STAGE-LIMITS-2026-09",
+    authority=StandardAuthority.MANUFACTURER,
+    title=(
+        "Centrifugal compressor stage-count limits: Siemens Energy integrally "
+        "geared range (API 617 / API 672) with trade-press corroboration for "
+        "beam-style single-casing machines"
+    ),
+    edition="Product page and article as retrieved 2026-09-04",
+    publication_date="2026-09",
+    applicability=(StandardApplicability.CENTRIFUGAL,),
+    verification_status=(StandardVerificationStatus.OFFICIAL_SOURCE_VERIFIED),
+    notes=(
+        "Manufacturer evidence set, not a standard. API 617 sets no numeric "
+        "stage limit; the <=10 impeller-stage cap comes from the published "
+        "integrally geared envelope (up to eight impellers) and the rotordynamic "
+        "limit of ten stages per beam-style casing. Data file: "
+        "app/data/evidence/manufacturer/centrifugal_stage_limits.json."
+    ),
+)
 MFR_ATLASCOPCO_AIR_RANGE_2026_09 = EngineeringStandard(
     standard_id="MFR-ATLASCOPCO-AIR-RANGE-2026-09",
     authority=StandardAuthority.MANUFACTURER,
@@ -400,6 +420,7 @@ ENGINEERING_STANDARDS: tuple[EngineeringStandard, ...] = (
     MFR_KAESER_OILFREE_SCREW_2026_09,
     MFR_KAESER_OILINJ_SCREW_2026_09,
     MFR_RECIP_FRAME_LIMITS_2026_09,
+    MFR_CENTRIFUGAL_STAGE_LIMITS_2026_09,
     MFR_ATLASCOPCO_AIR_RANGE_2026_09,
 )
 

@@ -19,6 +19,7 @@
     {"parameter": "recip_bore_mm", "applies_to": "reciprocating cylinder", "max": 1250, "basis": "Baker Hughes API 618 cylinder size up to 1250 mm"},
     {"parameter": "recip_rod_load_kn", "applies_to": "reciprocating frame", "max": 2000, "basis": "Baker Hughes 1980 kN double-acting piston load"},
     {"parameter": "recip_speed_rpm", "applies_to": "reciprocating crankshaft", "max": 1800, "basis": "Siemens API 11P rated to 1500 rpm; high-speed gathering compressors run 1200-1800 rpm (USPTO 11781664 background)"},
-    {"parameter": "process_pressure_bar", "applies_to": "reciprocating / general compression", "max": 800, "basis": "Baker Hughes API 618 up to 800 bar; Siemens up to 10000 psig (690 bar)"}
+    {"parameter": "process_pressure_bar", "applies_to": "reciprocating / general compression", "max": 800, "basis": "Baker Hughes API 618 up to 800 bar; Siemens up to 10000 psig (690 bar)"},
+    {"parameter": "recip_cylinders_per_frame", "applies_to": "reciprocating frame; a compression stage needs at least one cylinder, so stage count <= cylinders", "max": 10, "basis": "SRC-BH-API618: modular design allows up to 10 cylinders per frame"}
   ]
 }

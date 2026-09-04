@@ -1,0 +1,16 @@
+{
+  "evidence_set_id": "MFR-CENTRIFUGAL-STAGE-LIMITS-2026-09",
+  "kind": "manufacturer_evidence",
+  "vendor": "Siemens Energy (integrally geared range); Turbomachinery International (trade-press corroboration, not a vendor)",
+  "scope": "Published upper limits on the number of impeller stages in one centrifugal compressor unit: integrally geared machines and beam-style single-casing machines",
+  "retrieved_on": "2026-09-04",
+  "usage_rule": "Stage-count envelope only. Bounds the number_of_impeller_stages input; never a calculation constant. API 617 itself sets no numeric stage limit.",
+  "sources": [
+    {"id": "SRC-SE-IGC", "document": "Siemens Energy product page: Integrally geared centrifugal compressors", "url": "https://www.siemens-energy.com/global/en/home/products-services/product/integrally-geared-centrifugal-compressors.html", "figures": "Customized line: up to four pinion shafts with up to eight impellers / stages (API 617 or API 672); standardized frames 10-100: up to four impellers"},
+    {"id": "SRC-TMI-CONFIG", "document": "Turbomachinery International: Types of centrifugal compressor configurations", "url": "https://www.turbomachinerymag.com/view/types-of-centrifugal-compressor-configurations", "figures": "Current beam-style designs limit the number of stages in a single casing to 10 or less (lateral rotordynamics); two-section ~9, three-section ~8"}
+  ],
+  "vendor_claims_not_for_calculation": [],
+  "derived_bounds_for_c7b": [
+    {"parameter": "centrifugal_impeller_stages", "applies_to": "one centrifugal compressor unit (integrally geared or beam-style single casing)", "min": 1, "max": 10, "basis": "SRC-SE-IGC up to 8 impellers; SRC-TMI-CONFIG beam-style single casing <= 10 stages"}
+  ]
+}

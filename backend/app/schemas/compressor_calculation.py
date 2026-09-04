@@ -8,7 +8,9 @@ from app.domain.rotary_screw.models import (
     RotaryScrewStageCount,
 )
 from app.schemas._bounds import (
+    MAX_CENTRIFUGAL_IMPELLER_STAGES,
     MAX_ELECTRICITY_TARIFF_INR_PER_KWH,
+    MAX_RECIP_STAGES,
     MIN_ELECTRICITY_TARIFF_INR_PER_KWH,
 )
 
@@ -65,7 +67,14 @@ class CompressionCalculationRequest(BaseModel):
 
     gas: GasConditionInput
 
-    number_of_stages: int = Field(ge=1)
+    number_of_stages: int = Field(
+        ge=1,
+        le=MAX_RECIP_STAGES,
+        description=(
+            "Largest published API 618 frame carries 10 cylinders and a stage "
+            "needs at least one cylinder (MFR-RECIP-FRAME-LIMITS-2026-09 SRC-BH-API618)."
+        ),
+    )
 
     specific_heat_cp_kj_per_kg_k: Decimal = Field(
         ge=Decimal("0.5"),
@@ -163,7 +172,14 @@ class CentrifugalCalculationRequest(BaseModel):
 
     polytropic_efficiency: Decimal = Field(gt=0, le=1)
 
-    number_of_impeller_stages: int = Field(ge=1)
+    number_of_impeller_stages: int = Field(
+        ge=1,
+        le=MAX_CENTRIFUGAL_IMPELLER_STAGES,
+        description=(
+            "Integrally geared machines reach 8 impellers and beam-style single "
+            "casings are limited to 10 stages (MFR-CENTRIFUGAL-STAGE-LIMITS-2026-09)."
+        ),
+    )
     head_coefficient: Decimal = Field(
         gt=0,
         le=Decimal("1.0"),

@@ -12,8 +12,10 @@ from app.domain.compressed_air.station.station_models import (
 from app.schemas._bounds import (
     MAX_DB_INTEGER_ID,
     MAX_ELECTRICITY_TARIFF_INR_PER_KWH,
+    MAX_INSTALLATION_YEAR,
     MAX_PLANT_AIR_PRESSURE_BAR_G,
     MIN_ELECTRICITY_TARIFF_INR_PER_KWH,
+    MIN_INSTALLATION_YEAR,
 )
 
 
@@ -55,7 +57,12 @@ class ExistingCompressorInputSchema(BaseModel):
             "(MFR-ATLASCOPCO-AIR-RANGE-2026-09)."
         ),
     )
-    installation_year: int | None = None
+    installation_year: int | None = Field(
+        default=None,
+        ge=MIN_INSTALLATION_YEAR,
+        le=MAX_INSTALLATION_YEAR,
+        description="Structural window 1950 to next calendar year (schemas/_bounds.py).",
+    )
     operating_hours: Decimal | None = Field(
         default=None, ge=0, le=Decimal("8784"), description="Calendar limit: 366 days x 24 h."
     )
