@@ -37,6 +37,17 @@ describe("allied submit-time input bounds", () => {
     expect(found).toHaveLength(2);
   });
 
+  it("rejects a receiver design pressure above the plant-air ceiling", () => {
+    const state = withReceiver("7", "6.5");
+    const errors = validateAlliedFormState({
+      ...state,
+      receiver: { ...state.receiver, design_pressure_bar_g: "26" },
+    });
+    expect(
+      errors.some((error) => error.startsWith("Receiver design pressure")),
+    ).toBe(true);
+  });
+
   it("stays silent on receiver bounds when no receiver is entered", () => {
     const errors = validateAlliedFormState({
       ...createInitialAlliedFormState(),

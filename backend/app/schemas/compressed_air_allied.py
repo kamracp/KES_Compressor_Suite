@@ -135,6 +135,13 @@ class ReceiverConfigurationRequest(BaseModel):
     design_pressure_bar_g: Decimal | None = Field(
         default=None,
         ge=0,
+        le=MAX_PLANT_AIR_PRESSURE_BAR_G,
+        description=(
+            "Receiver vessel design pressure. Part of the plant-air circuit, so it "
+            "shares the plant-air ceiling; the 45 bar g packaged high-pressure "
+            "figure (MAX_HIGH_PRESSURE_CIRCUIT_BAR_G) applies only behind a future "
+            "high-pressure-circuit flag (C-7, 4 Sep 2026)."
+        ),
     )
 
     redundancy_philosophy: RedundancyPhilosophy = RedundancyPhilosophy.NONE

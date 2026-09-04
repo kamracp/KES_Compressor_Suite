@@ -565,6 +565,12 @@ export function validateAlliedFormState(
       `Receiver low pressure ${plantAir}`,
       errors,
     );
+    pushIfAbove(
+      state.receiver.design_pressure_bar_g ?? "",
+      MAX_PLANT_AIR_PRESSURE_BAR_G,
+      `Receiver design pressure ${plantAir}`,
+      errors,
+    );
   }
 
   return errors;
