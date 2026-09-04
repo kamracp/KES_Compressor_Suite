@@ -5,6 +5,7 @@ import type {
   LeakageSurveyInput,
   SystemMeasurementInput,
 } from "./brownfieldTypes";
+import type { SupplyPhase } from "../reference/referenceTypes";
 import {
   MAX_ASSET_FAD_NM3_PER_HR,
   MAX_ASSET_MOTOR_KW,
@@ -24,6 +25,9 @@ export type BrownfieldFormState = {
   leakageSummary: LeakageSurveyInput | null;
 
   electricityTariffPerKwh: string;
+  supplyPhase: SupplyPhase;
+  nominalSupplyVoltageV: number;
+  supplyFrequencyHz: number;
   annualOperatingHours: string;
 
   optimizedDischargePressureBarG: string;
@@ -108,7 +112,10 @@ export function createInitialBrownfieldFormState(): BrownfieldFormState {
 
     leakageSummary: null,
 
-    electricityTariffPerKwh: "0",
+    electricityTariffPerKwh: "",
+    supplyPhase: "three",
+    nominalSupplyVoltageV: 415,
+    supplyFrequencyHz: 50,
     annualOperatingHours: "",
 
     optimizedDischargePressureBarG: "",

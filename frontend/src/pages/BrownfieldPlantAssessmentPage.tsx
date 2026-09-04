@@ -36,6 +36,7 @@ import {
 } from "../features/brownfield/brownfieldFormState";
 import { analyzeBrownfieldSystem } from "../features/brownfield/brownfieldService";
 import { useProjectContext } from "../features/projects/useProjectContext";
+import { useInputOptions } from "../features/reference/useInputOptions";
 import { ApiError } from "../services/apiClient";
 
 function extractErrorMessage(error: unknown): string {
@@ -66,6 +67,7 @@ function extractErrorMessage(error: unknown): string {
 
 export function BrownfieldPlantAssessmentPage() {
   const { accessToken } = useAuth();
+  const inputOptionsQuery = useInputOptions(accessToken);
   const {
     projectId: projectIdNumber,
     hasValidProjectId,
@@ -278,6 +280,13 @@ export function BrownfieldPlantAssessmentPage() {
       )}
 
       <OptimizationBasisSection
+        inputOptions={inputOptionsQuery.data}
+        supplyPhase={formState.supplyPhase}
+        nominalSupplyVoltageV={formState.nominalSupplyVoltageV}
+        supplyFrequencyHz={formState.supplyFrequencyHz}
+        onSupplyBasisChange={(changes) =>
+          changeState((current) => ({ ...current, ...changes }))
+        }
         auditCode={formState.auditCode}
         annualOperatingHours={formState.annualOperatingHours}
         electricityTariffPerKwh={formState.electricityTariffPerKwh}

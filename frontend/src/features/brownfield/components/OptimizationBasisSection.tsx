@@ -13,10 +13,26 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+import type {
+  InputOptionsResponse,
+  SupplyPhase,
+} from "../../reference/referenceTypes";
+import {
+  SELECT_CLASS,
+  defaultVoltageForPhase,
+  phaseLabel,
+  voltageLabel,
+  voltagesForPhase,
+} from "../../reference/supplyBasis";
+
 type OptimizationBasisSectionProps = {
   auditCode: string;
   annualOperatingHours: string;
   electricityTariffPerKwh: string;
+  inputOptions?: InputOptionsResponse;
+  supplyPhase: SupplyPhase;
+  nominalSupplyVoltageV: number;
+  supplyFrequencyHz: number;
   optimizedDischargePressureBarG: string;
   expectedLeakRepairFraction: string;
   demandSavingControlFactor: string;
@@ -26,6 +42,11 @@ type OptimizationBasisSectionProps = {
   onAuditCodeChange: (value: string) => void;
   onAnnualOperatingHoursChange: (value: string) => void;
   onElectricityTariffChange: (value: string) => void;
+  onSupplyBasisChange: (changes: {
+    supplyPhase?: SupplyPhase;
+    nominalSupplyVoltageV?: number;
+    supplyFrequencyHz?: number;
+  }) => void;
   onOptimizedPressureChange: (value: string) => void;
   onExpectedLeakRepairFractionChange: (value: string) => void;
   onDemandSavingControlFactorChange: (value: string) => void;
@@ -37,6 +58,10 @@ export function OptimizationBasisSection({
   auditCode,
   annualOperatingHours,
   electricityTariffPerKwh,
+  inputOptions,
+  supplyPhase,
+  nominalSupplyVoltageV,
+  supplyFrequencyHz,
   optimizedDischargePressureBarG,
   expectedLeakRepairFraction,
   demandSavingControlFactor,
@@ -45,6 +70,7 @@ export function OptimizationBasisSection({
   onAuditCodeChange,
   onAnnualOperatingHoursChange,
   onElectricityTariffChange,
+  onSupplyBasisChange,
   onOptimizedPressureChange,
   onExpectedLeakRepairFractionChange,
   onDemandSavingControlFactorChange,
@@ -154,22 +180,97 @@ export function OptimizationBasisSection({
                 Electricity Tariff
               </Label>
 
-              <Input
+              <select
                 id="brownfield-tariff"
-                type="number"
-                min="0"
-                step="any"
+                className={SELECT_CLASS}
                 value={electricityTariffPerKwh}
-                onChange={(event) =>
-                  onElectricityTariffChange(
-                    event.target.value,
-                  )
-                }
-              />
+                disabled={!inputOptions}
+                onChange={(event) => onElectricityTariffChange(event.target.value)}
+              >
+                <option value="">
+                  {inputOptions ? "Select tariff" : "Loading..."}
+                </option>
+                {inputOptions?.electricity_tariff_inr_per_kwh.map((tariff) => (
+                  <option key={tariff} value={tariff}>
+                    {tariff}
+                  </option>
+                ))}
+              </select>
 
               <p className="text-xs text-slate-500">
-                currency units/kWh
+                INR/kWh
               </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brownfield-supply-phase">Supply Phase</Label>
+              <select
+                id="brownfield-supply-phase"
+                className={SELECT_CLASS}
+                value={supplyPhase}
+                disabled={!inputOptions}
+                onChange={(event) => {
+                  const phase = event.target.value as SupplyPhase;
+                  onSupplyBasisChange({
+                    supplyPhase: phase,
+                    nominalSupplyVoltageV: defaultVoltageForPhase(phase),
+                  });
+                }}
+              >
+                {inputOptions?.supply_phase.map((phase) => (
+                  <option key={phase} value={phase}>
+                    {phaseLabel(phase)}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-500">IS 12360</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brownfield-supply-voltage">Nominal Voltage</Label>
+              <select
+                id="brownfield-supply-voltage"
+                className={SELECT_CLASS}
+                value={String(nominalSupplyVoltageV)}
+                disabled={!inputOptions}
+                onChange={(event) =>
+                  onSupplyBasisChange({
+                    nominalSupplyVoltageV: Number(event.target.value),
+                  })
+                }
+              >
+                {voltagesForPhase(
+                  inputOptions?.nominal_supply_voltage_v ?? [],
+                  supplyPhase,
+                ).map((voltage) => (
+                  <option key={voltage} value={voltage}>
+                    {voltageLabel(voltage)}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-500">Line-to-line, IS 12360</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brownfield-supply-frequency">Frequency</Label>
+              <select
+                id="brownfield-supply-frequency"
+                className={SELECT_CLASS}
+                value={String(supplyFrequencyHz)}
+                disabled={!inputOptions}
+                onChange={(event) =>
+                  onSupplyBasisChange({
+                    supplyFrequencyHz: Number(event.target.value),
+                  })
+                }
+              >
+                {inputOptions?.supply_frequency_hz.map((hz) => (
+                  <option key={hz} value={hz}>
+                    {hz} Hz
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-500">Hz</p>
             </div>
           </div>
         </section>

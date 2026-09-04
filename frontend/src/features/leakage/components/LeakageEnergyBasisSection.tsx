@@ -15,24 +15,19 @@ import type {
   InputOptionsResponse,
   SupplyPhase,
 } from "../../reference/referenceTypes";
+import {
+  SELECT_CLASS,
+  defaultVoltageForPhase,
+  phaseLabel,
+  voltageLabel,
+  voltagesForPhase,
+} from "../../reference/supplyBasis";
 
 type LeakageEnergyBasisSectionProps = {
   state: LeakageFormState;
   onChange: (changes: Partial<LeakageFormState>) => void;
   inputOptions?: InputOptionsResponse;
 };
-
-const SELECT_CLASS =
-  "h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50";
-
-// IS 12360 pairs 240 V with single-phase supply and every higher preferred
-// voltage with three-phase; the backend enforces the same rule.
-function voltagesForPhase(
-  voltages: number[],
-  phase: SupplyPhase,
-): number[] {
-  return voltages.filter((v) => (phase === "single" ? v === 240 : v !== 240));
-}
 
 export function LeakageEnergyBasisSection({
   state,
@@ -157,13 +152,13 @@ export function LeakageEnergyBasisSection({
                 const supplyPhase = event.target.value as SupplyPhase;
                 onChange({
                   supplyPhase,
-                  nominalSupplyVoltageV: supplyPhase === "single" ? 240 : 415,
+                  nominalSupplyVoltageV: defaultVoltageForPhase(supplyPhase),
                 });
               }}
             >
               {inputOptions?.supply_phase.map((phase) => (
                 <option key={phase} value={phase}>
-                  {phase === "single" ? "Single-phase" : "Three-phase"}
+                  {phaseLabel(phase)}
                 </option>
               ))}
             </select>
@@ -187,7 +182,7 @@ export function LeakageEnergyBasisSection({
             >
               {voltageOptions.map((voltage) => (
                 <option key={voltage} value={voltage}>
-                  {voltage >= 1000 ? `${voltage / 1000} kV` : `${voltage} V`}
+                  {voltageLabel(voltage)}
                 </option>
               ))}
             </select>
