@@ -266,21 +266,21 @@ def test_cross_tenant_user_access_returns_404() -> None:
         headers=first_headers,
     )
 
-    assert list_response.status_code == 404
+    assert list_response.status_code == 404, list_response.json()
 
     get_response = client.get(
         f"/api/v1/users/{second_user['id']}",
         headers=first_headers,
     )
 
-    assert get_response.status_code == 404
+    assert get_response.status_code == 404, get_response.json()
 
     email_response = client.get(
         (f"/api/v1/users/organization/{second_organization['id']}/email/{second_user['email']}"),
         headers=first_headers,
     )
 
-    assert email_response.status_code == 404
+    assert email_response.status_code == 404, email_response.json()
 
     update_response = client.patch(
         f"/api/v1/users/{second_user['id']}",
