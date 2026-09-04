@@ -1,3 +1,4 @@
+from dataclasses import replace
 from decimal import Decimal
 
 import pytest
@@ -231,3 +232,25 @@ def test_invalid_average_system_demand_is_rejected() -> None:
         match="Average system demand must be greater than zero",
     ):
         analyze_leakage_management(inputs)
+
+
+# C-7b residue (c): the demand-saving control factor derates recoverable power,
+# energy and cost but not the recoverable flow. The 1 Sep smoke test ran at the
+# default of 1, so the derating path is pinned here instead.
+@pytest.mark.parametrize("factor", ["0.5", "0"])
+def test_demand_saving_control_factor_derates_power_energy_and_cost(factor: str) -> None:
+    leaks = (leak("L1", "500", repair_fraction="0.8"),)
+    baseline = analyze_leakage_management(base_input(leaks))
+    derated = analyze_leakage_management(
+        replace(base_input(leaks), demand_saving_control_factor=Decimal(factor))
+    )
+
+    assert derated.total_recoverable_leakage_flow_nm3_per_hr == (
+        baseline.total_recoverable_leakage_flow_nm3_per_hr
+    )
+    for field in (
+        "total_recoverable_power_kw",
+        "total_annual_energy_saving_kwh",
+        "total_annual_cost_saving",
+    ):
+        assert getattr(derated, field) == getattr(baseline, field) * Decimal(factor)
