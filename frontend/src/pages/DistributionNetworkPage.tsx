@@ -55,6 +55,7 @@ import type {
   VelocityScreeningStatus,
 } from "../features/projects/distributionTypes";
 import { useProjectContext } from "../features/projects/useProjectContext";
+import { validateDistributionPressures } from "../features/projects/distributionValidation";
 import { ApiError } from "../services/apiClient";
 
 // Velocity screening bands mirrored from the backend calibration.
@@ -441,13 +442,19 @@ export function DistributionNetworkPage() {
     !persistResult ||
     (calculationCode.trim().length > 0 && title.trim().length > 0);
 
+  const pressureErrors = validateDistributionPressures({
+    designSourcePressure,
+    nodes,
+    segments,
+  });
   const canSubmit =
     networkBasisIsValid &&
     nodesAreValid &&
     segmentsAreValid &&
     pathsAreValid &&
     optimizationIsValid &&
-    persistenceIsValid;
+    persistenceIsValid &&
+    pressureErrors.length === 0;
 
   const calculationMutation = useMutation({
     mutationFn: () => {
@@ -1518,6 +1525,28 @@ export function DistributionNetworkPage() {
         </Card>
       </form>
 
+      {pressureErrors.length > 0 && (
+        <Card className="border-red-200 bg-red-50">
+          <CardHeader>
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="mt-0.5 size-5 shrink-0 text-red-600" />
+              <div>
+                <CardTitle className="text-red-900">
+                  Check Pressure Inputs
+                </CardTitle>
+                <CardDescription className="mt-1 leading-6 text-red-800">
+                  Fix these before running the analysis.
+                </CardDescription>
+                <ul className="mt-2 list-disc pl-5 text-sm leading-6 text-red-800">
+                  {pressureErrors.map((error) => (
+                    <li key={error}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+      )}
       {calculationMutation.isError && (
         <Card className="border-red-200 bg-red-50">
           <CardHeader>
