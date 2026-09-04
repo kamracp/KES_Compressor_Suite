@@ -58,6 +58,12 @@ class SequencedMachine:
     # VSD only: power at minimum flow as a fraction of rated power; the power
     # curve between minimum and rated flow is taken as linear in flow.
     minimum_flow_power_fraction: Decimal | None = None
+    # Central-sequencer priority (1 loads first). None -> order by band pressure,
+    # i.e. the as-found local cascade.
+    priority: int | None = None
+    # As-found plants often leave the units below the trim running unloaded
+    # until an unload timer stops them; a sequencer with auto-standby stops them.
+    standby_runs_unloaded: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -102,5 +108,6 @@ class SequencingResult:
     total_energy_kwh: Decimal
     total_energy_cost: Decimal
     specific_power_kw_per_nm3_per_min: Decimal
-    unload_energy_kwh: Decimal  # energy spent producing no air
+    unload_energy_kwh: Decimal  # trim units unloaded, producing no air
+    standby_energy_kwh: Decimal  # standby units left running unloaded
     unmet_demand_hours: Decimal

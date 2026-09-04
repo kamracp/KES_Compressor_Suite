@@ -75,6 +75,10 @@ def _validate(inputs: SequencingInput) -> None:
 def cascade_order(machines: tuple[SequencedMachine, ...]) -> tuple[SequencedMachine, ...]:
     """Highest load setpoint first: it loads first as header pressure falls."""
 
+    if all(m.priority is not None for m in machines):
+        return tuple(sorted(machines, key=lambda m: (m.priority, m.unit_code)))
+    if any(m.priority is not None for m in machines):
+        raise InvalidSequencingInputError("Set priority on every machine or on none.")
     return tuple(
         sorted(
             machines,
@@ -148,26 +152,68 @@ def _vsd_trim(
     return load_fraction, cycles, power
 
 
+def _designated_trim(order: tuple[SequencedMachine, ...]) -> SequencedMachine | None:
+    """With explicit priorities and exactly one VSD, that VSD is the trim unit."""
+
+    if not all(m.priority is not None for m in order):
+        return None
+    vsds = [m for m in order if m.control_mode is ControlMode.VARIABLE_SPEED]
+    return vsds[0] if len(vsds) == 1 else None
+
+
+def _stands_down_for_trim(
+    machine: SequencedMachine, trim: SequencedMachine | None, residual: Decimal
+) -> bool:
+    """A fixed-speed unit stays off when the trim VSD can carry the residual."""
+
+    if trim is None or machine is trim or machine.control_mode is ControlMode.VARIABLE_SPEED:
+        return False
+    assert trim.minimum_flow_fraction is not None
+    if residual > trim.rated_fad_nm3_per_hr:
+        return False  # trim cannot carry it alone; this unit must load
+    q_min = trim.rated_fad_nm3_per_hr * trim.minimum_flow_fraction
+    return (
+        residual < machine.rated_fad_nm3_per_hr or residual - machine.rated_fad_nm3_per_hr < q_min
+    )
+
+
 def simulate_pressure_bands(inputs: SequencingInput) -> SequencingResult:
     _validate(inputs)
     order = cascade_order(inputs.machines)
     periods: list[PeriodResult] = []
     total_energy = _ZERO
     unload_energy = _ZERO
+    standby_energy = _ZERO
     unmet_hours = _ZERO
     supplied_volume = _ZERO
     total_hours = _ZERO
 
+    trim = _designated_trim(order)
     for point in inputs.demand_profile:
         residual = point.demand_nm3_per_hr
         machine_results: list[MachinePeriodResult] = []
         header_pressure: Decimal | None = None
         period_power = _ZERO
         period_unload_power = _ZERO
+        period_standby_power = _ZERO
         supplied = _ZERO
 
         for machine in order:
             if residual <= _ZERO:
+                standby_power = (
+                    machine.rated_power_kw * machine.unload_power_fraction
+                    if machine.standby_runs_unloaded and machine.unload_power_fraction is not None
+                    else _ZERO
+                )
+                role, flow, load_fraction, cycles, power = (
+                    DutyRole.STANDBY,
+                    _ZERO,
+                    _ZERO,
+                    None,
+                    standby_power,
+                )
+                period_standby_power += standby_power
+            elif _stands_down_for_trim(machine, trim, residual):
                 role, flow, load_fraction, cycles, power = (
                     DutyRole.STANDBY,
                     _ZERO,
@@ -231,6 +277,7 @@ def simulate_pressure_bands(inputs: SequencingInput) -> SequencingResult:
         energy = period_power * point.duration_hours
         total_energy += energy
         unload_energy += period_unload_power * point.duration_hours
+        standby_energy += period_standby_power * point.duration_hours
         supplied_volume += supplied * point.duration_hours
         total_hours += point.duration_hours
         periods.append(
@@ -263,5 +310,6 @@ def simulate_pressure_bands(inputs: SequencingInput) -> SequencingResult:
         total_energy_cost=_q(total_energy * inputs.electricity_tariff_per_kwh),
         specific_power_kw_per_nm3_per_min=_q(specific_power),
         unload_energy_kwh=_q(unload_energy),
+        standby_energy_kwh=_q(standby_energy),
         unmet_demand_hours=_q(unmet_hours),
     )

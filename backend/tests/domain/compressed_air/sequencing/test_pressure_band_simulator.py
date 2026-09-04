@@ -174,3 +174,47 @@ def test_periods_accumulate_energy_and_specific_power() -> None:
 def test_invalid_machines_are_rejected(machine: SequencedMachine) -> None:
     with pytest.raises(InvalidSequencingInputError):
         run([machine], period("400"))
+
+
+def test_priority_overrides_the_pressure_cascade() -> None:
+    low_band_first = fixed("B", "6.5", "7.0")
+    high_band_second = fixed("A", "6.8", "7.3")
+    from dataclasses import replace
+
+    machines = (replace(low_band_first, priority=1), replace(high_band_second, priority=2))
+    assert [m.unit_code for m in cascade_order(machines)] == ["B", "A"]
+
+    with pytest.raises(InvalidSequencingInputError):
+        cascade_order((replace(low_band_first, priority=1), high_band_second))
+
+
+def test_standby_unit_running_unloaded_burns_its_unload_power() -> None:
+    from dataclasses import replace
+
+    idle = replace(fixed("B", "6.5", "7.0"), standby_runs_unloaded=True)
+    result = run([fixed("A", "6.8", "7.3"), idle], period("1000"))
+    by_code = {m.unit_code: m for m in result.periods[0].machines}
+
+    assert by_code["A"].duty_role is DutyRole.BASE
+    assert by_code["B"].duty_role is DutyRole.STANDBY
+    assert by_code["B"].average_power_kw == D("25.0000")  # 100 x 0.25, no air
+    assert result.standby_energy_kwh == D("250.0000")
+    assert result.unload_energy_kwh == D("0.0000")
+
+
+def test_designated_vsd_trim_takes_the_residual_and_idle_fixed_units_stand_down() -> None:
+    from dataclasses import replace
+
+    a = replace(fixed("A", "6.3", "6.6"), priority=1)
+    b = replace(fixed("B", "6.3", "6.6"), priority=2)
+    c = replace(vsd("C", "6.3", "6.6"), priority=3)
+    result = run([a, b, c], period("1500"))
+    by_code = {m.unit_code: m for m in result.periods[0].machines}
+
+    # 1500 > VSD capacity, so A loads; residual 500 fits the VSD (300-1000):
+    # B stands down, C trims at 500: 40 + 60 x 200/700 = 57.1429 kW.
+    assert by_code["A"].duty_role is DutyRole.BASE
+    assert by_code["B"].duty_role is DutyRole.STANDBY
+    assert by_code["C"].duty_role is DutyRole.TRIM
+    assert by_code["C"].average_power_kw == D("57.1429")
+    assert result.periods[0].total_power_kw == D("157.1429")
