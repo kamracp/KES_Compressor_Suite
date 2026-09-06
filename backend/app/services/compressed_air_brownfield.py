@@ -5,6 +5,10 @@ from app.domain.compressed_air.brownfield.audit_models import (
     LeakageSurveySummary,
     SystemMeasurementPoint,
 )
+from app.domain.compressed_air.brownfield.sequencing_bridge import (
+    BrownfieldSequencingProposal,
+    BrownfieldSequencingSettings,
+)
 from app.domain.compressed_air.brownfield.system_engine import (
     BrownfieldSystemEngineInput,
     analyze_brownfield_system,
@@ -12,12 +16,22 @@ from app.domain.compressed_air.brownfield.system_engine import (
 from app.domain.compressed_air.energy.motor_pfc import (
     MotorMeasurementInput,
 )
+from app.domain.compressed_air.sequencing.sequencing_models import PressureBand
 from app.schemas.compressed_air_brownfield import (
     BrownfieldOpportunityResponse,
     BrownfieldSystemAuditRequest,
     BrownfieldSystemAuditResponse,
     MotorPfcResponse,
 )
+from app.schemas.compressed_air_sequencing import PressureBandSchema
+from app.services.compressed_air_sequencing import assessment_response
+
+
+def _band(item: PressureBandSchema) -> PressureBand:
+    return PressureBand(
+        load_pressure_bar_g=item.load_pressure_bar_g,
+        unload_pressure_bar_g=item.unload_pressure_bar_g,
+    )
 
 
 class CompressedAirBrownfieldService:
@@ -92,6 +106,28 @@ class CompressedAirBrownfieldService:
                 rated_motor_power_kw=request.motor_rated_power_kw,
             )
 
+        # C-7d: machine settings ride on the compressor register entries;
+        # the bridge validates completeness against the available units.
+        sequencing_proposal = None
+        if request.sequencing_proposal is not None:
+            sequencing_proposal = BrownfieldSequencingProposal(
+                proposed_band=_band(request.sequencing_proposal.proposed_band),
+                receiver_volume_m3=(request.sequencing_proposal.receiver_volume_m3),
+                machine_settings=tuple(
+                    BrownfieldSequencingSettings(
+                        unit_code=item.unit_code,
+                        band=_band(item.sequencing.band),
+                        unload_power_fraction=(item.sequencing.unload_power_fraction),
+                        priority=item.sequencing.priority,
+                        minimum_flow_fraction=(item.sequencing.minimum_flow_fraction),
+                        minimum_flow_power_fraction=(item.sequencing.minimum_flow_power_fraction),
+                        standby_runs_unloaded=(item.sequencing.standby_runs_unloaded),
+                    )
+                    for item in request.compressors
+                    if item.sequencing is not None
+                ),
+            )
+
         result = analyze_brownfield_system(
             BrownfieldSystemEngineInput(
                 audit=audit,
@@ -103,6 +139,7 @@ class CompressedAirBrownfieldService:
                 filter_excess_pressure_drop_bar=(request.filter_excess_pressure_drop_bar),
                 motor_measurement=motor_measurement,
                 pf_penalty_annual_cost=(request.pf_penalty_annual_cost),
+                sequencing_proposal=sequencing_proposal,
             )
         )
 
@@ -177,6 +214,11 @@ class CompressedAirBrownfieldService:
             high_unloaded_running_detected=(analysis.high_unloaded_running_detected),
             significant_leakage_detected=(analysis.significant_leakage_detected),
             motor_pfc=motor_pfc,
+            sequencing_assessment=(
+                assessment_response(result.sequencing_assessment)
+                if result.sequencing_assessment is not None
+                else None
+            ),
             opportunities=opportunities,
         )
 

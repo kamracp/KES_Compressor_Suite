@@ -73,7 +73,7 @@ def _run(result: SequencingResult) -> SequencingRunResponse:
     )
 
 
-def _response(result: SequencingAssessmentResult) -> SequencingAssessmentResponse:
+def assessment_response(result: SequencingAssessmentResult) -> SequencingAssessmentResponse:
     return SequencingAssessmentResponse(
         analysis_code=result.analysis_code,
         baseline=_run(result.baseline),
@@ -129,7 +129,7 @@ class CompressedAirSequencingService:
                 annual_operating_hours=request.annual_operating_hours,
             )
         )
-        return _response(result)
+        return assessment_response(result)
 
 
 compressed_air_sequencing_service = CompressedAirSequencingService()

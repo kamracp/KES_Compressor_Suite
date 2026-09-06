@@ -1,6 +1,7 @@
 from decimal import Decimal
+from typing import Self
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from app.domain.compressed_air.brownfield.audit_models import (
     AuditOperatingState,
@@ -12,11 +13,55 @@ from app.domain.compressed_air.station.station_models import (
 from app.schemas._bounds import (
     MAX_DB_INTEGER_ID,
     MAX_ELECTRICITY_TARIFF_INR_PER_KWH,
+    MAX_FIXED_SPEED_UNLOAD_POWER_FRACTION,
     MAX_INSTALLATION_YEAR,
     MAX_PLANT_AIR_PRESSURE_BAR_G,
     MIN_ELECTRICITY_TARIFF_INR_PER_KWH,
+    MIN_FIXED_SPEED_UNLOAD_POWER_FRACTION,
     MIN_INSTALLATION_YEAR,
+    MIN_VSD_MINIMUM_FLOW_FRACTION,
 )
+from app.schemas.compressed_air_sequencing import (
+    PressureBandSchema,
+    SequencingAssessmentResponse,
+)
+
+
+class BrownfieldSequencingSettingsSchema(BaseModel):
+    """Control settings of one audited machine (C-7d).
+
+    Bounds mirror SequencedMachineRequest exactly; rated FAD, rated power
+    and control mode come from the compressor register itself.
+    """
+
+    band: PressureBandSchema
+    unload_power_fraction: Decimal = Field(
+        ge=MIN_FIXED_SPEED_UNLOAD_POWER_FRACTION,
+        le=MAX_FIXED_SPEED_UNLOAD_POWER_FRACTION,
+        description=(
+            "Unloaded power / rated power. DOE-CAC-SOURCEBOOK-2003: unloaded "
+            "rotary screw 15-35 % of full-load power."
+        ),
+    )
+    priority: int | None = Field(
+        default=None,
+        ge=1,
+        le=20,
+        description="Cascade order (1 = first to load). Set on all units or none.",
+    )
+    minimum_flow_fraction: Decimal | None = Field(
+        default=None,
+        ge=MIN_VSD_MINIMUM_FLOW_FRACTION,
+        le=1,
+        description="VSD only: minimum flow / rated FAD (turndown <= 86 %).",
+    )
+    minimum_flow_power_fraction: Decimal | None = Field(
+        default=None, gt=0, le=1, description="VSD only: power at minimum flow / rated power."
+    )
+    standby_runs_unloaded: bool = Field(
+        default=False,
+        description="As-found practice: standby unit kept running unloaded.",
+    )
 
 
 class ExistingCompressorInputSchema(BaseModel):
@@ -68,6 +113,30 @@ class ExistingCompressorInputSchema(BaseModel):
     )
     available: bool = True
     notes: str | None = None
+
+    # Required for every available unit when the audit request carries a
+    # sequencing_proposal; ignored otherwise.
+    sequencing: BrownfieldSequencingSettingsSchema | None = None
+
+    @model_validator(mode="after")
+    def _sequencing_vsd_fields(self) -> Self:
+        if self.sequencing is None:
+            return self
+        is_vsd = self.control_mode is CompressorControlMode.VSD
+        has_vsd_fields = (
+            self.sequencing.minimum_flow_fraction is not None
+            and self.sequencing.minimum_flow_power_fraction is not None
+        )
+        if is_vsd and not has_vsd_fields:
+            raise ValueError(
+                "VSD units need minimum_flow_fraction and minimum_flow_power_fraction."
+            )
+        if not is_vsd and (
+            self.sequencing.minimum_flow_fraction is not None
+            or self.sequencing.minimum_flow_power_fraction is not None
+        ):
+            raise ValueError("Only VSD units take minimum-flow fields.")
+        return self
 
 
 class CompressorMeasurementInputSchema(BaseModel):
@@ -125,6 +194,13 @@ class LeakageSurveyInputSchema(BaseModel):
     survey_notes: str | None = None
 
 
+class BrownfieldSequencingProposalSchema(BaseModel):
+    """Central-sequencer proposal evaluated against the as-found baseline."""
+
+    proposed_band: PressureBandSchema
+    receiver_volume_m3: Decimal = Field(gt=0)
+
+
 class BrownfieldSystemAuditRequest(BaseModel):
     audit_code: str
     project_id: int = Field(gt=0, le=MAX_DB_INTEGER_ID)
@@ -140,6 +216,11 @@ class BrownfieldSystemAuditRequest(BaseModel):
     )
 
     leakage_summary: LeakageSurveyInputSchema | None = None
+
+    # C-7d: when present, every available compressor must carry
+    # `sequencing` settings; the demand profile is derived from
+    # system_measurements (equal-duration periods).
+    sequencing_proposal: BrownfieldSequencingProposalSchema | None = None
 
     electricity_tariff_per_kwh: Decimal = Field(
         ge=MIN_ELECTRICITY_TARIFF_INR_PER_KWH,
@@ -363,5 +444,7 @@ class BrownfieldSystemAuditResponse(BaseModel):
     # all supplied. Power-factor correction carries no kW or kWh saving
     # (see PF-CORRECTION opportunity rationale).
     motor_pfc: MotorPfcResponse | None = None
+    # Populated only when a sequencing_proposal was supplied.
+    sequencing_assessment: SequencingAssessmentResponse | None = None
 
     opportunities: list[BrownfieldOpportunityResponse]

@@ -3,6 +3,9 @@ from fastapi import APIRouter, HTTPException, status
 from app.domain.compressed_air.brownfield.audit_analysis import (
     InvalidBrownfieldAuditInputError,
 )
+from app.domain.compressed_air.brownfield.sequencing_bridge import (
+    InvalidBrownfieldSequencingInputError,
+)
 from app.domain.compressed_air.brownfield.system_engine import (
     InvalidBrownfieldSystemEngineInputError,
 )
@@ -11,6 +14,9 @@ from app.domain.compressed_air.energy.leakage_energy import (
 )
 from app.domain.compressed_air.energy.pressure_energy import (
     InvalidPressureEnergyInputError,
+)
+from app.domain.compressed_air.sequencing.sequencing_models import (
+    InvalidSequencingInputError,
 )
 from app.schemas.compressed_air_brownfield import (
     BrownfieldSystemAuditRequest,
@@ -40,6 +46,8 @@ def audit_existing_compressed_air_system(
     except (
         InvalidBrownfieldAuditInputError,
         InvalidBrownfieldSystemEngineInputError,
+        InvalidBrownfieldSequencingInputError,
+        InvalidSequencingInputError,
         InvalidLeakageEnergyInputError,
         InvalidPressureEnergyInputError,
     ) as exc:
