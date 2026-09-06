@@ -17,6 +17,9 @@ from app.domain.compressed_air.energy.pressure_energy import (
     PressureEnergyInput,
     calculate_pressure_energy_saving,
 )
+from app.domain.compressed_air.sequencing.sequencing_assessment import (
+    SequencingAssessmentResult,
+)
 
 
 class OpportunityCategory(StrEnum):
@@ -28,6 +31,7 @@ class OpportunityCategory(StrEnum):
     CONDENSATE_DRAIN = "CONDENSATE_DRAIN"
     FILTER_EFFICIENCY = "FILTER_EFFICIENCY"
     POWER_FACTOR = "POWER_FACTOR"
+    SEQUENCING = "SEQUENCING"
 
 
 class OpportunityPriority(StrEnum):
@@ -87,6 +91,8 @@ def identify_brownfield_opportunities(
     # tariff penalty structures vary by state utility, so no default is
     # assumed and no penalty saving is claimed without this figure.
     pf_penalty_annual_cost: Decimal | None = None,
+    # C-7: optional as-found vs central-sequencer assessment (sequencing package).
+    sequencing_assessment: SequencingAssessmentResult | None = None,
 ) -> BrownfieldOpportunityResult:
     opportunities: list[BrownfieldOpportunity] = []
 
@@ -338,6 +344,41 @@ def identify_brownfield_opportunities(
                     estimated_annual_cost_saving=avoided_penalty,
                 )
             )
+
+    if sequencing_assessment is not None:
+        seq = sequencing_assessment
+        annual_hours = seq.profile_hours * seq.annualisation_factor
+        power_saving_kw = (
+            seq.total_annual_saving_kwh / annual_hours if annual_hours > 0 else Decimal("0")
+        )
+        if seq.saving_claimed:
+            priority = (
+                OpportunityPriority.HIGH
+                if seq.standby_saving_kwh > 0 or seq.pressure_saving_kwh > 0
+                else OpportunityPriority.MEDIUM
+            )
+            rationale = (
+                f"Central sequencer simulated against the as-found local setpoints: "
+                f"standby {seq.standby_saving_kwh} kWh, trim {seq.trim_saving_kwh} kWh, "
+                f"header pressure {seq.pressure_saving_kwh} kWh per year "
+                f"(header {seq.baseline_average_header_pressure_bar_g} -> "
+                f"{seq.proposed_average_header_pressure_bar_g} bar g)."
+            )
+        else:
+            priority = OpportunityPriority.LOW
+            rationale = f"Central sequencer evaluated; no saving claimed. {seq.note}"
+        opportunities.append(
+            BrownfieldOpportunity(
+                opportunity_code="CENTRAL-SEQUENCER",
+                category=OpportunityCategory.SEQUENCING,
+                priority=priority,
+                title="Central sequencing with auto-standby",
+                rationale=rationale,
+                estimated_power_saving_kw=power_saving_kw.quantize(Decimal("0.0001")),
+                estimated_annual_energy_saving_kwh=seq.total_annual_saving_kwh,
+                estimated_annual_cost_saving=seq.total_annual_cost_saving,
+            )
+        )
 
     total_power_saving = sum(
         (item.estimated_power_saving_kw for item in opportunities),
