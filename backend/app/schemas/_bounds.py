@@ -75,3 +75,8 @@ MAX_INSTALLATION_YEAR = date.today().year + 1
 MIN_FIXED_SPEED_UNLOAD_POWER_FRACTION = Decimal("0.15")
 MAX_FIXED_SPEED_UNLOAD_POWER_FRACTION = Decimal("0.35")
 MODULATION_ZERO_FLOW_POWER_FRACTION = Decimal("0.70")
+
+# VSD turndown (C-7 sequencing). Widest published turndown is 86 %
+# (MFR-COMPAIR-OILFREE-SCREW-2026-09, dual-VSD two-stage), so the minimum
+# stable flow fraction input cannot be below 0.14.
+MIN_VSD_MINIMUM_FLOW_FRACTION = Decimal("0.14")
