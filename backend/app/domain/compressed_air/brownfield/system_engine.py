@@ -10,6 +10,10 @@ from app.domain.compressed_air.brownfield.opportunity_engine import (
     BrownfieldOpportunityResult,
     identify_brownfield_opportunities,
 )
+from app.domain.compressed_air.brownfield.sequencing_bridge import (
+    BrownfieldSequencingProposal,
+    build_sequencing_assessment_input,
+)
 from app.domain.compressed_air.energy.leakage_energy import (
     LeakageEnergyResult,
 )
@@ -26,6 +30,10 @@ from app.domain.compressed_air.energy.pressure_energy import (
 from app.domain.compressed_air.optimization.system_optimizer import (
     SystemOptimizationResult,
     optimize_compressed_air_system,
+)
+from app.domain.compressed_air.sequencing.sequencing_assessment import (
+    SequencingAssessmentResult,
+    assess_sequencing,
 )
 
 
@@ -57,6 +65,10 @@ class BrownfieldSystemEngineInput:
     # User-supplied only; never assumed from a tariff.
     pf_penalty_annual_cost: Decimal | None = None
 
+    # Central-sequencer proposal (C-7d); the baseline machines and the
+    # demand profile come from the audit itself via sequencing_bridge.
+    sequencing_proposal: BrownfieldSequencingProposal | None = None
+
 
 @dataclass(frozen=True, slots=True)
 class BrownfieldSystemEngineResult:
@@ -72,6 +84,9 @@ class BrownfieldSystemEngineResult:
     # factor already meets target (then no PF-CORRECTION opportunity is
     # raised, but the measured kW and kVAr are still worth showing).
     motor_pfc: MotorMeasurementResult | None
+
+    # Present only when a sequencing proposal was supplied.
+    sequencing_assessment: SequencingAssessmentResult | None
 
     opportunities: BrownfieldOpportunityResult
     optimization: SystemOptimizationResult
@@ -100,6 +115,14 @@ def analyze_brownfield_system(
 
     audit_analysis = analyze_brownfield_audit(inputs.audit)
 
+    sequencing_assessment = (
+        assess_sequencing(
+            build_sequencing_assessment_input(inputs.audit, inputs.sequencing_proposal)
+        )
+        if inputs.sequencing_proposal is not None
+        else None
+    )
+
     opportunities = identify_brownfield_opportunities(
         analysis=audit_analysis,
         expected_leak_repair_fraction=(inputs.expected_leak_repair_fraction),
@@ -110,6 +133,7 @@ def analyze_brownfield_system(
         filter_excess_pressure_drop_bar=(inputs.filter_excess_pressure_drop_bar),
         motor_measurement=inputs.motor_measurement,
         pf_penalty_annual_cost=inputs.pf_penalty_annual_cost,
+        sequencing_assessment=sequencing_assessment,
     )
 
     leakage_energy = _extract_leakage_energy(
@@ -175,6 +199,7 @@ def analyze_brownfield_system(
         leakage_energy=leakage_energy,
         pressure_energy=pressure_energy,
         motor_pfc=motor_pfc,
+        sequencing_assessment=sequencing_assessment,
         opportunities=opportunities,
         optimization=optimization,
         current_average_power_kw=current_average_power_kw,
