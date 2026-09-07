@@ -80,3 +80,26 @@ MODULATION_ZERO_FLOW_POWER_FRACTION = Decimal("0.70")
 # (MFR-COMPAIR-OILFREE-SCREW-2026-09, dual-VSD two-stage), so the minimum
 # stable flow fraction input cannot be below 0.14.
 MIN_VSD_MINIMUM_FLOW_FRACTION = Decimal("0.14")
+
+# Part-load modes (C-8). Guideline ranges are cited constants; machine
+# curves stay per-machine inputs bounded here, never assumed.
+#   Inlet modulation floor: DOE-CAC-SOURCEBOOK-2003 Fig. 2.6 throttles to
+#   40 % capacity then unloads (cited default); ATLASCOPCO-CAM-9ED-2019 says
+#   liquid-injected screws can throttle down to 10 %.
+MIN_MODULATION_FLOOR_CAPACITY_FRACTION = Decimal("0.10")
+MAX_MODULATION_FLOOR_CAPACITY_FRACTION = Decimal("0.40")
+DEFAULT_MODULATION_FLOOR_CAPACITY_FRACTION = Decimal("0.40")
+#   Variable displacement (turn / spiral / poppet valve): power near
+#   proportional over the first 50 % of capacity (DOE-CAC-SOURCEBOOK-2003).
+VARIABLE_DISPLACEMENT_FLOOR_CAPACITY_FRACTION = Decimal("0.50")
+#   Centrifugal turndown before blow-off / unload: CAGI 30-40 % typical,
+#   "35 % or more"; Atlas Copco ZH "over 25 %" (CAGI-CENTRIFUGAL-CAPACITY-
+#   CONTROLS, MFR-ATLASCOPCO-AIR-RANGE-2026-09). Power at turndown is machine
+#   specific (CAGI); a published example sits at 80 % power for 75 % flow.
+MIN_CENTRIFUGAL_TURNDOWN_FRACTION = Decimal("0.10")
+MAX_CENTRIFUGAL_TURNDOWN_FRACTION = Decimal("0.45")
+MIN_CENTRIFUGAL_POWER_FRACTION_AT_TURNDOWN = Decimal("0.60")
+#   Centrifugal auto-dual off-loaded power about 20 % of full load
+#   (ATLASCOPCO-CAM-9ED-2019); bounded as a per-machine input.
+MIN_CENTRIFUGAL_UNLOAD_POWER_FRACTION = Decimal("0.05")
+MAX_CENTRIFUGAL_UNLOAD_POWER_FRACTION = Decimal("0.35")

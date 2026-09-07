@@ -79,7 +79,7 @@ def test_kaeser_heat_recovery_example_is_self_consistent() -> None:
 def test_every_derived_bound_has_a_limit_and_a_basis() -> None:
     bounds = derived_bounds()
     # CompAir, KAESER x2, recip (+1 cylinders-per-frame), Atlas Copco, centrifugal stages
-    assert len(bounds) == 11 + 12 + 4 + 5 + 8 + 1
+    assert len(bounds) == 11 + 12 + 4 + 5 + 11 + 1
     for bound in bounds:
         assert isinstance(bound, DerivedBound)
         assert bound.minimum is not None or bound.maximum is not None

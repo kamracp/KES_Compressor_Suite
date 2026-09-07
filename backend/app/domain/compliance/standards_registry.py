@@ -320,6 +320,54 @@ DOE_CAC_SOURCEBOOK_2003 = EngineeringStandard(
         "energy/pressure_energy.py, not the rule of thumb."
     ),
 )
+CAGI_CENTRIFUGAL_CAPACITY_CONTROLS = EngineeringStandard(
+    standard_id="CAGI-CENTRIFUGAL-CAPACITY-CONTROLS",
+    authority=StandardAuthority.CAGI,
+    title=(
+        "Understanding Centrifugal Compressor Capacity Controls; Applying "
+        "Centrifugal Compressors for Variable Loads (CAGI Centrifugal Section)"
+    ),
+    edition="cagi.org PDFs, refreshed July 2022 / October 2023",
+    publication_date="2022",
+    applicability=(
+        StandardApplicability.CENTRIFUGAL,
+        StandardApplicability.ENERGY_AUDIT,
+    ),
+    verification_status=(StandardVerificationStatus.OFFICIAL_SOURCE_VERIFIED),
+    notes=(
+        "Guideline, not a standard. Centrifugal plant-air capacity control: "
+        "turndown (throttle range) typically 30-40 percent in auto-dual mode, "
+        "30-35 percent or more depending on inlet conditions, machine specific; "
+        "inlet guide vanes about 9 percent more efficient than an inlet butterfly "
+        "valve at part load; below turndown the machine either blows off (power "
+        "unchanged, air wasted) or unloads to idle (auto-dual). Basis for the C-8 "
+        "IGV / blow-off part-load model: the IGV curve is a per-machine input "
+        "(turndown flow fraction, power at turndown) bounded in schemas/_bounds.py."
+    ),
+)
+ATLASCOPCO_CAM_9ED_2019 = EngineeringStandard(
+    standard_id="ATLASCOPCO-CAM-9ED-2019",
+    authority=StandardAuthority.MANUFACTURER,
+    title="Atlas Copco Compressed Air Manual, 9th edition",
+    edition="9th edition, Atlas Copco Airpower NV",
+    publication_date="2019",
+    applicability=(
+        StandardApplicability.ROTARY_SCREW,
+        StandardApplicability.CENTRIFUGAL,
+        StandardApplicability.ENERGY_AUDIT,
+    ),
+    verification_status=(StandardVerificationStatus.OFFICIAL_SOURCE_VERIFIED),
+    notes=(
+        "Manufacturer handbook (section 2.5 regulation). Pressure relief with "
+        "throttled inlet (load/unload): 0-100 percent range at only 15-30 percent "
+        "of full-load power off-loaded; inlet throttling on liquid-injected screws "
+        "can regulate down to 10 percent of capacity; centrifugal auto-dual "
+        "off-loading power about 20 percent of full load; centrifugal blow-off "
+        "(modulating) leaves energy consumption unchanged; speed regulation acts "
+        "like inlet guide vanes within the turndown range. Corroborates "
+        "DOE-CAC-SOURCEBOOK-2003 and CAGI-CENTRIFUGAL-CAPACITY-CONTROLS for C-8."
+    ),
+)
 BCAS_BPG_101 = EngineeringStandard(
     standard_id="BCAS-BPG-101",
     authority=StandardAuthority.BCAS,
@@ -444,6 +492,8 @@ ENGINEERING_STANDARDS: tuple[EngineeringStandard, ...] = (
     ISO_11011,
     CAGI_HANDBOOK,
     DOE_CAC_SOURCEBOOK_2003,
+    CAGI_CENTRIFUGAL_CAPACITY_CONTROLS,
+    ATLASCOPCO_CAM_9ED_2019,
     BCAS_BPG_101,
     IPMVP_CORE,
     ZAIM_2025,
