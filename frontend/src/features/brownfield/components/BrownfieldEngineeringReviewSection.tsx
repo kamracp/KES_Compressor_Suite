@@ -6,6 +6,7 @@ import {
   Lightbulb,
   TrendingDown,
   Zap,
+  ListOrdered,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -579,6 +580,139 @@ export function BrownfieldEngineeringReviewSection({
                   transformer loading and the utility power-factor penalty. It
                   does not reduce the motor active power draw, so no kW or kWh
                   saving is reported against this finding.
+                </p>
+              </section>
+            )}
+
+            {result.sequencing_assessment && (
+              <section className="border-t border-slate-100 pt-6">
+                <div className="mb-4 flex items-center gap-2">
+                  <ListOrdered className="size-4 text-slate-500" />
+
+                  <h3 className="text-sm font-semibold text-slate-900">
+                    Central Sequencer Assessment
+                  </h3>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                  <Metric
+                    label="Average Header Pressure (as-found / proposed)"
+                    value={`${formatDecimal(
+                      result.sequencing_assessment
+                        .baseline_average_header_pressure_bar_g,
+                      2,
+                    )} / ${formatDecimal(
+                      result.sequencing_assessment
+                        .proposed_average_header_pressure_bar_g,
+                      2,
+                    )}`}
+                    unit="bar g"
+                  />
+
+                  <Metric
+                    label="Standby Saving"
+                    value={formatDecimal(
+                      result.sequencing_assessment.standby_saving_kwh,
+                      0,
+                    )}
+                    unit="kWh/year · unloaded standby stopped"
+                  />
+
+                  <Metric
+                    label="Trim Saving"
+                    value={formatDecimal(
+                      result.sequencing_assessment.trim_saving_kwh,
+                      0,
+                    )}
+                    unit="kWh/year · one trim unit"
+                  />
+
+                  <Metric
+                    label="Pressure Saving"
+                    value={formatDecimal(
+                      result.sequencing_assessment.pressure_saving_kwh,
+                      0,
+                    )}
+                    unit="kWh/year · adiabatic, header average"
+                  />
+                </div>
+
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                  <Metric
+                    label="Total Annual Saving"
+                    value={formatDecimal(
+                      result.sequencing_assessment.total_annual_saving_kwh,
+                      0,
+                    )}
+                    unit="kWh/year"
+                  />
+
+                  <Metric
+                    label="Annual Cost Saving"
+                    value={formatDecimal(
+                      result.sequencing_assessment.total_annual_cost_saving,
+                      2,
+                    )}
+                    unit="currency units/year"
+                  />
+
+                  <Metric
+                    label="Profile Basis"
+                    value={`${formatDecimal(
+                      result.sequencing_assessment.profile_hours,
+                      0,
+                    )} h × ${formatDecimal(
+                      result.sequencing_assessment.annualisation_factor,
+                      2,
+                    )}`}
+                    unit="measured periods × annualisation factor"
+                  />
+
+                  <Metric
+                    label="Saving Claimed"
+                    value={result.sequencing_assessment.saving_claimed ? "Yes" : "No"}
+                  />
+                </div>
+
+                <div className="mt-4 overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
+                        <th className="py-2 pr-4">Unit</th>
+                        <th className="py-2 pr-4">Control</th>
+                        <th className="py-2 pr-4">Cascade priority</th>
+                        <th className="py-2 pr-4">Proposed band (bar g)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {result.sequencing_assessment.proposed_machines.map(
+                        (machine) => (
+                          <tr
+                            key={machine.unit_code}
+                            className="border-b border-slate-100"
+                          >
+                            <td className="py-2 pr-4 font-medium text-slate-900">
+                              {machine.unit_code}
+                            </td>
+                            <td className="py-2 pr-4 text-slate-700">
+                              {machine.control_mode}
+                            </td>
+                            <td className="py-2 pr-4 text-slate-700">
+                              {machine.priority}
+                            </td>
+                            <td className="py-2 pr-4 text-slate-700">
+                              {machine.band.load_pressure_bar_g} –{" "}
+                              {machine.band.unload_pressure_bar_g}
+                            </td>
+                          </tr>
+                        ),
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                <p className="mt-4 text-xs leading-5 text-slate-500">
+                  {result.sequencing_assessment.note}
                 </p>
               </section>
             )}

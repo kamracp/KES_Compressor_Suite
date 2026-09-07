@@ -26,6 +26,7 @@ import { ExistingCompressorSection } from "../features/brownfield/components/Exi
 import { LeakageSurveySection } from "../features/brownfield/components/LeakageSurveySection";
 import { AirTreatmentSection } from "../features/brownfield/components/AirTreatmentSection";
 import { MotorPfcSection } from "../features/brownfield/components/MotorPfcSection";
+import { SequencingProposalSection } from "../features/brownfield/components/SequencingProposalSection";
 import { OptimizationBasisSection } from "../features/brownfield/components/OptimizationBasisSection";
 import { SystemMeasurementsSection } from "../features/brownfield/components/SystemMeasurementsSection";
 import {
@@ -426,6 +427,32 @@ export function BrownfieldPlantAssessmentPage() {
           changeState((current) => ({
             ...current,
             [field]: value,
+          }))
+        }
+      />
+
+      <SequencingProposalSection
+        enabled={formState.sequencingEnabled}
+        proposedLoadPressureBarG={formState.sequencingProposedLoadPressureBarG}
+        proposedUnloadPressureBarG={formState.sequencingProposedUnloadPressureBarG}
+        receiverVolumeM3={formState.sequencingReceiverVolumeM3}
+        compressors={formState.compressors}
+        onEnabledChange={(sequencingEnabled) =>
+          changeState((current) => ({
+            ...current,
+            sequencingEnabled,
+          }))
+        }
+        onProposalChange={(field, value) =>
+          changeState((current) => ({
+            ...current,
+            [field]: value,
+          }))
+        }
+        onCompressorsChange={(compressors) =>
+          changeState((current) => ({
+            ...current,
+            compressors,
           }))
         }
       />
