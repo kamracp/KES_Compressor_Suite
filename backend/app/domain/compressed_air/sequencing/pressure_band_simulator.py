@@ -11,6 +11,12 @@ load/unload cycle time follows from the receiver volume and the band width
 from decimal import Decimal
 
 from app.domain.compressed_air.energy.pressure_energy import ATMOSPHERIC_PRESSURE_BAR
+from app.domain.compressed_air.performance.part_load import (
+    BelowTurndownMode,
+    InvalidPartLoadInputError,
+    part_load_point,
+    validate_curve,
+)
 from app.domain.compressed_air.sequencing.sequencing_models import (
     ControlMode,
     DutyRole,
@@ -20,6 +26,10 @@ from app.domain.compressed_air.sequencing.sequencing_models import (
     SequencedMachine,
     SequencingInput,
     SequencingResult,
+    part_load_curve,
+)
+from app.schemas._bounds import (
+    VARIABLE_DISPLACEMENT_FLOOR_CAPACITY_FRACTION,
 )
 
 _Q4 = Decimal("0.0001")
@@ -50,21 +60,16 @@ def _validate(inputs: SequencingInput) -> None:
             raise InvalidSequencingInputError(
                 f"{m.unit_code}: unload pressure must exceed load pressure."
             )
-        if m.unload_power_fraction is None or not (_ZERO <= m.unload_power_fraction < _ONE):
+        # C-8: every curve input is checked once, in part_load, against the
+        # cited bounds (unload 0.15-0.35, VSD minimum flow >= 0.14, IGV ...).
+        try:
+            validate_curve(part_load_curve(m))
+        except InvalidPartLoadInputError as exc:
+            raise InvalidSequencingInputError(f"{m.unit_code}: {exc}") from exc
+        if m.standby_runs_unloaded and m.unload_power_fraction is None:
             raise InvalidSequencingInputError(
-                f"{m.unit_code}: unload_power_fraction is required and must be in [0, 1)."
+                f"{m.unit_code}: standby_runs_unloaded needs unload_power_fraction."
             )
-        if m.control_mode is ControlMode.VARIABLE_SPEED:
-            if m.minimum_flow_fraction is None or not (_ZERO < m.minimum_flow_fraction <= _ONE):
-                raise InvalidSequencingInputError(
-                    f"{m.unit_code}: VSD minimum_flow_fraction must be in (0, 1]."
-                )
-            if m.minimum_flow_power_fraction is None or not (
-                _ZERO < m.minimum_flow_power_fraction <= _ONE
-            ):
-                raise InvalidSequencingInputError(
-                    f"{m.unit_code}: VSD minimum_flow_power_fraction must be in (0, 1]."
-                )
     for point in inputs.demand_profile:
         if point.demand_nm3_per_hr < _ZERO or point.duration_hours <= _ZERO:
             raise InvalidSequencingInputError(
@@ -122,7 +127,67 @@ def _fixed_speed_cycling(
     power = machine.rated_power_kw * (
         load_fraction + (_ONE - load_fraction) * machine.unload_power_fraction
     )
+    if machine.unload_blowdown_seconds and cycles > _ZERO:
+        # Sump blowdown (C-8): after unloading, power decays from full load to
+        # the unloaded level over the blowdown time instead of dropping at
+        # once. Taken as linear, so the extra energy per cycle is half the
+        # (full - unloaded) power over the blowdown, capped by the unloaded
+        # time actually available in that cycle. This is what makes small
+        # storage expensive in the DOE 1/3/5/10 gal/cfm family.
+        unloaded_hours_per_cycle = (_ONE - load_fraction) / cycles
+        blowdown_hours = min(
+            machine.unload_blowdown_seconds / Decimal("3600"), unloaded_hours_per_cycle
+        )
+        power += (
+            cycles
+            * blowdown_hours
+            * machine.rated_power_kw
+            * (_ONE - machine.unload_power_fraction)
+            / 2
+        )
     return load_fraction, cycles, power
+
+
+def _part_load_trim(
+    machine: SequencedMachine,
+    residual_nm3_per_hr: Decimal,
+    receiver_volume_m3: Decimal,
+) -> tuple[Decimal, Decimal | None, Decimal, Decimal, Decimal]:
+    """Modulation / variable displacement / IGV trim via part_load (C-8).
+
+    Returns (load_fraction, cycles_per_hour or None, average_power_kw,
+    unloaded_share, wasted_flow_nm3_per_hr). Above the mode's floor the
+    unit runs continuously (load_fraction 1); below it the unit cycles
+    between the floor point and unloaded, except IGV blow-off which keeps
+    running at the turndown point and vents the surplus.
+    """
+
+    curve = part_load_curve(machine)
+    point = part_load_point(curve, residual_nm3_per_hr / machine.rated_fad_nm3_per_hr)
+    power = machine.rated_power_kw * point.power_fraction
+    wasted = machine.rated_fad_nm3_per_hr * point.wasted_flow_fraction
+
+    if machine.control_mode is ControlMode.MODULATION:
+        floor_fraction = curve.modulation_floor_capacity_fraction
+    elif machine.control_mode is ControlMode.VARIABLE_DISPLACEMENT:
+        floor_fraction = VARIABLE_DISPLACEMENT_FLOOR_CAPACITY_FRACTION
+    else:  # INLET_GUIDE_VANE
+        assert curve.turndown_flow_fraction is not None
+        floor_fraction = _ONE - curve.turndown_flow_fraction
+    floor_flow = machine.rated_fad_nm3_per_hr * floor_fraction
+
+    blows_off = (
+        machine.control_mode is ControlMode.INLET_GUIDE_VANE
+        and curve.below_turndown is BelowTurndownMode.BLOW_OFF
+    )
+    if residual_nm3_per_hr >= floor_flow or blows_off:
+        return _ONE, None, power, _ZERO, wasted
+
+    load_fraction = residual_nm3_per_hr / floor_flow
+    cycles = _cycles_per_hour(
+        receiver_volume_m3, machine.band.width_bar, floor_flow, residual_nm3_per_hr
+    )
+    return load_fraction, cycles, power, _ONE - load_fraction, wasted
 
 
 def _vsd_trim(
@@ -199,6 +264,8 @@ def simulate_pressure_bands(inputs: SequencingInput) -> SequencingResult:
         supplied = _ZERO
 
         for machine in order:
+            wasted = _ZERO
+            unloaded_share = _ZERO
             if residual <= _ZERO:
                 standby_power = (
                     machine.rated_power_kw * machine.unload_power_fraction
@@ -235,18 +302,22 @@ def simulate_pressure_bands(inputs: SequencingInput) -> SequencingResult:
                     load_fraction, cycles, power = _vsd_trim(
                         machine, residual, inputs.receiver_volume_m3
                     )
-                else:
+                    unloaded_share = _ONE - load_fraction
+                elif machine.control_mode is ControlMode.FIXED_SPEED_LOAD_UNLOAD:
                     load_fraction, cycles, power = _fixed_speed_cycling(
+                        machine, residual, inputs.receiver_volume_m3
+                    )
+                    unloaded_share = _ONE - load_fraction
+                else:
+                    load_fraction, cycles, power, unloaded_share, wasted = _part_load_trim(
                         machine, residual, inputs.receiver_volume_m3
                     )
                 header_pressure = (
                     machine.band.load_pressure_bar_g + machine.band.unload_pressure_bar_g
                 ) / 2
-                if machine.unload_power_fraction is not None and load_fraction < _ONE:
+                if machine.unload_power_fraction is not None and unloaded_share > _ZERO:
                     period_unload_power += (
-                        machine.rated_power_kw
-                        * machine.unload_power_fraction
-                        * (_ONE - load_fraction)
+                        machine.rated_power_kw * machine.unload_power_fraction * unloaded_share
                     )
             residual -= flow
             supplied += flow
@@ -261,6 +332,7 @@ def simulate_pressure_bands(inputs: SequencingInput) -> SequencingResult:
                     cycles_per_hour=None if cycles is None else _q(cycles),
                     average_power_kw=_q(power),
                     energy_kwh=_q(power * point.duration_hours),
+                    wasted_flow_nm3_per_hr=_q(wasted),
                 )
             )
 
