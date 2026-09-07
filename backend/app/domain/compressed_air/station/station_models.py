@@ -21,6 +21,7 @@ class CompressorControlMode(StrEnum):
     LOAD_UNLOAD = "LOAD_UNLOAD"
     MODULATION = "MODULATION"
     INLET_GUIDE_VANE = "INLET_GUIDE_VANE"
+    VARIABLE_DISPLACEMENT = "VARIABLE_DISPLACEMENT"  # turn / spiral / poppet valve (C-8)
 
 
 class CompressorDutyRole(StrEnum):

@@ -25,6 +25,7 @@ from app.domain.compressed_air.brownfield.audit_models import (
     BrownfieldAuditCase,
     ExistingCompressor,
 )
+from app.domain.compressed_air.performance.part_load import BelowTurndownMode
 from app.domain.compressed_air.profiles.demand_profile import DemandProfilePoint
 from app.domain.compressed_air.sequencing.sequencing_assessment import (
     SequencingAssessmentInput,
@@ -50,11 +51,17 @@ class BrownfieldSequencingSettings:
 
     unit_code: str
     band: PressureBand
-    unload_power_fraction: Decimal
+    unload_power_fraction: Decimal | None
     priority: int | None = None
     minimum_flow_fraction: Decimal | None = None
     minimum_flow_power_fraction: Decimal | None = None
     standby_runs_unloaded: bool = False
+    # C-8 part-load inputs (mode specific; validated by part_load).
+    modulation_floor_capacity_fraction: Decimal | None = None
+    turndown_flow_fraction: Decimal | None = None
+    power_fraction_at_turndown: Decimal | None = None
+    below_turndown: BelowTurndownMode | None = None
+    unload_blowdown_seconds: Decimal | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -66,13 +73,14 @@ class BrownfieldSequencingProposal:
     machine_settings: tuple[BrownfieldSequencingSettings, ...]
 
 
-# MODULATION and INLET_GUIDE_VANE are deliberately absent: they are C-8
-# (part-load modes) scope, and the load/unload simulator would misstate
-# their part-load power. They are rejected, not approximated.
+# C-8: every register control mode maps onto a part_load curve.
 _CONTROL_MODE_MAP: dict[CompressorControlMode, ControlMode] = {
     CompressorControlMode.FIXED_SPEED: ControlMode.FIXED_SPEED_LOAD_UNLOAD,
     CompressorControlMode.LOAD_UNLOAD: ControlMode.FIXED_SPEED_LOAD_UNLOAD,
     CompressorControlMode.VSD: ControlMode.VARIABLE_SPEED,
+    CompressorControlMode.MODULATION: ControlMode.MODULATION,
+    CompressorControlMode.VARIABLE_DISPLACEMENT: ControlMode.VARIABLE_DISPLACEMENT,
+    CompressorControlMode.INLET_GUIDE_VANE: ControlMode.INLET_GUIDE_VANE,
 }
 
 
@@ -82,8 +90,7 @@ def sequencing_control_mode(mode: CompressorControlMode) -> ControlMode:
         return _CONTROL_MODE_MAP[mode]
     except KeyError as exc:
         raise InvalidBrownfieldSequencingInputError(
-            f"Control mode {mode.value} is not supported by the sequencing "
-            "simulator yet (part-load modes are C-8 scope)."
+            f"Control mode {mode.value} has no part-load curve."
         ) from exc
 
 
@@ -102,6 +109,11 @@ def _machine(
         minimum_flow_fraction=settings.minimum_flow_fraction,
         minimum_flow_power_fraction=settings.minimum_flow_power_fraction,
         standby_runs_unloaded=settings.standby_runs_unloaded,
+        modulation_floor_capacity_fraction=settings.modulation_floor_capacity_fraction,
+        turndown_flow_fraction=settings.turndown_flow_fraction,
+        power_fraction_at_turndown=settings.power_fraction_at_turndown,
+        below_turndown=settings.below_turndown,
+        unload_blowdown_seconds=settings.unload_blowdown_seconds,
     )
 
 

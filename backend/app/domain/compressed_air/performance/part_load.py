@@ -253,9 +253,7 @@ def part_load_point(curve: PartLoadCurve, capacity_fraction: Decimal) -> PartLoa
         p_min = curve.minimum_flow_power_fraction
         assert q_min is not None and p_min is not None  # validated above
         if q >= q_min:
-            power = (
-                ONE if q_min == ONE else p_min + (ONE - p_min) * (q - q_min) / (ONE - q_min)
-            )
+            power = ONE if q_min == ONE else p_min + (ONE - p_min) * (q - q_min) / (ONE - q_min)
             regime = "speed regulation"
         else:
             power = _cycling_power(q / q_min, p_min, f_unload)

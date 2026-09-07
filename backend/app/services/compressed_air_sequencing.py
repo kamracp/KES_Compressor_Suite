@@ -32,6 +32,11 @@ def _machine(item: SequencedMachineRequest) -> SequencedMachine:
         minimum_flow_fraction=item.minimum_flow_fraction,
         minimum_flow_power_fraction=item.minimum_flow_power_fraction,
         standby_runs_unloaded=item.standby_runs_unloaded,
+        modulation_floor_capacity_fraction=item.modulation_floor_capacity_fraction,
+        turndown_flow_fraction=item.turndown_flow_fraction,
+        power_fraction_at_turndown=item.power_fraction_at_turndown,
+        below_turndown=item.below_turndown,
+        unload_blowdown_seconds=item.unload_blowdown_seconds,
     )
 
 
@@ -58,6 +63,7 @@ def _run(result: SequencingResult) -> SequencingRunResponse:
                         cycles_per_hour=m.cycles_per_hour,
                         average_power_kw=m.average_power_kw,
                         energy_kwh=m.energy_kwh,
+                        wasted_flow_nm3_per_hr=m.wasted_flow_nm3_per_hr,
                     )
                     for m in p.machines
                 ],

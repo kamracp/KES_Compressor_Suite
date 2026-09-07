@@ -6,19 +6,27 @@ from pydantic import BaseModel, Field, model_validator
 from app.domain.compressed_air.brownfield.audit_models import (
     AuditOperatingState,
 )
+from app.domain.compressed_air.performance.part_load import BelowTurndownMode
 from app.domain.compressed_air.station.station_models import (
     CompressorControlMode,
     CompressorTechnology,
 )
 from app.schemas._bounds import (
+    MAX_CENTRIFUGAL_TURNDOWN_FRACTION,
+    MAX_CENTRIFUGAL_UNLOAD_POWER_FRACTION,
     MAX_DB_INTEGER_ID,
     MAX_ELECTRICITY_TARIFF_INR_PER_KWH,
     MAX_FIXED_SPEED_UNLOAD_POWER_FRACTION,
     MAX_INSTALLATION_YEAR,
+    MAX_MODULATION_FLOOR_CAPACITY_FRACTION,
     MAX_PLANT_AIR_PRESSURE_BAR_G,
+    MIN_CENTRIFUGAL_POWER_FRACTION_AT_TURNDOWN,
+    MIN_CENTRIFUGAL_TURNDOWN_FRACTION,
+    MIN_CENTRIFUGAL_UNLOAD_POWER_FRACTION,
     MIN_ELECTRICITY_TARIFF_INR_PER_KWH,
     MIN_FIXED_SPEED_UNLOAD_POWER_FRACTION,
     MIN_INSTALLATION_YEAR,
+    MIN_MODULATION_FLOOR_CAPACITY_FRACTION,
     MIN_VSD_MINIMUM_FLOW_FRACTION,
 )
 from app.schemas.compressed_air_sequencing import (
@@ -35,13 +43,42 @@ class BrownfieldSequencingSettingsSchema(BaseModel):
     """
 
     band: PressureBandSchema
-    unload_power_fraction: Decimal = Field(
-        ge=MIN_FIXED_SPEED_UNLOAD_POWER_FRACTION,
-        le=MAX_FIXED_SPEED_UNLOAD_POWER_FRACTION,
+    unload_power_fraction: Decimal | None = Field(
+        default=None,
+        ge=0,
+        le=1,
         description=(
-            "Unloaded power / rated power. DOE-CAC-SOURCEBOOK-2003: unloaded "
-            "rotary screw 15-35 % of full-load power."
+            "Unloaded power / rated power. Screw units 15-35 % (DOE-CAC-SOURCEBOOK-2003), "
+            "required; centrifugal auto-dual 5-35 % (ATLASCOPCO-CAM-9ED-2019), required "
+            "only when below_turndown is UNLOAD."
         ),
+    )
+    modulation_floor_capacity_fraction: Decimal | None = Field(
+        default=None,
+        ge=MIN_MODULATION_FLOOR_CAPACITY_FRACTION,
+        le=MAX_MODULATION_FLOOR_CAPACITY_FRACTION,
+        description="MODULATION only; default 0.40 (DOE Fig. 2.6).",
+    )
+    turndown_flow_fraction: Decimal | None = Field(
+        default=None,
+        ge=MIN_CENTRIFUGAL_TURNDOWN_FRACTION,
+        le=MAX_CENTRIFUGAL_TURNDOWN_FRACTION,
+        description="INLET_GUIDE_VANE only: turndown / rated FAD.",
+    )
+    power_fraction_at_turndown: Decimal | None = Field(
+        default=None,
+        ge=MIN_CENTRIFUGAL_POWER_FRACTION_AT_TURNDOWN,
+        le=1,
+        description="INLET_GUIDE_VANE only: power at full turndown / rated power.",
+    )
+    below_turndown: BelowTurndownMode | None = Field(
+        default=None, description="INLET_GUIDE_VANE only: BLOW_OFF (default) or UNLOAD."
+    )
+    unload_blowdown_seconds: Decimal | None = Field(
+        default=None,
+        ge=0,
+        le=Decimal("600"),
+        description="Load/unload only, manufacturer figure: sump blowdown time.",
     )
     priority: int | None = Field(
         default=None,
@@ -122,6 +159,53 @@ class ExistingCompressorInputSchema(BaseModel):
     def _sequencing_vsd_fields(self) -> Self:
         if self.sequencing is None:
             return self
+        s = self.sequencing
+        is_igv = self.control_mode is CompressorControlMode.INLET_GUIDE_VANE
+        if is_igv:
+            if s.turndown_flow_fraction is None or s.power_fraction_at_turndown is None:
+                raise ValueError(
+                    "INLET_GUIDE_VANE units need turndown_flow_fraction "
+                    "and power_fraction_at_turndown."
+                )
+            needs_unload = s.below_turndown is BelowTurndownMode.UNLOAD or s.standby_runs_unloaded
+            if needs_unload and s.unload_power_fraction is None:
+                raise ValueError(
+                    "Centrifugal auto-dual / unloaded standby needs unload_power_fraction."
+                )
+            if s.unload_power_fraction is not None and not (
+                MIN_CENTRIFUGAL_UNLOAD_POWER_FRACTION
+                <= s.unload_power_fraction
+                <= MAX_CENTRIFUGAL_UNLOAD_POWER_FRACTION
+            ):
+                raise ValueError("Centrifugal unload_power_fraction must be 0.05-0.35.")
+        else:
+            if s.unload_power_fraction is None:
+                raise ValueError("unload_power_fraction is required for screw control modes.")
+            if not (
+                MIN_FIXED_SPEED_UNLOAD_POWER_FRACTION
+                <= s.unload_power_fraction
+                <= MAX_FIXED_SPEED_UNLOAD_POWER_FRACTION
+            ):
+                raise ValueError(
+                    "unload_power_fraction must be 0.15-0.35 (DOE-CAC-SOURCEBOOK-2003)."
+                )
+            if (
+                s.turndown_flow_fraction is not None
+                or s.power_fraction_at_turndown is not None
+                or s.below_turndown is not None
+            ):
+                raise ValueError("Only INLET_GUIDE_VANE units take turndown fields.")
+        if (
+            self.control_mode is not CompressorControlMode.MODULATION
+            and s.modulation_floor_capacity_fraction is not None
+        ):
+            raise ValueError("Only MODULATION units take modulation_floor_capacity_fraction.")
+        if (
+            self.control_mode
+            not in (CompressorControlMode.LOAD_UNLOAD, CompressorControlMode.FIXED_SPEED)
+            and s.unload_blowdown_seconds is not None
+        ):
+            raise ValueError("Only load/unload units take unload_blowdown_seconds.")
         is_vsd = self.control_mode is CompressorControlMode.VSD
         has_vsd_fields = (
             self.sequencing.minimum_flow_fraction is not None

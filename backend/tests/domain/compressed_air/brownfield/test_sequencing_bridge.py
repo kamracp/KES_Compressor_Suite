@@ -199,11 +199,25 @@ def test_unavailable_compressor_is_excluded_and_needs_no_settings() -> None:
     assert [m.unit_code for m in case.baseline_machines] == ["A", "B"]
 
 
-def test_modulation_control_is_rejected_as_c8_scope() -> None:
-    machines = (compressor("M", CompressorControlMode.MODULATION, "1000", "100"),)
+def test_modulation_and_igv_map_onto_part_load_modes() -> None:
+    machines = (
+        compressor("M", CompressorControlMode.MODULATION, "1000", "100"),
+        compressor("T", CompressorControlMode.INLET_GUIDE_VANE, "3000", "300"),
+    )
+    igv_settings = BrownfieldSequencingSettings(
+        unit_code="T",
+        band=PressureBand(load_pressure_bar_g=Decimal("6.5"), unload_pressure_bar_g=Decimal("7.5")),
+        unload_power_fraction=None,
+        turndown_flow_fraction=Decimal("0.25"),
+        power_fraction_at_turndown=Decimal("0.80"),
+    )
+    case = build_sequencing_assessment_input(
+        audit(machines, TWO_POINTS), proposal(settings("M"), igv_settings)
+    )
 
-    with pytest.raises(InvalidBrownfieldSequencingInputError, match="C-8"):
-        build_sequencing_assessment_input(audit(machines, TWO_POINTS), proposal(settings("M")))
+    assert case.baseline_machines[0].control_mode is ControlMode.MODULATION
+    assert case.baseline_machines[1].control_mode is ControlMode.INLET_GUIDE_VANE
+    assert case.baseline_machines[1].turndown_flow_fraction == Decimal("0.25")
 
 
 def test_missing_settings_for_available_unit_is_rejected() -> None:

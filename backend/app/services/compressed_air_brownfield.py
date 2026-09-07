@@ -122,6 +122,13 @@ class CompressedAirBrownfieldService:
                         minimum_flow_fraction=(item.sequencing.minimum_flow_fraction),
                         minimum_flow_power_fraction=(item.sequencing.minimum_flow_power_fraction),
                         standby_runs_unloaded=(item.sequencing.standby_runs_unloaded),
+                        modulation_floor_capacity_fraction=(
+                            item.sequencing.modulation_floor_capacity_fraction
+                        ),
+                        turndown_flow_fraction=item.sequencing.turndown_flow_fraction,
+                        power_fraction_at_turndown=(item.sequencing.power_fraction_at_turndown),
+                        below_turndown=item.sequencing.below_turndown,
+                        unload_blowdown_seconds=item.sequencing.unload_blowdown_seconds,
                     )
                     for item in request.compressors
                     if item.sequencing is not None

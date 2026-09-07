@@ -80,10 +80,21 @@ def test_vsd_unit_without_minimum_flow_fields_returns_422() -> None:
     assert client.post(URL, json=body).status_code == 422
 
 
-def test_modulation_unit_returns_422_as_c8_scope() -> None:
+def test_modulation_unit_is_assessed_through_part_load() -> None:
     body = request_with_proposal()
     body["compressors"][0]["control_mode"] = "MODULATION"
 
     response = client.post(URL, json=body)
-    assert response.status_code == 422
-    assert "C-8" in response.json()["detail"]
+    assert response.status_code == 200, response.json()
+    modes = {
+        m["unit_code"]: m["control_mode"]
+        for m in response.json()["sequencing_assessment"]["proposed_machines"]
+    }
+    assert modes["AC-01"] == "MODULATION"
+
+
+def test_igv_unit_without_turndown_fields_returns_422() -> None:
+    body = request_with_proposal()
+    body["compressors"][0]["control_mode"] = "INLET_GUIDE_VANE"
+
+    assert client.post(URL, json=body).status_code == 422
