@@ -55,6 +55,10 @@ export const compressorControlModeOptions: Option<CompressorControlMode>[] = [
     value: "INLET_GUIDE_VANE",
     label: "Inlet Guide Vane",
   },
+  {
+    value: "VARIABLE_DISPLACEMENT",
+    label: "Variable Displacement (spiral / turn valve)",
+  },
 ];
 
 export const auditOperatingStateOptions: Option<AuditOperatingState>[] = [

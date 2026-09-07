@@ -18,7 +18,8 @@ export type CompressorControlMode =
   | "VSD"
   | "LOAD_UNLOAD"
   | "MODULATION"
-  | "INLET_GUIDE_VANE";
+  | "INLET_GUIDE_VANE"
+  | "VARIABLE_DISPLACEMENT";
 
 export type BrownfieldOpportunityCategory =
   | "LEAKAGE"
@@ -42,13 +43,22 @@ export type PressureBandInput = {
 
 // C-7d: control settings of one audited machine. Rated FAD, rated power
 // and control mode come from the compressor register itself.
+export type BelowTurndownMode = "BLOW_OFF" | "UNLOAD";
+
 export type CompressorSequencingInput = {
   band: PressureBandInput;
-  unload_power_fraction: DecimalString;
+  // Screw modes 0.15-0.35 (required); IGV auto-dual 0.05-0.35; blank = null.
+  unload_power_fraction: DecimalString | null;
   priority: number | null;
   minimum_flow_fraction: DecimalString | null;
   minimum_flow_power_fraction: DecimalString | null;
   standby_runs_unloaded: boolean;
+  // C-8 part-load inputs, mode specific.
+  modulation_floor_capacity_fraction: DecimalString | null;
+  turndown_flow_fraction: DecimalString | null;
+  power_fraction_at_turndown: DecimalString | null;
+  below_turndown: BelowTurndownMode | null;
+  unload_blowdown_seconds: DecimalString | null;
 };
 
 export type BrownfieldSequencingProposalInput = {

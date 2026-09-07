@@ -12,6 +12,15 @@ export const MAX_ELECTRICITY_TARIFF_INR_PER_KWH = 25;
 export const MIN_FIXED_SPEED_UNLOAD_POWER_FRACTION = 0.15; // DOE-CAC-SOURCEBOOK-2003
 export const MAX_FIXED_SPEED_UNLOAD_POWER_FRACTION = 0.35; // unloaded screw 15-35 %
 export const MIN_VSD_MINIMUM_FLOW_FRACTION = 0.14; // VSD turndown <= 86 %
+// C-8 part-load modes: mirrors backend _bounds (DOE Fig 2.6, CAGI, Atlas Copco CAM)
+export const MIN_MODULATION_FLOOR_CAPACITY_FRACTION = 0.1;
+export const MAX_MODULATION_FLOOR_CAPACITY_FRACTION = 0.4;
+export const MIN_CENTRIFUGAL_TURNDOWN_FRACTION = 0.1;
+export const MAX_CENTRIFUGAL_TURNDOWN_FRACTION = 0.45;
+export const MIN_CENTRIFUGAL_POWER_FRACTION_AT_TURNDOWN = 0.6;
+export const MIN_CENTRIFUGAL_UNLOAD_POWER_FRACTION = 0.05;
+export const MAX_CENTRIFUGAL_UNLOAD_POWER_FRACTION = 0.35;
+export const MAX_UNLOAD_BLOWDOWN_SECONDS = 600;
 
 export function pushIfAbove(
   raw: string,

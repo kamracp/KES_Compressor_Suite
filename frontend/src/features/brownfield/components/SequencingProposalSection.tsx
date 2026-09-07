@@ -33,8 +33,6 @@ type SequencingProposalSectionProps = {
   onCompressorsChange: (compressors: ExistingCompressorInput[]) => void;
 };
 
-const UNSEQUENCEABLE_MODES = new Set(["MODULATION", "INLET_GUIDE_VANE"]);
-
 export function SequencingProposalSection({
   enabled,
   proposedLoadPressureBarG,
@@ -202,6 +200,11 @@ export function SequencingProposalSection({
                 const settings =
                   compressor.sequencing ?? createCompressorSequencingSettings();
                 const isVsd = compressor.control_mode === "VSD";
+                const isIgv = compressor.control_mode === "INLET_GUIDE_VANE";
+                const isModulation = compressor.control_mode === "MODULATION";
+                const isLoadUnload =
+                  compressor.control_mode === "LOAD_UNLOAD" ||
+                  compressor.control_mode === "FIXED_SPEED";
                 const idBase = `brownfield-seq-${index}`;
 
                 if (!compressor.available) {
@@ -212,20 +215,6 @@ export function SequencingProposalSection({
                     >
                       {compressor.unit_code || `Compressor ${index + 1}`} — not
                       available; excluded from sequencing.
-                    </div>
-                  );
-                }
-
-                if (UNSEQUENCEABLE_MODES.has(compressor.control_mode)) {
-                  return (
-                    <div
-                      key={idBase}
-                      className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800"
-                    >
-                      {compressor.unit_code || `Compressor ${index + 1}`} —{" "}
-                      {compressor.control_mode} units cannot be sequenced yet;
-                      part-load modes arrive with C-8. Mark the unit unavailable
-                      to run the proposal without it.
                     </div>
                   );
                 }
@@ -293,15 +282,16 @@ export function SequencingProposalSection({
 
                       <div className="space-y-1">
                         <Label htmlFor={`${idBase}-unload-fraction`}>
-                          Unload power fraction
+                          {isIgv ? "Off-loaded power fraction" : "Unload power fraction"}
                         </Label>
                         <Input
                           id={`${idBase}-unload-fraction`}
                           type="number"
-                          min="0.15"
+                          min={isIgv ? "0.05" : "0.15"}
                           max="0.35"
                           step="0.01"
-                          value={settings.unload_power_fraction}
+                          placeholder={isIgv ? "Auto-dual only" : undefined}
+                          value={settings.unload_power_fraction ?? ""}
                           onChange={(event) =>
                             patchSettings(index, {
                               unload_power_fraction: event.target.value,
@@ -330,6 +320,106 @@ export function SequencingProposalSection({
                           }
                         />
                       </div>
+
+                      {isModulation && (
+                        <div className="space-y-1">
+                          <Label htmlFor={`${idBase}-mod-floor`}>Modulation floor</Label>
+                          <Input
+                            id={`${idBase}-mod-floor`}
+                            type="number"
+                            min="0.1"
+                            max="0.4"
+                            step="0.01"
+                            value={settings.modulation_floor_capacity_fraction ?? ""}
+                            placeholder="Default 0.40 (DOE)"
+                            onChange={(event) =>
+                              patchSettings(index, {
+                                modulation_floor_capacity_fraction: event.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                      )}
+
+                      {isLoadUnload && (
+                        <div className="space-y-1">
+                          <Label htmlFor={`${idBase}-blowdown`}>Unload blowdown (s)</Label>
+                          <Input
+                            id={`${idBase}-blowdown`}
+                            type="number"
+                            min="0"
+                            max="600"
+                            step="1"
+                            value={settings.unload_blowdown_seconds ?? ""}
+                            placeholder="Optional, manufacturer"
+                            onChange={(event) =>
+                              patchSettings(index, {
+                                unload_blowdown_seconds: event.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                      )}
+
+                      {isIgv && (
+                        <>
+                          <div className="space-y-1">
+                            <Label htmlFor={`${idBase}-turndown`}>Turndown fraction</Label>
+                            <Input
+                              id={`${idBase}-turndown`}
+                              type="number"
+                              min="0.1"
+                              max="0.45"
+                              step="0.01"
+                              value={settings.turndown_flow_fraction ?? ""}
+                              placeholder="Example: 0.30"
+                              onChange={(event) =>
+                                patchSettings(index, {
+                                  turndown_flow_fraction: event.target.value,
+                                })
+                              }
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <Label htmlFor={`${idBase}-turndown-power`}>
+                              Power at turndown
+                            </Label>
+                            <Input
+                              id={`${idBase}-turndown-power`}
+                              type="number"
+                              min="0.6"
+                              max="1"
+                              step="0.01"
+                              value={settings.power_fraction_at_turndown ?? ""}
+                              placeholder="fraction of rated"
+                              onChange={(event) =>
+                                patchSettings(index, {
+                                  power_fraction_at_turndown: event.target.value,
+                                })
+                              }
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <Label htmlFor={`${idBase}-below-turndown`}>Below turndown</Label>
+                            <select
+                              id={`${idBase}-below-turndown`}
+                              className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm"
+                              value={settings.below_turndown ?? "BLOW_OFF"}
+                              onChange={(event) =>
+                                patchSettings(index, {
+                                  below_turndown:
+                                    event.target.value === "UNLOAD" ? "UNLOAD" : "BLOW_OFF",
+                                })
+                              }
+                            >
+                              <option value="BLOW_OFF">Blow-off (power unchanged)</option>
+                              <option value="UNLOAD">Auto-dual unload</option>
+                            </select>
+                          </div>
+                        </>
+                      )}
 
                       {isVsd && (
                         <>

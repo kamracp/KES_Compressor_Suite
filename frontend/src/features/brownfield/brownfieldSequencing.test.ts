@@ -81,6 +81,11 @@ describe("brownfield sequencing proposal (C-7d)", () => {
       minimum_flow_fraction: null,
       minimum_flow_power_fraction: null,
       standby_runs_unloaded: false,
+      modulation_floor_capacity_fraction: null,
+      turndown_flow_fraction: null,
+      power_fraction_at_turndown: null,
+      below_turndown: null,
+      unload_blowdown_seconds: null,
     });
   });
 
@@ -127,11 +132,46 @@ describe("brownfield sequencing proposal (C-7d)", () => {
     expect(sequencingErrors(state).join(" ")).toMatch(/above the load setpoint/);
   });
 
-  it("rejects modulation units as C-8 scope", () => {
+  it("accepts modulation units and sends the floor only for them", () => {
     const state = enabledState();
     state.compressors[0] = compressor(0, { control_mode: "MODULATION" });
+    state.compressors[0].sequencing!.modulation_floor_capacity_fraction = "0.3";
+    state.compressors[1].sequencing!.modulation_floor_capacity_fraction = "0.3";
 
-    expect(sequencingErrors(state).join(" ")).toMatch(/C-8/);
+    expect(sequencingErrors(state)).toEqual([]);
+    const payload = buildBrownfieldAuditRequest(state, 1);
+    expect(payload.compressors[0].sequencing?.modulation_floor_capacity_fraction).toBe("0.3");
+    expect(payload.compressors[1].sequencing?.modulation_floor_capacity_fraction).toBeNull();
+  });
+
+  it("requires turndown fields on an inlet-guide-vane unit and defaults to blow-off", () => {
+    const state = enabledState();
+    state.compressors[0] = compressor(0, { control_mode: "INLET_GUIDE_VANE" });
+    state.compressors[0].sequencing!.unload_power_fraction = null;
+
+    const joined = sequencingErrors(state).join(" ");
+    expect(joined).toMatch(/turndown fraction/);
+    expect(joined).toMatch(/power at turndown/);
+
+    state.compressors[0].sequencing!.turndown_flow_fraction = "0.3";
+    state.compressors[0].sequencing!.power_fraction_at_turndown = "0.8";
+    expect(sequencingErrors(state)).toEqual([]);
+    const payload = buildBrownfieldAuditRequest(state, 1);
+    expect(payload.compressors[0].sequencing?.below_turndown).toBe("BLOW_OFF");
+    expect(payload.compressors[0].sequencing?.unload_power_fraction).toBeNull();
+  });
+
+  it("requires a centrifugal off-loaded fraction for auto-dual", () => {
+    const state = enabledState();
+    state.compressors[0] = compressor(0, { control_mode: "INLET_GUIDE_VANE" });
+    Object.assign(state.compressors[0].sequencing!, {
+      unload_power_fraction: null,
+      turndown_flow_fraction: "0.3",
+      power_fraction_at_turndown: "0.8",
+      below_turndown: "UNLOAD",
+    });
+
+    expect(sequencingErrors(state).join(" ")).toMatch(/centrifugal unload power fraction/);
   });
 
   it("requires priority on all units or none", () => {

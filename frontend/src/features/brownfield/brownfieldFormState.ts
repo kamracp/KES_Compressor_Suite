@@ -11,9 +11,17 @@ import {
   MAX_ASSET_FAD_NM3_PER_HR,
   MAX_ASSET_MOTOR_KW,
   MAX_MEASURED_POWER_KW,
+  MAX_CENTRIFUGAL_TURNDOWN_FRACTION,
+  MAX_CENTRIFUGAL_UNLOAD_POWER_FRACTION,
   MAX_FIXED_SPEED_UNLOAD_POWER_FRACTION,
+  MAX_MODULATION_FLOOR_CAPACITY_FRACTION,
   MAX_PLANT_AIR_PRESSURE_BAR_G,
+  MAX_UNLOAD_BLOWDOWN_SECONDS,
+  MIN_CENTRIFUGAL_POWER_FRACTION_AT_TURNDOWN,
+  MIN_CENTRIFUGAL_TURNDOWN_FRACTION,
+  MIN_CENTRIFUGAL_UNLOAD_POWER_FRACTION,
   MIN_FIXED_SPEED_UNLOAD_POWER_FRACTION,
+  MIN_MODULATION_FLOOR_CAPACITY_FRACTION,
   MIN_VSD_MINIMUM_FLOW_FRACTION,
   pushIfAbove,
   pushIfTariffOutOfRange,
@@ -88,6 +96,11 @@ export function createCompressorSequencingSettings(): CompressorSequencingInput 
     minimum_flow_fraction: null,
     minimum_flow_power_fraction: null,
     standby_runs_unloaded: false,
+    modulation_floor_capacity_fraction: null,
+    turndown_flow_fraction: null,
+    power_fraction_at_turndown: null,
+    below_turndown: null,
+    unload_blowdown_seconds: null,
   };
 }
 
@@ -629,16 +642,6 @@ function validateSequencingProposal(
 
     const prefix = `Compressor ${index + 1} sequencing`;
 
-    if (
-      compressor.control_mode === "MODULATION" ||
-      compressor.control_mode === "INLET_GUIDE_VANE"
-    ) {
-      errors.push(
-        `${prefix}: ${compressor.control_mode} units cannot be sequenced yet (part-load modes are C-8 scope).`,
-      );
-      return;
-    }
-
     const settings = compressor.sequencing;
 
     if (!settings) {
@@ -653,17 +656,91 @@ function validateSequencingProposal(
       errors,
     );
 
-    const unloadFraction = parseNumber(settings.unload_power_fraction);
+    // C-8: mode-specific curve inputs, mirroring part_load.validate_curve.
+    const isIgv = compressor.control_mode === "INLET_GUIDE_VANE";
+    const isLoadUnload =
+      compressor.control_mode === "LOAD_UNLOAD" ||
+      compressor.control_mode === "FIXED_SPEED";
+    const unloadText = settings.unload_power_fraction ?? "";
+
+    if (isIgv) {
+      const turndown = parseNumber(settings.turndown_flow_fraction ?? "");
+      if (
+        !(
+          turndown >= MIN_CENTRIFUGAL_TURNDOWN_FRACTION &&
+          turndown <= MAX_CENTRIFUGAL_TURNDOWN_FRACTION
+        )
+      ) {
+        errors.push(
+          `${prefix} turndown fraction must be ${MIN_CENTRIFUGAL_TURNDOWN_FRACTION}-${MAX_CENTRIFUGAL_TURNDOWN_FRACTION} of rated FAD (CAGI 30-40 % typical).`,
+        );
+      }
+
+      const powerAtTurndown = parseNumber(settings.power_fraction_at_turndown ?? "");
+      if (
+        !(
+          powerAtTurndown >= MIN_CENTRIFUGAL_POWER_FRACTION_AT_TURNDOWN &&
+          powerAtTurndown <= 1
+        )
+      ) {
+        errors.push(
+          `${prefix} power at turndown must be ${MIN_CENTRIFUGAL_POWER_FRACTION_AT_TURNDOWN}-1 of rated power (machine curve).`,
+        );
+      }
+
+      const needsUnload =
+        settings.below_turndown === "UNLOAD" || settings.standby_runs_unloaded;
+      if (needsUnload || unloadText.trim()) {
+        const centrifugalUnload = parseNumber(unloadText);
+        if (
+          !(
+            centrifugalUnload >= MIN_CENTRIFUGAL_UNLOAD_POWER_FRACTION &&
+            centrifugalUnload <= MAX_CENTRIFUGAL_UNLOAD_POWER_FRACTION
+          )
+        ) {
+          errors.push(
+            `${prefix} centrifugal unload power fraction must be ${MIN_CENTRIFUGAL_UNLOAD_POWER_FRACTION}-${MAX_CENTRIFUGAL_UNLOAD_POWER_FRACTION} (Atlas Copco CAM ~0.20).`,
+          );
+        }
+      }
+    } else {
+      const unloadFraction = parseNumber(unloadText);
+      if (
+        !(
+          unloadFraction >= MIN_FIXED_SPEED_UNLOAD_POWER_FRACTION &&
+          unloadFraction <= MAX_FIXED_SPEED_UNLOAD_POWER_FRACTION
+        )
+      ) {
+        errors.push(
+          `${prefix} unload power fraction must be ${MIN_FIXED_SPEED_UNLOAD_POWER_FRACTION}-${MAX_FIXED_SPEED_UNLOAD_POWER_FRACTION} (DOE CAC Sourcebook).`,
+        );
+      }
+    }
 
     if (
-      !(
-        unloadFraction >= MIN_FIXED_SPEED_UNLOAD_POWER_FRACTION &&
-        unloadFraction <= MAX_FIXED_SPEED_UNLOAD_POWER_FRACTION
-      )
+      compressor.control_mode === "MODULATION" &&
+      (settings.modulation_floor_capacity_fraction ?? "").trim()
     ) {
-      errors.push(
-        `${prefix} unload power fraction must be ${MIN_FIXED_SPEED_UNLOAD_POWER_FRACTION}-${MAX_FIXED_SPEED_UNLOAD_POWER_FRACTION} (DOE CAC Sourcebook).`,
-      );
+      const floor = parseNumber(settings.modulation_floor_capacity_fraction ?? "");
+      if (
+        !(
+          floor >= MIN_MODULATION_FLOOR_CAPACITY_FRACTION &&
+          floor <= MAX_MODULATION_FLOOR_CAPACITY_FRACTION
+        )
+      ) {
+        errors.push(
+          `${prefix} modulation floor must be ${MIN_MODULATION_FLOOR_CAPACITY_FRACTION}-${MAX_MODULATION_FLOOR_CAPACITY_FRACTION} of capacity (DOE default 0.40).`,
+        );
+      }
+    }
+
+    if (isLoadUnload && (settings.unload_blowdown_seconds ?? "").trim()) {
+      const blowdown = parseNumber(settings.unload_blowdown_seconds ?? "");
+      if (!(blowdown >= 0 && blowdown <= MAX_UNLOAD_BLOWDOWN_SECONDS)) {
+        errors.push(
+          `${prefix} unload blowdown must be 0-${MAX_UNLOAD_BLOWDOWN_SECONDS} seconds (manufacturer figure).`,
+        );
+      }
     }
 
     if (
@@ -717,13 +794,31 @@ function sequencingPayload(
   }
 
   const isVsd = compressor.control_mode === "VSD";
+  const isIgv = compressor.control_mode === "INLET_GUIDE_VANE";
+  const isModulation = compressor.control_mode === "MODULATION";
+  const isLoadUnload =
+    compressor.control_mode === "LOAD_UNLOAD" ||
+    compressor.control_mode === "FIXED_SPEED";
 
   return {
     band: {
       load_pressure_bar_g: settings.band.load_pressure_bar_g.trim(),
       unload_pressure_bar_g: settings.band.unload_pressure_bar_g.trim(),
     },
-    unload_power_fraction: settings.unload_power_fraction.trim(),
+    unload_power_fraction: nullableDecimal(settings.unload_power_fraction ?? ""),
+    modulation_floor_capacity_fraction: isModulation
+      ? nullableDecimal(settings.modulation_floor_capacity_fraction ?? "")
+      : null,
+    turndown_flow_fraction: isIgv
+      ? nullableDecimal(settings.turndown_flow_fraction ?? "")
+      : null,
+    power_fraction_at_turndown: isIgv
+      ? nullableDecimal(settings.power_fraction_at_turndown ?? "")
+      : null,
+    below_turndown: isIgv ? (settings.below_turndown ?? "BLOW_OFF") : null,
+    unload_blowdown_seconds: isLoadUnload
+      ? nullableDecimal(settings.unload_blowdown_seconds ?? "")
+      : null,
     priority: settings.priority,
     // Non-VSD units must not carry minimum-flow fields (backend rule).
     minimum_flow_fraction: isVsd
