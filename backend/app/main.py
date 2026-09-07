@@ -10,6 +10,7 @@ from app.api.v1.compressed_air_brownfield import router as compressed_air_brownf
 from app.api.v1.compressed_air_distribution import router as compressed_air_distribution_router
 from app.api.v1.compressed_air_greenfield import router as compressed_air_greenfield_router
 from app.api.v1.compressed_air_leakage import router as compressed_air_leakage_router
+from app.api.v1.compressed_air_part_load import router as compressed_air_part_load_router
 from app.api.v1.compressed_air_performance import router as compressed_air_performance_router
 from app.api.v1.compressed_air_report import router as compressed_air_report_router
 from app.api.v1.compressed_air_sequencing import router as compressed_air_sequencing_router
@@ -204,6 +205,10 @@ app.include_router(
 )
 app.include_router(
     compressed_air_sequencing_router,
+    prefix=settings.api_v1_prefix,
+)
+app.include_router(
+    compressed_air_part_load_router,
     prefix=settings.api_v1_prefix,
 )
 
