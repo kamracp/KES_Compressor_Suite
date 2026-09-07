@@ -76,6 +76,13 @@ const PerformanceEnergyAnalysisPage = lazy(
     ).PerformanceEnergyAnalysisPage,
   }),
 );
+const PartLoadComparisonPage = lazy(
+  async () => ({
+    default: (
+      await import("../pages/PartLoadComparisonPage")
+    ).PartLoadComparisonPage,
+  }),
+);
 
 const CompressorEngineeringPage = lazy(
   async () => ({
@@ -235,6 +242,14 @@ export function AppRouter() {
             element={
               <ProtectedPage>
                 <PerformanceEnergyAnalysisPage />
+              </ProtectedPage>
+            }
+          />
+          <Route
+            path="/projects/:projectId/part-load"
+            element={
+              <ProtectedPage>
+                <PartLoadComparisonPage />
               </ProtectedPage>
             }
           />

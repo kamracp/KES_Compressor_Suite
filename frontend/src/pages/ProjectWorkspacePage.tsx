@@ -100,6 +100,15 @@ export function ProjectWorkspacePage() {
       actionLabel: "Open Performance Analysis",
     },
     {
+      title: "Part-Load Control Modes",
+      phase: "Energy Performance",
+      description:
+        "Compare load/unload, modulation, variable displacement, VSD and inlet-guide-vane curves for one machine, with annual energy over a load-duration profile.",
+      icon: Gauge,
+      path: `/projects/${projectId}/part-load`,
+      actionLabel: "Open Part-Load Comparison",
+    },
+    {
       title: "Leakage Management",
       phase: "Loss Management",
       description:

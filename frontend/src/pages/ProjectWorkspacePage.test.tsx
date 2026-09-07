@@ -91,7 +91,7 @@ describe("ProjectWorkspacePage", () => {
 
     expect(screen.queryByText("Available")).not.toBeInTheDocument();
 
-    expect(screen.getAllByText("Ready")).toHaveLength(6);
+    expect(screen.getAllByText("Ready")).toHaveLength(7);
   });
 
   it("provides project-scoped engineering workflow links", () => {
