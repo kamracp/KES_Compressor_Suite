@@ -1,6 +1,7 @@
 import type {
   BrownfieldSystemAuditRequest,
   CompressorMeasurementInput,
+  CompressorSequencingInput,
   ExistingCompressorInput,
   LeakageSurveyInput,
   SystemMeasurementInput,
@@ -10,7 +11,10 @@ import {
   MAX_ASSET_FAD_NM3_PER_HR,
   MAX_ASSET_MOTOR_KW,
   MAX_MEASURED_POWER_KW,
+  MAX_FIXED_SPEED_UNLOAD_POWER_FRACTION,
   MAX_PLANT_AIR_PRESSURE_BAR_G,
+  MIN_FIXED_SPEED_UNLOAD_POWER_FRACTION,
+  MIN_VSD_MINIMUM_FLOW_FRACTION,
   pushIfAbove,
   pushIfTariffOutOfRange,
 } from "../reference/inputBounds";
@@ -45,6 +49,13 @@ export type BrownfieldFormState = {
   motorRatedPowerKw: string;
   pfPenaltyAnnualCost: string;
 
+  // C-7d central-sequencer proposal (opt-in). Per-machine settings live on
+  // each compressor entry so add/remove stays in sync automatically.
+  sequencingEnabled: boolean;
+  sequencingProposedLoadPressureBarG: string;
+  sequencingProposedUnloadPressureBarG: string;
+  sequencingReceiverVolumeM3: string;
+
   notes: string;
 };
 
@@ -65,6 +76,18 @@ export function createBrownfieldCompressor(
     operating_hours: null,
     available: true,
     notes: null,
+    sequencing: null,
+  };
+}
+
+export function createCompressorSequencingSettings(): CompressorSequencingInput {
+  return {
+    band: { load_pressure_bar_g: "", unload_pressure_bar_g: "" },
+    unload_power_fraction: "0.25",
+    priority: null,
+    minimum_flow_fraction: null,
+    minimum_flow_power_fraction: null,
+    standby_runs_unloaded: false,
   };
 }
 
@@ -132,6 +155,10 @@ export function createInitialBrownfieldFormState(): BrownfieldFormState {
     motorTargetPowerFactor: "0.95",
     motorRatedPowerKw: "",
     pfPenaltyAnnualCost: "",
+    sequencingEnabled: false,
+    sequencingProposedLoadPressureBarG: "",
+    sequencingProposedUnloadPressureBarG: "",
+    sequencingReceiverVolumeM3: "",
 
     notes: "",
   };
@@ -548,7 +575,165 @@ export function validateBrownfieldFormState(
     );
   });
 
+  if (state.sequencingEnabled) {
+    validateSequencingProposal(state, errors);
+  }
+
   return errors;
+}
+
+function validateBand(
+  load: string,
+  unload: string,
+  label: string,
+  errors: string[],
+): void {
+  requireNonNegative(load, `${label} load setpoint`, errors);
+  requirePositive(unload, `${label} unload setpoint`, errors);
+
+  if (parseNumber(unload) > MAX_PLANT_AIR_PRESSURE_BAR_G) {
+    errors.push(
+      `${label} unload setpoint exceeds the plant-air ceiling of ${MAX_PLANT_AIR_PRESSURE_BAR_G} bar g.`,
+    );
+  }
+
+  if (load.trim() && unload.trim() && parseNumber(unload) <= parseNumber(load)) {
+    errors.push(`${label}: unload setpoint must be above the load setpoint.`);
+  }
+}
+
+// C-7d: mirrors BrownfieldSequencingSettingsSchema and sequencing_bridge
+// rules so the user sees the same rejection before the request is sent.
+function validateSequencingProposal(
+  state: BrownfieldFormState,
+  errors: string[],
+): void {
+  validateBand(
+    state.sequencingProposedLoadPressureBarG,
+    state.sequencingProposedUnloadPressureBarG,
+    "Proposed sequencer band",
+    errors,
+  );
+  requirePositive(
+    state.sequencingReceiverVolumeM3,
+    "Receiver volume for sequencing",
+    errors,
+  );
+
+  const priorities: Array<number | null> = [];
+
+  state.compressors.forEach((compressor, index) => {
+    if (!compressor.available) {
+      return;
+    }
+
+    const prefix = `Compressor ${index + 1} sequencing`;
+
+    if (
+      compressor.control_mode === "MODULATION" ||
+      compressor.control_mode === "INLET_GUIDE_VANE"
+    ) {
+      errors.push(
+        `${prefix}: ${compressor.control_mode} units cannot be sequenced yet (part-load modes are C-8 scope).`,
+      );
+      return;
+    }
+
+    const settings = compressor.sequencing;
+
+    if (!settings) {
+      errors.push(`${prefix} settings are required for an available unit.`);
+      return;
+    }
+
+    validateBand(
+      settings.band.load_pressure_bar_g,
+      settings.band.unload_pressure_bar_g,
+      `${prefix} band`,
+      errors,
+    );
+
+    const unloadFraction = parseNumber(settings.unload_power_fraction);
+
+    if (
+      !(
+        unloadFraction >= MIN_FIXED_SPEED_UNLOAD_POWER_FRACTION &&
+        unloadFraction <= MAX_FIXED_SPEED_UNLOAD_POWER_FRACTION
+      )
+    ) {
+      errors.push(
+        `${prefix} unload power fraction must be ${MIN_FIXED_SPEED_UNLOAD_POWER_FRACTION}-${MAX_FIXED_SPEED_UNLOAD_POWER_FRACTION} (DOE CAC Sourcebook).`,
+      );
+    }
+
+    if (
+      settings.priority !== null &&
+      (!Number.isInteger(settings.priority) ||
+        settings.priority < 1 ||
+        settings.priority > 20)
+    ) {
+      errors.push(`${prefix} priority must be an integer from 1 to 20.`);
+    }
+
+    priorities.push(settings.priority);
+
+    if (compressor.control_mode === "VSD") {
+      const minimumFlow = parseNumber(settings.minimum_flow_fraction ?? "");
+      const minimumFlowPower = parseNumber(
+        settings.minimum_flow_power_fraction ?? "",
+      );
+
+      if (!(minimumFlow >= MIN_VSD_MINIMUM_FLOW_FRACTION && minimumFlow <= 1)) {
+        errors.push(
+          `${prefix} minimum flow fraction must be ${MIN_VSD_MINIMUM_FLOW_FRACTION}-1 for a VSD unit.`,
+        );
+      }
+
+      if (!(minimumFlowPower > 0 && minimumFlowPower <= 1)) {
+        errors.push(
+          `${prefix} minimum-flow power fraction must be above 0 and at most 1 for a VSD unit.`,
+        );
+      }
+    }
+  });
+
+  const someSet = priorities.some((priority) => priority !== null);
+  const someUnset = priorities.some((priority) => priority === null);
+
+  if (someSet && someUnset) {
+    errors.push(
+      "Sequencing priority must be set on every available unit or on none.",
+    );
+  }
+}
+
+function sequencingPayload(
+  compressor: ExistingCompressorInput,
+): CompressorSequencingInput | null {
+  const settings = compressor.sequencing;
+
+  if (!settings || !compressor.available) {
+    return null;
+  }
+
+  const isVsd = compressor.control_mode === "VSD";
+
+  return {
+    band: {
+      load_pressure_bar_g: settings.band.load_pressure_bar_g.trim(),
+      unload_pressure_bar_g: settings.band.unload_pressure_bar_g.trim(),
+    },
+    unload_power_fraction: settings.unload_power_fraction.trim(),
+    priority: settings.priority,
+    // Non-VSD units must not carry minimum-flow fields (backend rule).
+    minimum_flow_fraction: isVsd
+      ? nullableDecimal(settings.minimum_flow_fraction ?? "")
+      : null,
+    minimum_flow_power_fraction: isVsd
+      ? nullableDecimal(settings.minimum_flow_power_fraction ?? "")
+      : null,
+    standby_runs_unloaded: settings.standby_runs_unloaded,
+  };
 }
 
 function nullableDecimal(value: string): string | null {
@@ -580,6 +765,10 @@ export function buildBrownfieldAuditRequest(
       manufacturer: null,
       model: nullableText(compressor.model),
       notes: nullableText(compressor.notes),
+      // Stale settings never leak when the proposal is switched off.
+      sequencing: state.sequencingEnabled
+        ? sequencingPayload(compressor)
+        : null,
     })),
 
     compressor_measurements: state.compressorMeasurements.map(
@@ -637,6 +826,18 @@ export function buildBrownfieldAuditRequest(
     filter_excess_pressure_drop_bar: nullableDecimal(
       state.filterExcessPressureDropBar,
     ),
+
+    sequencing_proposal: state.sequencingEnabled
+      ? {
+          proposed_band: {
+            load_pressure_bar_g:
+              state.sequencingProposedLoadPressureBarG.trim(),
+            unload_pressure_bar_g:
+              state.sequencingProposedUnloadPressureBarG.trim(),
+          },
+          receiver_volume_m3: state.sequencingReceiverVolumeM3.trim(),
+        }
+      : null,
 
     // Blank motor fields are sent as null: an unmeasured quantity must
     // never reach the engine as a guessed number.

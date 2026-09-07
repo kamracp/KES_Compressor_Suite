@@ -35,6 +35,27 @@ export type BrownfieldOpportunityPriority =
   | "MEDIUM"
   | "LOW";
 
+export type PressureBandInput = {
+  load_pressure_bar_g: DecimalString;
+  unload_pressure_bar_g: DecimalString;
+};
+
+// C-7d: control settings of one audited machine. Rated FAD, rated power
+// and control mode come from the compressor register itself.
+export type CompressorSequencingInput = {
+  band: PressureBandInput;
+  unload_power_fraction: DecimalString;
+  priority: number | null;
+  minimum_flow_fraction: DecimalString | null;
+  minimum_flow_power_fraction: DecimalString | null;
+  standby_runs_unloaded: boolean;
+};
+
+export type BrownfieldSequencingProposalInput = {
+  proposed_band: PressureBandInput;
+  receiver_volume_m3: DecimalString;
+};
+
 export type ExistingCompressorInput = {
   unit_code: string;
   equipment_source?: string | null;
@@ -53,6 +74,9 @@ export type ExistingCompressorInput = {
 
   available: boolean;
   notes?: string | null;
+
+  // Required for every available unit when sequencing_proposal is sent.
+  sequencing?: CompressorSequencingInput | null;
 };
 
 export type CompressorMeasurementInput = {
@@ -124,8 +148,34 @@ export type BrownfieldSystemAuditRequest = {
   // Annual PF penalty the utility currently bills this site.
   // User-supplied only; no penalty saving is claimed without it.
   pf_penalty_annual_cost?: DecimalString | null;
+  sequencing_proposal?: BrownfieldSequencingProposalInput | null;
 
   notes?: string | null;
+};
+
+export type SequencingProposedMachine = {
+  unit_code: string;
+  control_mode: string;
+  priority: number;
+  band: PressureBandInput;
+};
+
+// Summary fields of the C-7 assessment. The per-period baseline/proposed
+// runs are also in the JSON but are not typed here until a UI uses them.
+export type SequencingAssessmentResult = {
+  analysis_code: string;
+  proposed_machines: SequencingProposedMachine[];
+  profile_hours: DecimalString;
+  annualisation_factor: DecimalString;
+  baseline_average_header_pressure_bar_g: DecimalString;
+  proposed_average_header_pressure_bar_g: DecimalString;
+  standby_saving_kwh: DecimalString;
+  trim_saving_kwh: DecimalString;
+  pressure_saving_kwh: DecimalString;
+  total_annual_saving_kwh: DecimalString;
+  total_annual_cost_saving: DecimalString;
+  saving_claimed: boolean;
+  note: string;
 };
 
 export type MotorPfcResult = {
@@ -206,6 +256,7 @@ export type BrownfieldSystemAuditResponse = {
   significant_leakage_detected: boolean;
 
   motor_pfc: MotorPfcResult | null;
+  sequencing_assessment?: SequencingAssessmentResult | null;
 
   opportunities: BrownfieldOpportunity[];
 };

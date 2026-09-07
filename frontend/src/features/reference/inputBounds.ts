@@ -8,6 +8,10 @@ export const MAX_ASSET_MOTOR_KW = 3150; // ZH+ centrifugal, largest single motor
 export const MAX_MEASURED_POWER_KW = 3400; // 3150 kW x 1.08 measured/nameplate ratio
 export const MIN_ELECTRICITY_TARIFF_INR_PER_KWH = 5;
 export const MAX_ELECTRICITY_TARIFF_INR_PER_KWH = 25;
+// C-7 sequencing: mirrors backend app/schemas/_bounds.py
+export const MIN_FIXED_SPEED_UNLOAD_POWER_FRACTION = 0.15; // DOE-CAC-SOURCEBOOK-2003
+export const MAX_FIXED_SPEED_UNLOAD_POWER_FRACTION = 0.35; // unloaded screw 15-35 %
+export const MIN_VSD_MINIMUM_FLOW_FRACTION = 0.14; // VSD turndown <= 86 %
 
 export function pushIfAbove(
   raw: string,
