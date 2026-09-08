@@ -5,6 +5,7 @@ from sqlalchemy import engine_from_config, pool
 
 import app.models.calculation_case  # noqa: F401
 import app.models.compressed_air_assessment  # noqa: F401
+import app.models.compressed_air_leak  # noqa: F401
 import app.models.organization  # noqa: F401
 import app.models.permission  # noqa: F401
 import app.models.project  # noqa: F401
