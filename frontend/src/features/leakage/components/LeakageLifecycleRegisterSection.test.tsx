@@ -230,4 +230,61 @@ describe("LeakageLifecycleRegisterSection", () => {
       }),
     ).toBeDisabled();
   });
+
+  it("calls leak selection with the reviewed leak id", () => {
+    const onSelectLeak = vi.fn();
+
+    render(
+      <LeakageLifecycleRegisterSection
+        register={registerFixture}
+        isPending={false}
+        isFetching={false}
+        onRefresh={vi.fn()}
+        onSelectLeak={onSelectLeak}
+      />,
+    );
+
+    const reviewButtons = screen.getAllByRole("button", {
+      name: "Review",
+    });
+
+    expect(reviewButtons).toHaveLength(
+      registerFixture.items.length,
+    );
+
+    fireEvent.click(reviewButtons[1]);
+
+    expect(onSelectLeak).toHaveBeenCalledTimes(1);
+    expect(onSelectLeak).toHaveBeenCalledWith(
+      registerFixture.items[1].id,
+    );
+  });
+
+  it("marks the selected leakage record", () => {
+    render(
+      <LeakageLifecycleRegisterSection
+        register={registerFixture}
+        isPending={false}
+        isFetching={false}
+        onRefresh={vi.fn()}
+        selectedLeakId={registerFixture.items[1].id}
+        onSelectLeak={vi.fn()}
+      />,
+    );
+
+    const selectedButton = screen.getByRole("button", {
+      name: "Selected",
+    });
+
+    expect(selectedButton).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+
+    expect(
+      screen.getAllByRole("button", {
+        name: "Review",
+      }),
+    ).toHaveLength(registerFixture.items.length - 1);
+  });
 });
