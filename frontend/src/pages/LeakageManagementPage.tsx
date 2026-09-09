@@ -22,6 +22,7 @@ import {
 import { useAuth } from "../features/auth/AuthProvider";
 import { LeakageEnergyBasisSection } from "../features/leakage/components/LeakageEnergyBasisSection";
 import { LeakageEngineeringReviewSection } from "../features/leakage/components/LeakageEngineeringReviewSection";
+import { LeakageLifecycleDetailSection } from "../features/leakage/components/LeakageLifecycleDetailSection";
 import { LeakageLifecycleRegisterSection } from "../features/leakage/components/LeakageLifecycleRegisterSection";
 import { LeakageStudyBasisSection } from "../features/leakage/components/LeakageStudyBasisSection";
 import { LeakRegisterSection } from "../features/leakage/components/LeakRegisterSection";
@@ -33,6 +34,7 @@ import {
   type LeakageFormState,
 } from "../features/leakage/leakageFormState";
 import { analyzeCompressedAirLeakage } from "../features/leakage/leakageService";
+import { useLeakageLifecycleDetail } from "../features/leakage/useLeakageLifecycleDetail";
 import { useLeakageLifecycleRegister } from "../features/leakage/useLeakageLifecycleRegister";
 import { useProjectContext } from "../features/projects/useProjectContext";
 import { useInputOptions } from "../features/reference/useInputOptions";
@@ -80,6 +82,21 @@ export function LeakageManagementPage() {
       projectIdNumber,
       hasValidProjectId,
     );
+
+  const [selectedLeakId, setSelectedLeakId] =
+    useState<number | null>(null);
+
+  const leakageLifecycleDetail =
+    useLeakageLifecycleDetail(
+      accessToken,
+      selectedLeakId ?? 0,
+      selectedLeakId !== null,
+    );
+
+  const lifecycleDetailError =
+    leakageLifecycleDetail.detailQuery.error ??
+    leakageLifecycleDetail.historyQuery.error ??
+    leakageLifecycleDetail.kpiSnapshotsQuery.error;
 
   const [formState, setFormState] = useState<LeakageFormState>(
     createInitialLeakageFormState,
@@ -328,6 +345,31 @@ export function LeakageManagementPage() {
         onRefresh={() => {
           void leakageLifecycleRegisterQuery.refetch();
         }}
+        selectedLeakId={selectedLeakId}
+        onSelectLeak={setSelectedLeakId}
+      />
+
+      <LeakageLifecycleDetailSection
+        leak={leakageLifecycleDetail.detailQuery.data}
+        history={leakageLifecycleDetail.historyQuery.data}
+        kpiSnapshots={
+          leakageLifecycleDetail.kpiSnapshotsQuery.data
+        }
+        isPending={
+          selectedLeakId !== null &&
+          (
+            leakageLifecycleDetail.detailQuery.isPending ||
+            leakageLifecycleDetail.historyQuery.isPending ||
+            leakageLifecycleDetail.kpiSnapshotsQuery.isPending
+          )
+        }
+        errorMessage={
+          lifecycleDetailError instanceof Error
+            ? lifecycleDetailError.message
+            : lifecycleDetailError
+              ? "Leakage lifecycle detail could not be loaded."
+              : null
+        }
       />
 
       <LeakageEnergyBasisSection
