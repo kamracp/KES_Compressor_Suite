@@ -22,6 +22,7 @@ import {
 import { useAuth } from "../features/auth/AuthProvider";
 import { LeakageEnergyBasisSection } from "../features/leakage/components/LeakageEnergyBasisSection";
 import { LeakageEngineeringReviewSection } from "../features/leakage/components/LeakageEngineeringReviewSection";
+import { LeakageLifecycleRegisterSection } from "../features/leakage/components/LeakageLifecycleRegisterSection";
 import { LeakageStudyBasisSection } from "../features/leakage/components/LeakageStudyBasisSection";
 import { LeakRegisterSection } from "../features/leakage/components/LeakRegisterSection";
 import { RepairVerificationSection } from "../features/leakage/components/RepairVerificationSection";
@@ -32,6 +33,7 @@ import {
   type LeakageFormState,
 } from "../features/leakage/leakageFormState";
 import { analyzeCompressedAirLeakage } from "../features/leakage/leakageService";
+import { useLeakageLifecycleRegister } from "../features/leakage/useLeakageLifecycleRegister";
 import { useProjectContext } from "../features/projects/useProjectContext";
 import { useInputOptions } from "../features/reference/useInputOptions";
 import { ApiError } from "../services/apiClient";
@@ -71,6 +73,13 @@ export function LeakageManagementPage() {
     project,
     projectQuery,
   } = useProjectContext();
+
+  const leakageLifecycleRegisterQuery =
+    useLeakageLifecycleRegister(
+      accessToken,
+      projectIdNumber,
+      hasValidProjectId,
+    );
 
   const [formState, setFormState] = useState<LeakageFormState>(
     createInitialLeakageFormState,
@@ -303,6 +312,22 @@ export function LeakageManagementPage() {
             leaks,
           }))
         }
+      />
+
+      <LeakageLifecycleRegisterSection
+        register={leakageLifecycleRegisterQuery.data}
+        isPending={leakageLifecycleRegisterQuery.isPending}
+        isFetching={leakageLifecycleRegisterQuery.isFetching}
+        errorMessage={
+          leakageLifecycleRegisterQuery.isError
+            ? leakageLifecycleRegisterQuery.error instanceof Error
+              ? leakageLifecycleRegisterQuery.error.message
+              : "Leakage lifecycle register could not be loaded."
+            : null
+        }
+        onRefresh={() => {
+          void leakageLifecycleRegisterQuery.refetch();
+        }}
       />
 
       <LeakageEnergyBasisSection
