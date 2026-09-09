@@ -32,6 +32,8 @@ type LeakageLifecycleRegisterSectionProps = {
   isFetching: boolean;
   errorMessage?: string | null;
   onRefresh: () => void;
+  selectedLeakId?: number | null;
+  onSelectLeak?: (leakId: number) => void;
 };
 
 const statusLabels: Record<
@@ -73,6 +75,8 @@ export function LeakageLifecycleRegisterSection({
   isFetching,
   errorMessage,
   onRefresh,
+  selectedLeakId,
+  onSelectLeak,
 }: LeakageLifecycleRegisterSectionProps) {
   const summaryItems = [
     {
@@ -198,6 +202,9 @@ export function LeakageLifecycleRegisterSection({
                     <TableHead>Assigned To</TableHead>
                     <TableHead>Tagged At</TableHead>
                     <TableHead>Updated At</TableHead>
+                    {onSelectLeak && (
+                      <TableHead>Action</TableHead>
+                    )}
                   </TableRow>
                 </TableHeader>
 
@@ -237,6 +244,25 @@ export function LeakageLifecycleRegisterSection({
                       <TableCell>
                         {formatTimestamp(leak.updated_at)}
                       </TableCell>
+
+                      {onSelectLeak && (
+                        <TableCell>
+                          <button
+                            type="button"
+                            className="text-sm font-medium text-slate-700 underline-offset-4 hover:underline"
+                            aria-pressed={
+                              selectedLeakId === leak.id
+                            }
+                            onClick={() =>
+                              onSelectLeak(leak.id)
+                            }
+                          >
+                            {selectedLeakId === leak.id
+                              ? "Selected"
+                              : "Review"}
+                          </button>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>
