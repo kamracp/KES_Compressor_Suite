@@ -1,0 +1,282 @@
+import {
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+import {
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import {
+  MemoryRouter,
+  Route,
+  Routes,
+} from "react-router";
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+
+import { useAuth } from "../features/auth/AuthProvider";
+import { useLeakageLifecycleDetail } from "../features/leakage/useLeakageLifecycleDetail";
+import { useLeakageLifecycleRegister } from "../features/leakage/useLeakageLifecycleRegister";
+import { useProjectContext } from "../features/projects/useProjectContext";
+import { useInputOptions } from "../features/reference/useInputOptions";
+import type { Project } from "../types/project";
+import { LeakageManagementPage } from "./LeakageManagementPage";
+
+vi.mock("../features/auth/AuthProvider", () => ({
+  useAuth: vi.fn(),
+}));
+
+vi.mock(
+  "../features/projects/useProjectContext",
+  () => ({
+    useProjectContext: vi.fn(),
+  }),
+);
+
+vi.mock(
+  "../features/reference/useInputOptions",
+  () => ({
+    useInputOptions: vi.fn(),
+  }),
+);
+
+vi.mock(
+  "../features/leakage/useLeakageLifecycleRegister",
+  () => ({
+    useLeakageLifecycleRegister: vi.fn(),
+  }),
+);
+
+vi.mock(
+  "../features/leakage/useLeakageLifecycleDetail",
+  () => ({
+    useLeakageLifecycleDetail: vi.fn(),
+  }),
+);
+
+vi.mock(
+  "../features/leakage/components/LeakageLifecycleRegisterSection",
+  () => ({
+    LeakageLifecycleRegisterSection: ({
+      onSelectLeak,
+    }: {
+      onSelectLeak: (leakId: number) => void;
+    }) => (
+      <button
+        type="button"
+        onClick={() => onSelectLeak(18)}
+      >
+        Review leak 18
+      </button>
+    ),
+  }),
+);
+
+vi.mock(
+  "../features/leakage/components/LeakageLifecycleDetailSection",
+  () => ({
+    LeakageLifecycleDetailSection: ({
+      leak,
+      history,
+      kpiSnapshots,
+    }: {
+      leak?: { id: number };
+      history?: { total: number };
+      kpiSnapshots?: { total: number };
+    }) => (
+      <section aria-label="Leakage lifecycle detail">
+        <p>Selected leak {leak?.id ?? "none"}</p>
+        <p>History records {history?.total ?? 0}</p>
+        <p>KPI snapshots {kpiSnapshots?.total ?? 0}</p>
+      </section>
+    ),
+  }),
+);
+
+vi.mock(
+  "../features/leakage/components/LeakageStudyBasisSection",
+  () => ({
+    LeakageStudyBasisSection: () => null,
+  }),
+);
+
+vi.mock(
+  "../features/leakage/components/LeakRegisterSection",
+  () => ({
+    LeakRegisterSection: () => null,
+  }),
+);
+
+vi.mock(
+  "../features/leakage/components/LeakageEnergyBasisSection",
+  () => ({
+    LeakageEnergyBasisSection: () => null,
+  }),
+);
+
+vi.mock(
+  "../features/leakage/components/RepairVerificationSection",
+  () => ({
+    RepairVerificationSection: () => null,
+  }),
+);
+
+vi.mock(
+  "../features/leakage/components/LeakageEngineeringReviewSection",
+  () => ({
+    LeakageEngineeringReviewSection: () => null,
+  }),
+);
+
+type ProjectContextValue = ReturnType<typeof useProjectContext>;
+type ProjectQuery = ProjectContextValue["projectQuery"];
+
+const projectFixture: Project = {
+  id: 42,
+  organization_id: 6406,
+  project_code: "C-9K8-TEST",
+  project_name: "Leakage Lifecycle Page Test",
+  client_name: "KES Test Client",
+  plant_name: null,
+  location: null,
+  service_description: null,
+  status: "DRAFT",
+  created_at: "2026-09-10T00:00:00Z",
+  updated_at: "2026-09-10T00:00:00Z",
+};
+
+function configurePageDependencies(): void {
+  vi.mocked(useAuth).mockReturnValue({
+    accessToken: "test-access-token",
+    currentUser: null,
+    isAuthenticated: true,
+    isLoading: false,
+    login: vi.fn(async () => undefined),
+    logout: vi.fn(),
+  });
+
+  const projectQuery = {
+    data: projectFixture,
+    error: null,
+    isError: false,
+    isFetching: false,
+    isPending: false,
+    refetch: vi.fn(),
+  } as unknown as ProjectQuery;
+
+  vi.mocked(useProjectContext).mockReturnValue({
+    projectId: 42,
+    hasValidProjectId: true,
+    project: projectFixture,
+    projectQuery,
+  });
+
+  vi.mocked(useInputOptions).mockReturnValue({
+    data: undefined,
+  } as unknown as ReturnType<typeof useInputOptions>);
+
+  vi.mocked(useLeakageLifecycleRegister).mockReturnValue({
+    data: undefined,
+    error: null,
+    isError: false,
+    isFetching: false,
+    isPending: false,
+    refetch: vi.fn(),
+  } as unknown as ReturnType<
+    typeof useLeakageLifecycleRegister
+  >);
+
+  vi.mocked(useLeakageLifecycleDetail).mockImplementation(
+    (_accessToken, leakId, enabled) => ({
+      detailQuery: {
+        data: enabled ? { id: leakId } : undefined,
+        error: null,
+        isPending: false,
+      },
+      historyQuery: {
+        data: enabled ? { total: 2 } : undefined,
+        error: null,
+        isPending: false,
+      },
+      kpiSnapshotsQuery: {
+        data: enabled ? { total: 3 } : undefined,
+        error: null,
+        isPending: false,
+      },
+    }) as unknown as ReturnType<
+      typeof useLeakageLifecycleDetail
+    >,
+  );
+}
+
+function renderPage() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+
+  const user = userEvent.setup();
+
+  render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter
+        initialEntries={[
+          "/projects/42/compressor/leakage",
+        ]}
+      >
+        <Routes>
+          <Route
+            path="/projects/:projectId/compressor/leakage"
+            element={<LeakageManagementPage />}
+          />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  );
+
+  return user;
+}
+
+describe("LeakageManagementPage", () => {
+  beforeEach(() => {
+    configurePageDependencies();
+  });
+
+  it("loads lifecycle detail, history, and KPI data for the reviewed leak", async () => {
+    const user = renderPage();
+
+    expect(useLeakageLifecycleDetail).toHaveBeenCalledWith(
+      "test-access-token",
+      0,
+      false,
+    );
+    expect(screen.getByText("Selected leak none")).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Review leak 18",
+      }),
+    );
+
+    await waitFor(() => {
+      expect(useLeakageLifecycleDetail).toHaveBeenLastCalledWith(
+        "test-access-token",
+        18,
+        true,
+      );
+    });
+
+    expect(screen.getByText("Selected leak 18")).toBeInTheDocument();
+    expect(screen.getByText("History records 2")).toBeInTheDocument();
+    expect(screen.getByText("KPI snapshots 3")).toBeInTheDocument();
+  });
+});
