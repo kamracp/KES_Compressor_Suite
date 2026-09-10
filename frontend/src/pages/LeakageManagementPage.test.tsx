@@ -23,7 +23,9 @@ import {
 
 import { useAuth } from "../features/auth/AuthProvider";
 import { useLeakageLifecycleDetail } from "../features/leakage/useLeakageLifecycleDetail";
+import { useLeakageLifecycleMutations } from "../features/leakage/useLeakageLifecycleMutations";
 import { useLeakageLifecycleRegister } from "../features/leakage/useLeakageLifecycleRegister";
+import type { LeakRegisterItemInput } from "../features/leakage/leakageTypes";
 import { useProjectContext } from "../features/projects/useProjectContext";
 import { useInputOptions } from "../features/reference/useInputOptions";
 import type { Project } from "../types/project";
@@ -58,6 +60,41 @@ vi.mock(
   "../features/leakage/useLeakageLifecycleDetail",
   () => ({
     useLeakageLifecycleDetail: vi.fn(),
+  }),
+);
+
+vi.mock(
+  "../features/leakage/useLeakageLifecycleMutations",
+  () => ({
+    useLeakageLifecycleMutations: vi.fn(),
+  }),
+);
+
+vi.mock(
+  "../features/leakage/components/LeakageLifecycleTaggingSection",
+  () => ({
+    LeakageLifecycleTaggingSection: ({
+      onTagLeak,
+    }: {
+      onTagLeak: (leak: LeakRegisterItemInput) => void;
+    }) => (
+      <button
+        type="button"
+        onClick={() =>
+          onTagLeak({
+            leak_code: "LEAK-001",
+            location: "Compressor room",
+            baseline_leakage_flow_nm3_per_hr: "12.5",
+            quantification_basis: "ULTRASONIC_ESTIMATE",
+            source_category: "PIPE_JOINT",
+            expected_repair_fraction: "0.8",
+            repair_status: "OPEN",
+          })
+        }
+      >
+        Tag test leak
+      </button>
+    ),
   }),
 );
 
@@ -138,6 +175,9 @@ vi.mock(
 type ProjectContextValue = ReturnType<typeof useProjectContext>;
 type ProjectQuery = ProjectContextValue["projectQuery"];
 
+const createLifecycleRecord = vi.fn();
+const resetCreateLifecycleRecord = vi.fn();
+
 const projectFixture: Project = {
   id: 42,
   organization_id: 6406,
@@ -153,6 +193,9 @@ const projectFixture: Project = {
 };
 
 function configurePageDependencies(): void {
+  createLifecycleRecord.mockReset();
+  resetCreateLifecycleRecord.mockReset();
+
   vi.mocked(useAuth).mockReturnValue({
     accessToken: "test-access-token",
     currentUser: null,
@@ -214,6 +257,22 @@ function configurePageDependencies(): void {
       typeof useLeakageLifecycleDetail
     >,
   );
+
+  vi.mocked(useLeakageLifecycleMutations).mockReturnValue({
+    createMutation: {
+      mutate: createLifecycleRecord,
+      reset: resetCreateLifecycleRecord,
+      isPending: false,
+      isError: false,
+      error: null,
+      variables: undefined,
+    },
+    assignMutation: {},
+    closeMutation: {},
+    createKpiSnapshotMutation: {},
+  } as unknown as ReturnType<
+    typeof useLeakageLifecycleMutations
+  >);
 }
 
 function renderPage() {
