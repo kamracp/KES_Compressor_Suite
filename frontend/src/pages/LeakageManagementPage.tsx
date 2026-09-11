@@ -24,6 +24,7 @@ import { LeakageEnergyBasisSection } from "../features/leakage/components/Leakag
 import { LeakageEngineeringReviewSection } from "../features/leakage/components/LeakageEngineeringReviewSection";
 import { LeakageLifecycleDetailSection } from "../features/leakage/components/LeakageLifecycleDetailSection";
 import { LeakageLifecycleRegisterSection } from "../features/leakage/components/LeakageLifecycleRegisterSection";
+import { LeakageLifecycleTaggingSection } from "../features/leakage/components/LeakageLifecycleTaggingSection";
 import { LeakageStudyBasisSection } from "../features/leakage/components/LeakageStudyBasisSection";
 import { LeakRegisterSection } from "../features/leakage/components/LeakRegisterSection";
 import { RepairVerificationSection } from "../features/leakage/components/RepairVerificationSection";
@@ -33,14 +34,20 @@ import {
   validateLeakageFormState,
   type LeakageFormState,
 } from "../features/leakage/leakageFormState";
+import { buildLeakageLifecycleCreateRequest } from "../features/leakage/leakageLifecyclePayload";
 import { analyzeCompressedAirLeakage } from "../features/leakage/leakageService";
 import { useLeakageLifecycleDetail } from "../features/leakage/useLeakageLifecycleDetail";
+import { useLeakageLifecycleMutations } from "../features/leakage/useLeakageLifecycleMutations";
 import { useLeakageLifecycleRegister } from "../features/leakage/useLeakageLifecycleRegister";
 import { useProjectContext } from "../features/projects/useProjectContext";
 import { useInputOptions } from "../features/reference/useInputOptions";
 import { ApiError } from "../services/apiClient";
 
-function extractErrorMessage(error: unknown): string {
+function extractErrorMessage(
+  error: unknown,
+  fallbackMessage =
+    "Compressed-air leakage analysis could not be completed.",
+): string {
   if (error instanceof ApiError) {
     const details = error.details;
 
@@ -63,7 +70,7 @@ function extractErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  return "Compressed-air leakage analysis could not be completed.";
+  return fallbackMessage;
 }
 
 export function LeakageManagementPage() {
@@ -75,6 +82,12 @@ export function LeakageManagementPage() {
     project,
     projectQuery,
   } = useProjectContext();
+
+  const { createMutation: createLifecycleMutation } =
+    useLeakageLifecycleMutations(
+      accessToken,
+      projectIdNumber,
+    );
 
   const leakageLifecycleRegisterQuery =
     useLeakageLifecycleRegister(
@@ -131,6 +144,7 @@ export function LeakageManagementPage() {
     updater: (current: LeakageFormState) => LeakageFormState,
   ): void {
     leakageMutation.reset();
+    createLifecycleMutation.reset();
     setValidationErrors([]);
     setFormState(updater);
   }
@@ -165,6 +179,7 @@ export function LeakageManagementPage() {
 
   function resetAnalysis(): void {
     leakageMutation.reset();
+    createLifecycleMutation.reset();
     setValidationErrors([]);
     setFormState(createInitialLeakageFormState());
   }
@@ -271,9 +286,10 @@ export function LeakageManagementPage() {
           {[
             "01 Study Basis",
             "02 Leak Register",
-            "03 Energy Basis",
-            "04 Repair Verification",
-            "05 Engineering Review",
+            "03 Lifecycle Tagging",
+            "04 Energy Basis",
+            "05 Repair Verification",
+            "06 Engineering Review",
           ].map((stage) => (
             <Badge
               key={stage}
@@ -329,6 +345,32 @@ export function LeakageManagementPage() {
             leaks,
           }))
         }
+      />
+
+      <LeakageLifecycleTaggingSection
+        leaks={formState.leaks}
+        persistedLeakCodes={
+          leakageLifecycleRegisterQuery.data?.items.map(
+            (leak) => leak.leak_code,
+          ) ?? []
+        }
+        isPending={createLifecycleMutation.isPending}
+        pendingLeakCode={
+          createLifecycleMutation.variables?.leak_code ?? null
+        }
+        errorMessage={
+          createLifecycleMutation.isError
+            ? extractErrorMessage(
+                createLifecycleMutation.error,
+                "Leakage record could not be tagged.",
+              )
+            : null
+        }
+        onTagLeak={(leak) => {
+          createLifecycleMutation.mutate(
+            buildLeakageLifecycleCreateRequest(leak),
+          );
+        }}
       />
 
       <LeakageLifecycleRegisterSection
