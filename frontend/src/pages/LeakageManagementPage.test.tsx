@@ -23,6 +23,7 @@ import {
 
 import { useAuth } from "../features/auth/AuthProvider";
 import { LEAKAGE_SOURCE_SNAPSHOT_SCHEMA } from "../features/leakage/leakageLifecyclePayload";
+import type { CompressedAirLeakAssignRequest } from "../features/leakage/leakageLifecycleTypes";
 import { useLeakageLifecycleDetail } from "../features/leakage/useLeakageLifecycleDetail";
 import { useLeakageLifecycleMutations } from "../features/leakage/useLeakageLifecycleMutations";
 import { useLeakageLifecycleRegister } from "../features/leakage/useLeakageLifecycleRegister";
@@ -94,6 +95,31 @@ vi.mock(
         }
       >
         Tag test leak
+      </button>
+    ),
+  }),
+);
+
+vi.mock(
+  "../features/leakage/components/LeakageLifecycleAssignmentSection",
+  () => ({
+    LeakageLifecycleAssignmentSection: ({
+      onAssign,
+    }: {
+      onAssign: (
+        payload: CompressedAirLeakAssignRequest,
+      ) => void;
+    }) => (
+      <button
+        type="button"
+        onClick={() =>
+          onAssign({
+            assigned_to: "maintenance@example.com",
+            change_notes: "Assigned during test review.",
+          })
+        }
+      >
+        Assign test leak
       </button>
     ),
   }),
@@ -178,6 +204,8 @@ type ProjectQuery = ProjectContextValue["projectQuery"];
 
 const createLifecycleRecord = vi.fn();
 const resetCreateLifecycleRecord = vi.fn();
+const assignLifecycleRecord = vi.fn();
+const resetAssignLifecycleRecord = vi.fn();
 
 const projectFixture: Project = {
   id: 42,
@@ -196,6 +224,8 @@ const projectFixture: Project = {
 function configurePageDependencies(): void {
   createLifecycleRecord.mockReset();
   resetCreateLifecycleRecord.mockReset();
+  assignLifecycleRecord.mockReset();
+  resetAssignLifecycleRecord.mockReset();
 
   vi.mocked(useAuth).mockReturnValue({
     accessToken: "test-access-token",
@@ -268,7 +298,13 @@ function configurePageDependencies(): void {
       error: null,
       variables: undefined,
     },
-    assignMutation: {},
+    assignMutation: {
+      mutate: assignLifecycleRecord,
+      reset: resetAssignLifecycleRecord,
+      isPending: false,
+      isError: false,
+      error: null,
+    },
     closeMutation: {},
     createKpiSnapshotMutation: {},
   } as unknown as ReturnType<
