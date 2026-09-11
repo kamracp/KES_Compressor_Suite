@@ -412,4 +412,46 @@ describe("LeakageManagementPage", () => {
       },
     });
   });
+
+  it("assigns the selected lifecycle record with its transition payload", async () => {
+    const user = renderPage();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Assign test leak",
+      }),
+    );
+    expect(assignLifecycleRecord).not.toHaveBeenCalled();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Review leak 18",
+      }),
+    );
+
+    await waitFor(() => {
+      expect(useLeakageLifecycleDetail).toHaveBeenLastCalledWith(
+        "test-access-token",
+        18,
+        true,
+      );
+    });
+
+    expect(resetAssignLifecycleRecord).toHaveBeenCalledTimes(1);
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Assign test leak",
+      }),
+    );
+
+    expect(assignLifecycleRecord).toHaveBeenCalledTimes(1);
+    expect(assignLifecycleRecord).toHaveBeenCalledWith({
+      leakId: 18,
+      payload: {
+        assigned_to: "maintenance@example.com",
+        change_notes: "Assigned during test review.",
+      },
+    });
+  });
 });
