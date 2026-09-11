@@ -22,6 +22,7 @@ import {
 } from "vitest";
 
 import { useAuth } from "../features/auth/AuthProvider";
+import { LEAKAGE_SOURCE_SNAPSHOT_SCHEMA } from "../features/leakage/leakageLifecyclePayload";
 import { useLeakageLifecycleDetail } from "../features/leakage/useLeakageLifecycleDetail";
 import { useLeakageLifecycleMutations } from "../features/leakage/useLeakageLifecycleMutations";
 import { useLeakageLifecycleRegister } from "../features/leakage/useLeakageLifecycleRegister";
@@ -337,5 +338,42 @@ describe("LeakageManagementPage", () => {
     expect(screen.getByText("Selected leak 18")).toBeInTheDocument();
     expect(screen.getByText("History records 2")).toBeInTheDocument();
     expect(screen.getByText("KPI snapshots 3")).toBeInTheDocument();
+  });
+
+  it("submits a normalized lifecycle record when a leak is tagged", async () => {
+    const user = renderPage();
+
+    expect(useLeakageLifecycleMutations).toHaveBeenCalledWith(
+      "test-access-token",
+      42,
+    );
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Tag test leak",
+      }),
+    );
+
+    expect(createLifecycleRecord).toHaveBeenCalledTimes(1);
+    expect(createLifecycleRecord).toHaveBeenCalledWith({
+      leak_code: "LEAK-001",
+      location: "Compressor room",
+      source_snapshot: {
+        schema: LEAKAGE_SOURCE_SNAPSHOT_SCHEMA,
+        baseline_leakage_flow_nm3_per_hr: "12.5",
+        quantification_basis: "ULTRASONIC_ESTIMATE",
+        source_category: "PIPE_JOINT",
+        area: null,
+        equipment_tag: null,
+        component_description: null,
+        survey_pressure_bar_g: null,
+        expected_repair_fraction: "0.8",
+        repair_status: "OPEN",
+        estimated_repair_cost: null,
+        verified_post_repair_flow_nm3_per_hr: null,
+        survey_method_reference: null,
+        notes: null,
+      },
+    });
   });
 });
