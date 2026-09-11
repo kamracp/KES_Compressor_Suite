@@ -22,6 +22,7 @@ import {
 import { useAuth } from "../features/auth/AuthProvider";
 import { LeakageEnergyBasisSection } from "../features/leakage/components/LeakageEnergyBasisSection";
 import { LeakageEngineeringReviewSection } from "../features/leakage/components/LeakageEngineeringReviewSection";
+import { LeakageLifecycleAssignmentSection } from "../features/leakage/components/LeakageLifecycleAssignmentSection";
 import { LeakageLifecycleDetailSection } from "../features/leakage/components/LeakageLifecycleDetailSection";
 import { LeakageLifecycleRegisterSection } from "../features/leakage/components/LeakageLifecycleRegisterSection";
 import { LeakageLifecycleTaggingSection } from "../features/leakage/components/LeakageLifecycleTaggingSection";
@@ -83,11 +84,13 @@ export function LeakageManagementPage() {
     projectQuery,
   } = useProjectContext();
 
-  const { createMutation: createLifecycleMutation } =
-    useLeakageLifecycleMutations(
-      accessToken,
-      projectIdNumber,
-    );
+  const {
+    createMutation: createLifecycleMutation,
+    assignMutation: assignLifecycleMutation,
+  } = useLeakageLifecycleMutations(
+    accessToken,
+    projectIdNumber,
+  );
 
   const leakageLifecycleRegisterQuery =
     useLeakageLifecycleRegister(
@@ -158,6 +161,11 @@ export function LeakageManagementPage() {
     }));
   }
 
+  function selectLifecycleLeak(leakId: number): void {
+    assignLifecycleMutation.reset();
+    setSelectedLeakId(leakId);
+  }
+
   function runLeakageAnalysis(): void {
     const errors = validateLeakageFormState(formState);
 
@@ -180,6 +188,7 @@ export function LeakageManagementPage() {
   function resetAnalysis(): void {
     leakageMutation.reset();
     createLifecycleMutation.reset();
+    assignLifecycleMutation.reset();
     setValidationErrors([]);
     setFormState(createInitialLeakageFormState());
   }
@@ -287,9 +296,10 @@ export function LeakageManagementPage() {
             "01 Study Basis",
             "02 Leak Register",
             "03 Lifecycle Tagging",
-            "04 Energy Basis",
-            "05 Repair Verification",
-            "06 Engineering Review",
+            "04 Repair Assignment",
+            "05 Energy Basis",
+            "06 Repair Verification",
+            "07 Engineering Review",
           ].map((stage) => (
             <Badge
               key={stage}
@@ -388,7 +398,7 @@ export function LeakageManagementPage() {
           void leakageLifecycleRegisterQuery.refetch();
         }}
         selectedLeakId={selectedLeakId}
-        onSelectLeak={setSelectedLeakId}
+        onSelectLeak={selectLifecycleLeak}
       />
 
       <LeakageLifecycleDetailSection
@@ -412,6 +422,32 @@ export function LeakageManagementPage() {
               ? "Leakage lifecycle detail could not be loaded."
               : null
         }
+      />
+
+      <LeakageLifecycleAssignmentSection
+        leak={leakageLifecycleDetail.detailQuery.data}
+        isPending={assignLifecycleMutation.isPending}
+        errorMessage={
+          assignLifecycleMutation.isError
+            ? extractErrorMessage(
+                assignLifecycleMutation.error,
+                "Leakage record could not be assigned.",
+              )
+            : null
+        }
+        onAssign={(payload) => {
+          const selectedLeak =
+            leakageLifecycleDetail.detailQuery.data;
+
+          if (!selectedLeak) {
+            return;
+          }
+
+          assignLifecycleMutation.mutate({
+            leakId: selectedLeak.id,
+            payload,
+          });
+        }}
       />
 
       <LeakageEnergyBasisSection
