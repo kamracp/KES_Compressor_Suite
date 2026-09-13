@@ -23,7 +23,10 @@ import {
 
 import { useAuth } from "../features/auth/AuthProvider";
 import { LEAKAGE_SOURCE_SNAPSHOT_SCHEMA } from "../features/leakage/leakageLifecyclePayload";
-import type { CompressedAirLeakAssignRequest } from "../features/leakage/leakageLifecycleTypes";
+import type {
+  CompressedAirLeakAssignRequest,
+  CompressedAirLeakCloseRequest,
+} from "../features/leakage/leakageLifecycleTypes";
 import { useLeakageLifecycleDetail } from "../features/leakage/useLeakageLifecycleDetail";
 import { useLeakageLifecycleMutations } from "../features/leakage/useLeakageLifecycleMutations";
 import { useLeakageLifecycleRegister } from "../features/leakage/useLeakageLifecycleRegister";
@@ -126,6 +129,38 @@ vi.mock(
 );
 
 vi.mock(
+  "../features/leakage/components/LeakageLifecycleClosureSection",
+  () => ({
+    LeakageLifecycleClosureSection: ({
+      onClose,
+    }: {
+      onClose: (
+        payload: CompressedAirLeakCloseRequest,
+      ) => void;
+    }) => (
+      <button
+        type="button"
+        onClick={() =>
+          onClose({
+            closure_evidence: {
+              schema: "KES_LEAK_CLOSURE_EVIDENCE_V1",
+              repair_action: "Replaced damaged coupling",
+              verification_method: "FLOW_METER",
+              verified_post_repair_flow_nm3_per_hr: "0.8",
+              verification_reference: "WO-2026-104",
+            },
+            closure_notes: "Repair verified.",
+            change_notes: "Closed during test review.",
+          })
+        }
+      >
+        Close test leak
+      </button>
+    ),
+  }),
+);
+
+vi.mock(
   "../features/leakage/components/LeakageLifecycleRegisterSection",
   () => ({
     LeakageLifecycleRegisterSection: ({
@@ -206,6 +241,8 @@ const createLifecycleRecord = vi.fn();
 const resetCreateLifecycleRecord = vi.fn();
 const assignLifecycleRecord = vi.fn();
 const resetAssignLifecycleRecord = vi.fn();
+const closeLifecycleRecord = vi.fn();
+const resetCloseLifecycleRecord = vi.fn();
 
 const projectFixture: Project = {
   id: 42,
@@ -226,6 +263,8 @@ function configurePageDependencies(): void {
   resetCreateLifecycleRecord.mockReset();
   assignLifecycleRecord.mockReset();
   resetAssignLifecycleRecord.mockReset();
+  closeLifecycleRecord.mockReset();
+  resetCloseLifecycleRecord.mockReset();
 
   vi.mocked(useAuth).mockReturnValue({
     accessToken: "test-access-token",
@@ -305,7 +344,13 @@ function configurePageDependencies(): void {
       isError: false,
       error: null,
     },
-    closeMutation: {},
+    closeMutation: {
+      mutate: closeLifecycleRecord,
+      reset: resetCloseLifecycleRecord,
+      isPending: false,
+      isError: false,
+      error: null,
+    },
     createKpiSnapshotMutation: {},
   } as unknown as ReturnType<
     typeof useLeakageLifecycleMutations
