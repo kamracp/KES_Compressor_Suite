@@ -23,6 +23,7 @@ import { useAuth } from "../features/auth/AuthProvider";
 import { LeakageEnergyBasisSection } from "../features/leakage/components/LeakageEnergyBasisSection";
 import { LeakageEngineeringReviewSection } from "../features/leakage/components/LeakageEngineeringReviewSection";
 import { LeakageLifecycleAssignmentSection } from "../features/leakage/components/LeakageLifecycleAssignmentSection";
+import { LeakageLifecycleClosureSection } from "../features/leakage/components/LeakageLifecycleClosureSection";
 import { LeakageLifecycleDetailSection } from "../features/leakage/components/LeakageLifecycleDetailSection";
 import { LeakageLifecycleRegisterSection } from "../features/leakage/components/LeakageLifecycleRegisterSection";
 import { LeakageLifecycleTaggingSection } from "../features/leakage/components/LeakageLifecycleTaggingSection";
@@ -87,6 +88,7 @@ export function LeakageManagementPage() {
   const {
     createMutation: createLifecycleMutation,
     assignMutation: assignLifecycleMutation,
+    closeMutation: closeLifecycleMutation,
   } = useLeakageLifecycleMutations(
     accessToken,
     projectIdNumber,
@@ -163,6 +165,7 @@ export function LeakageManagementPage() {
 
   function selectLifecycleLeak(leakId: number): void {
     assignLifecycleMutation.reset();
+    closeLifecycleMutation.reset();
     setSelectedLeakId(leakId);
   }
 
@@ -189,6 +192,7 @@ export function LeakageManagementPage() {
     leakageMutation.reset();
     createLifecycleMutation.reset();
     assignLifecycleMutation.reset();
+    closeLifecycleMutation.reset();
     setValidationErrors([]);
     setFormState(createInitialLeakageFormState());
   }
@@ -297,9 +301,10 @@ export function LeakageManagementPage() {
             "02 Leak Register",
             "03 Lifecycle Tagging",
             "04 Repair Assignment",
-            "05 Energy Basis",
-            "06 Repair Verification",
-            "07 Engineering Review",
+            "05 Lifecycle Closure",
+            "06 Energy Basis",
+            "07 Repair Verification",
+            "08 Engineering Review",
           ].map((stage) => (
             <Badge
               key={stage}
@@ -444,6 +449,32 @@ export function LeakageManagementPage() {
           }
 
           assignLifecycleMutation.mutate({
+            leakId: selectedLeak.id,
+            payload,
+          });
+        }}
+      />
+
+      <LeakageLifecycleClosureSection
+        leak={leakageLifecycleDetail.detailQuery.data}
+        isPending={closeLifecycleMutation.isPending}
+        errorMessage={
+          closeLifecycleMutation.isError
+            ? extractErrorMessage(
+                closeLifecycleMutation.error,
+                "Leakage lifecycle could not be closed.",
+              )
+            : null
+        }
+        onClose={(payload) => {
+          const selectedLeak =
+            leakageLifecycleDetail.detailQuery.data;
+
+          if (!selectedLeak) {
+            return;
+          }
+
+          closeLifecycleMutation.mutate({
             leakId: selectedLeak.id,
             payload,
           });
